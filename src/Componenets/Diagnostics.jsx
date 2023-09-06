@@ -121,7 +121,6 @@ const Diagnostics = (values) => {
       clearInterval(timerRef.current);
       timerRef.current = undefined;
       flag = 0;
-      setData([]);
       setProgress(0); // Reset the progress bar
     } else {
       // If the chart is stopped, start it
