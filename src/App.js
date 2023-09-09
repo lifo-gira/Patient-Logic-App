@@ -3,6 +3,7 @@ import Login from "./Login.js";
 import Home from "./Home.js";
 import Header from "./Componenets/Header.jsx";
 import { useEffect, useState } from "react";
+import Diagno from "./Componenets/Diagno.jsx";
 
 function App() {
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));
@@ -11,8 +12,10 @@ function App() {
   return (
     <Routes>
       {/* <Route path="*" element={<App />} /> */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Header />} />
       <Route element={<Home />} path="/home" />
+      <Route element={<Login />} path="/login" />
+      <Route element={<Diagno />} path="/diagnostics" />
     </Routes>
   );
 }

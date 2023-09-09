@@ -34,7 +34,7 @@ const Login = () => {
           localStorage.setItem("user", JSON.stringify(data));
           // console.log(JSON.stringify(data));
           localStorage.getItem("user");
-          navigate("/home");
+          navigate("/diagnostics");
         }
       })
       .catch((err) => console.log(err));

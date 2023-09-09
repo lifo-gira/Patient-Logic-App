@@ -131,7 +131,9 @@ const Diagnostics = () => {
         socket.close();
         setSocket(null);
         setCounter(-1);
-        setmetricArray([]) // Set the socket to null to indicate it's closed
+        console.log('Before clearing metricArray:', metricArray);
+        setmetricArray([]);
+console.log('After clearing metricArray:', metricArray); // Set the socket to null to indicate it's closed
       }
     } else {
       // If the chart is stopped, start it
