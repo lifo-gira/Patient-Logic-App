@@ -189,32 +189,32 @@ const Diagnostics = () => {
     }
   };
 
-  const startTimer = () => {
-    setIsRunning(true);
-    setIsTimerRunning(true);
-    // setCounter(counter-1)
-    setElapsedTime(0);
-    updateChart();
-    if (!timerRef.current) {
-      timerRef.current = setInterval(updateChart, 1000);
-    }
+  // const startTimer = () => {
+  //   setIsRunning(true);
+  //   setIsTimerRunning(true);
+  //   // setCounter(counter-1)
+  //   setElapsedTime(0);
+  //   updateChart();
+  //   if (!timerRef.current) {
+  //     timerRef.current = setInterval(updateChart, 1000);
+  //   }
 
-    setTimeout(() => {
-      setIsRunning(false);
-      setIsTimerRunning(false);
-      clearInterval(timerRef.current);
-      timerRef.current = undefined;
-    }, 124500); // 120000 milliseconds = 2 minutes
-    flag = 0;
-    setData([]);
-  };
+  //   setTimeout(() => {
+  //     setIsRunning(false);
+  //     setIsTimerRunning(false);
+  //     clearInterval(timerRef.current);
+  //     timerRef.current = undefined;
+  //   }, 124500); // 120000 milliseconds = 2 minutes
+  //   flag = 0;
+  //   setData([]);
+  // };
 
-  const stopTimer = () => {
-    setIsRunning(false);
-    setIsTimerRunning(true);
-    clearInterval(timerRef.current);
-    timerRef.current = undefined;
-  };
+  // const stopTimer = () => {
+  //   setIsRunning(false);
+  //   setIsTimerRunning(true);
+  //   clearInterval(timerRef.current);
+  //   timerRef.current = undefined;
+  // };
 
   // useEffect(() => {
   //   const socket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
