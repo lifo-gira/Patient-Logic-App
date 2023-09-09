@@ -16,7 +16,8 @@ import {
 import Timer from "../additionals/Timer";
 import { ToastContainer, toast } from "react-toastify";
 
-const Diagnostics = (values) => {
+const Diagnostics = () => {
+  const [socket, setSocket] = useState(null);
   const [progress, setProgress] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(120); // 2 minutes in seconds
@@ -48,19 +49,22 @@ const Diagnostics = (values) => {
     });
   }
   console.log(metricArray, "metricArray");
-  
-  const generateNewDataPoint = () => {
-  console.log(metricArray, "metricArraygraph");
-  console.log(counter, "counter");
-  console.log(metricArray.length, "no of elemetns");
-  if (counter < metricArray.length) {
-    const newIndex = elapsedTime + 1;
-    return { index: newIndex, val: metricArray[counter].val, ...dotAppearance };
-  } else {
-    return null;
-  }
-};
 
+  const generateNewDataPoint = () => {
+    console.log(metricArray, "metricArraygraph");
+    console.log(counter, "counter");
+    console.log(metricArray.length, "no of elemetns");
+    if (counter < metricArray.length) {
+      const newIndex = elapsedTime + 1;
+      return {
+        index: newIndex,
+        val: metricArray[counter].val,
+        ...dotAppearance,
+      };
+    } else {
+      return null;
+    }
+  };
 
   const updateChart = () => {
     if (counter >= metricArray.length) {
@@ -80,9 +84,9 @@ const Diagnostics = (values) => {
       const newDataPoint = generateNewDataPoint();
       setCounter((prevCounter) => prevCounter + 1);
       setData((prevData) => [...prevData, newDataPoint]);
-      elapsedTime +=1;
+      elapsedTime += 1;
       setChartData((prevData) => [...prevData, newDataPoint]);
-      setElapsedTime((prevElapsedTime) => prevElapsedTime + 1); 
+      setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
     }
   };
 
@@ -122,12 +126,54 @@ const Diagnostics = (values) => {
       timerRef.current = undefined;
       flag = 0;
       setProgress(0); // Reset the progress bar
+
+      if (socket) {
+        socket.close();
+        setSocket(null);
+        setCounter(-1);
+        setmetricArray([]) // Set the socket to null to indicate it's closed
+      }
     } else {
       // If the chart is stopped, start it
       setIsRunning(true);
       setIsTimerRunning(false); // Timer will start when the chart starts
+      setCounter(-1);
       elapsedTime = -1;
       updateChart();
+
+      // Create a new WebSocket connection when starting the chart
+      const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
+      newSocket.onmessage = (event) => {
+        console.log(event, "event");
+        const newData = JSON.parse(event.data);
+        console.log(newData, "newData");
+        const seriesCount = newData.series;
+        // seriesCount = Updated_data.length
+        if (!isRunning) {
+          metricArray.pop(metricArray);
+        }
+        for (let i = 0; i < seriesCount.length; i += 20) {
+          const slice = seriesCount.slice(i, i + 10);
+          const mappedSlice = slice.map((val, index) => ({
+            index: i + index,
+            val: parseFloat(val),
+          }));
+          metricArray.push(...mappedSlice);
+          console.log(metricArray, "metrics");
+          // setmetricArray(mappedSlice)
+        }
+        console.log(metricArray);
+        return metricArray;
+      };
+      newSocket.onopen = () => {
+        console.log("Socket open");
+      };
+      newSocket.onclose = () => {
+        console.log("Socket close");
+      };
+
+      setSocket(newSocket); // Set the socket state to the new WebSocket instance
+
       if (!timerRef.current) {
         timerRef.current = setInterval(updateChart, 1000);
       }
@@ -145,62 +191,66 @@ const Diagnostics = (values) => {
 
   const startTimer = () => {
     setIsRunning(true);
-      setIsTimerRunning(true);
-      // setCounter(counter-1)
-      setElapsedTime(0);
+    setIsTimerRunning(true);
+    // setCounter(counter-1)
+    setElapsedTime(0);
     updateChart();
-      if (!timerRef.current) {
-        timerRef.current = setInterval(updateChart, 1000);
-      }
+    if (!timerRef.current) {
+      timerRef.current = setInterval(updateChart, 1000);
+    }
 
-      setTimeout(() => {
-        setIsRunning(false);
-        setIsTimerRunning(false);
-        clearInterval(timerRef.current);
-        timerRef.current = undefined;
-      }, 124500); // 120000 milliseconds = 2 minutes
-      flag = 0
-      setData([]);
+    setTimeout(() => {
+      setIsRunning(false);
+      setIsTimerRunning(false);
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+    }, 124500); // 120000 milliseconds = 2 minutes
+    flag = 0;
+    setData([]);
   };
 
   const stopTimer = () => {
     setIsRunning(false);
-      setIsTimerRunning(true);
-      clearInterval(timerRef.current);
-      timerRef.current = undefined;
+    setIsTimerRunning(true);
+    clearInterval(timerRef.current);
+    timerRef.current = undefined;
   };
-  
-  useEffect(() => {
-        const socket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
-        // console.log("socket",socket)
-        socket.onmessage = (event) => {
-          console.log(event, "event")
-          const newData = JSON.parse(event.data);
-          console.log(newData,"newData")
-          const seriesCount = newData.series
-          // seriesCount = Updated_data.length
-          for (let i = 0; i < seriesCount.length; i += 20) {
-            const slice = seriesCount.slice(i, i + 10);
-            const mappedSlice = slice.map((val, index) => ({ index: i + index, val: parseFloat(val) }));
-            metricArray.push(...mappedSlice)
-            console.log(metricArray,"metrics")
-            // setmetricArray(mappedSlice)
-          }
-          console.log(metricArray)
-          return metricArray;
-        };
-        socket.onopen = () => {
-          console.log("Socket open")
-    
-        };
-        socket.onclose = () => {
-          console.log("Socket close")
-        };
-        return () => {
-          socket.close();
-        };
-      }, [])
-  
+
+  // useEffect(() => {
+  //   const socket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
+  //   // console.log("socket",socket)
+  //   socket.onmessage = (event) => {
+  //     console.log(event, "event");
+  //     const newData = JSON.parse(event.data);
+  //     console.log(newData, "newData");
+  //     const seriesCount = newData.series;
+  //     // seriesCount = Updated_data.length
+  //     if (!isRunning) {
+  //       metricArray.pop(metricArray);
+  //     }
+  //     for (let i = 0; i < seriesCount.length; i += 20) {
+  //       const slice = seriesCount.slice(i, i + 10);
+  //       const mappedSlice = slice.map((val, index) => ({
+  //         index: i + index,
+  //         val: parseFloat(val),
+  //       }));
+  //       metricArray.push(...mappedSlice);
+  //       console.log(metricArray, "metrics");
+  //       // setmetricArray(mappedSlice)
+  //     }
+  //     console.log(metricArray);
+  //     return metricArray;
+  //   };
+  //   socket.onopen = () => {
+  //     console.log("Socket open");
+  //   };
+  //   socket.onclose = () => {
+  //     console.log("Socket close");
+  //   };
+  //   return () => {
+  //     socket.close();
+  //   };
+  // }, []);
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
 
@@ -270,8 +320,6 @@ const Diagnostics = (values) => {
       setDownloadEnabled(true);
     }
   }, [timer]);
-
-  
 
   const downloadGraph = () => {
     // Replace this with actual logic to download the graph image
@@ -357,7 +405,7 @@ const Diagnostics = (values) => {
                 strokeWidth={3}
                 stackId="2"
                 stroke="cyan"
-                isAnimationActive={false} 
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
