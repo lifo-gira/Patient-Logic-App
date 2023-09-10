@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-const Timer = ({ isRunning }) => {
+const Timer = ({ sock }) => {
+
     const [seconds, setSeconds] = useState(0);
     const [minutes, setMinutes] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -8,7 +9,8 @@ const Timer = ({ isRunning }) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            if (minutes === 2 && seconds === 0) {
+            if (minutes === 1 && seconds === 0) {
+                sock.close()
                 clearInterval(timer);
                 setTimerCompleted(true); // Set timerCompleted to true
                 return;
@@ -17,7 +19,7 @@ const Timer = ({ isRunning }) => {
             setSeconds(prevSeconds => {
                 const newSeconds = prevSeconds + 1;
                 if (newSeconds === 60) {
-                    setMinutes(prevMinutes => prevMinutes + 1);
+                    setMinutes(minutes + 1);
                     return 0;
                 }
                 return newSeconds;
@@ -25,7 +27,7 @@ const Timer = ({ isRunning }) => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [isRunning,minutes, seconds]);
+    }, [minutes, seconds]);
 
     useEffect(() => {
         if (timerCompleted){
@@ -33,7 +35,7 @@ const Timer = ({ isRunning }) => {
          } // No need to update progress if timer is completed
 
         const totalSeconds = minutes * 60 + seconds;
-        const totalDuration = 2 * 60; // Total duration in seconds (2 minutes)
+        const totalDuration = 1 * 60; // Total duration in seconds (2 minutes)
         const calculatedProgress = (totalSeconds / totalDuration) * 100;
         setProgress(calculatedProgress);
     }, [minutes, seconds, timerCompleted]);

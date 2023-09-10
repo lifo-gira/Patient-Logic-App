@@ -86,17 +86,15 @@ const Diagno = () => {
   const updateChart = () => {
     if (counter >= metricArray.length) {
       if (flag < 1) {
-        setIsTimerRunning(true);
         showToastMessage();
         flag += 1;
       }
       setCounter(counter - 1);
       return;
     }
-
+  
     if (!isPlaying) {
-      setIsPlaying(true);
-      setIsTimerRunning(true);
+      // Only update the chart data, do not change isPlaying here
       if (counter < metricArray.length) counter = counter + 1;
       const newDataPoint = generateNewDataPoint();
       setCounter((prevCounter) => prevCounter + 1);
@@ -108,16 +106,8 @@ const Diagno = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsButtonEnabled(true);
-    }, 1000);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, []);
-
-  useEffect(() => {
     if (isPlaying) {
+      setIsPlaying(true)
       const interval = setInterval(updateChart, 1000);
       return () => {
         clearInterval(interval);
@@ -134,29 +124,14 @@ const Diagno = () => {
   // };
 
   const toggleChart = () => {
-    if (isPlaying) {
-      // If the chart is running, stop it
-      setIsPlaying(false);
-      setIsTimerRunning(false); // Stop the timer
-      clearInterval(timerRef.current);
-      timerRef.current = undefined;
-      flag = 0;
-      setProgress(0); // Reset the progress bar
-
-      if (socket) {
-        socket.close();
-        setSocket(null); // Set the socket to null to indicate it's closed
-        setmetricArray([]);
-        setCounter(-1);
-      }
-    } else {
+    if (!isPlaying) {
       // If the chart is stopped, start it
       setIsPlaying(true);
       setIsTimerRunning(true); // Timer will start when the chart starts
       setCounter(-1);
       elapsedTime = -1;
       updateChart();
-
+  
       // Create a new WebSocket connection when starting the chart
       const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
       newSocket.onmessage = (event) => {
@@ -184,23 +159,46 @@ const Diagno = () => {
       newSocket.onclose = () => {
         console.log("Socket close");
       };
-
+  
       setSocket(newSocket); // Set the socket state to the new WebSocket instance
-
+  
       if (!timerRef.current) {
         timerRef.current = setInterval(updateChart, 1000);
       }
-
+  
       setTimeout(() => {
-        setIsPlaying(false);
         setIsTimerRunning(false);
+        setIsPlaying(false)
         clearInterval(timerRef.current);
         timerRef.current = undefined;
-      }, 124500); // 120000 milliseconds = 2 minutes
+        setProgress(0);
+        if (newSocket) {
+          newSocket.close();
+          setSocket(null);
+          setCounter(-1);
+          setmetricArray([]);
+        }
+      }, 61500); // 120000 milliseconds = 2 minutes
       flag = 0;
       setData([]);
+    } else {
+      // If the chart is running, stop it
+      setIsPlaying(false);
+      setIsTimerRunning(false); // Stop the timer
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+      flag = 0;
+      setProgress(0); // Reset the progress bar
+  
+      if (socket) {
+        socket.close();
+        setSocket(null);
+        setCounter(-1);
+        setmetricArray([]);
+      }
     }
   };
+  
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
 
@@ -482,7 +480,7 @@ const Diagno = () => {
                 className="flex flex-col items-center justify-start pb-1 pr-5 rounded w-full h-[700px]"
                 ref={chartRef}
               >
-                {isTimerRunning && <Timer />}
+                {isTimerRunning && <Timer sock={socket}/>}
                 <ResponsiveContainer width="100%" height="80%">
                   <LineChart data={data} className={"mx-auto"}>
                     <Tooltip
