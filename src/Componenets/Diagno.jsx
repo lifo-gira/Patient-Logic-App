@@ -332,6 +332,7 @@ const Diagno = () => {
                             setDropdownVisible(!isDropdownVisible);
                             localStorage.setItem("isLoggedIn", false);
                             localStorage.setItem("user", null);
+                            console.clear();
                             navigate("/");
                           }}
                           className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -340,7 +341,7 @@ const Diagno = () => {
                         </a>
                       </li>
                     </ul>
-                    <ul
+                    {/* <ul
                       className="py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
                       aria-labelledby="avatarButton"
                     >
@@ -350,20 +351,23 @@ const Diagno = () => {
                         <a
                           onClick={() => {
                             setDropdownVisible(!isDropdownVisible);
+                            console.clear();
                             navigate("/live");
+                            window.location.reload();
                           }}
                           className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
                         >
                           Live Data
                         </a>
                       </li>
-                    </ul>
+                    </ul> */}
                     <div className="py-1">
                       <a
                         onClick={() => {
                           setDropdownVisible(!isDropdownVisible);
                           localStorage.setItem("isLoggedIn", false);
                           localStorage.setItem("user", null);
+                          console.clear();
                           navigate("/login");
                         }}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white cursor-pointer"
