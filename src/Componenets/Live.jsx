@@ -2,8 +2,12 @@ import React, { useState } from 'react'
 import { useRef } from 'react';
 import { useEffect } from 'react';
 import Spinner from "../assets/Spinner";
+import Profile from "../assets/profile.jpg";
+import Logo from "../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 
 const Live = () => {
+  const navigate = useNavigate();
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
   const userId=user.user_id;
@@ -17,6 +21,7 @@ const Live = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [metricArray, setmetricArray] = useState([]);
   const [seriesCount, setseriesCount] = useState([]);
+  
   const tempArray = []
   var flag = 0
 
@@ -36,9 +41,9 @@ async function fetchData(){
       .then((res) => res.json())
       .then((data) => {
         setPatient(data);
-        sereiesMetrics(data.data).then((metrics) => {
-          setMetrics(metrics);
-        });
+        // sereiesMetrics(data.data).then((metrics) => {
+        //   setMetrics(metrics);
+        // });
         fetchMetrics(data.data).then((metrics) => {
           setMetrics(metrics);
           seriesCount.push(metrics.length)
@@ -63,7 +68,7 @@ async function fetchData(){
                   for (let i = 0; i < series.length; i += 10) {
                     const slice = series.slice(i, i + 10);
                     const mappedSlice = slice.map((val, index) => ({ index: i + index, val: parseInt(val) }));
-                    console.log(slice, "mapped")
+                    // console.log(slice, "mapped")
                     metricArray.push(...mappedSlice);
                     // console.log(metricArray,"metric")
                   }
@@ -84,17 +89,17 @@ async function fetchData(){
     };
 }
 
-  async function sereiesMetrics(data) {
-    const response = await fetch("https://api-h5zs.onrender.com/metrics", {
-      method: "POST",
-      cache: "no-cache",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
-  }
+  // async function sereiesMetrics(data) {
+  //   const response = await fetch("https://api-h5zs.onrender.com/metrics", {
+  //     method: "POST",
+  //     cache: "no-cache",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(data),
+  //   });
+  //   return response.json();
+  // }
 
   async function fetchMetrics(data) {
     const response = await fetch("https://api-h5zs.onrender.com/metrics", {
@@ -123,30 +128,114 @@ async function fetchData(){
     }
   }, []);
 
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
+
+  const toggleDropdown = () => {
+    setDropdownVisible((prevVisible) => !prevVisible);
+  };
 
   return (
-    <div className="h-full">
+    <>
+    <header class="fixed w-full">
+        <nav class="bg-gray-100 border-gray-500 py-1 dark:bg-gray-900">
+          <div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
+            <a href="#" class="flex items-center">
+              <img src={Logo} class="h-6 mr-3 sm:h-9" alt="Landwind Logo" />
+            </a>
+            <div class="flex items-center lg:order-2">
+              <div className="relative">
+                <button
+                  id="avatarButton"
+                  type="button"
+                  onClick={() => setDropdownVisible(!isDropdownVisible)}
+                  className="w-10 h-10 rounded-full cursor-pointer"
+                >
+                  <img
+                    src={Profile}
+                    alt="User dropdown"
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                </button>
+                {isDropdownVisible && (
+                  <div
+                    id="userDropdown"
+                    className="absolute top-12 right-0 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600"
+                  >
+                    <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      <div>{}</div>
+                      <div className="font-medium truncate">
+                        bonnie@gmail.com
+                      </div>
+                    </div>
+                    <ul
+                      className="py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
+                      aria-labelledby="avatarButton"
+                    >
+                      <li
+                        onClick={() => setDropdownVisible(!isDropdownVisible)}
+                      >
+                        <a
+                          onClick={() => {
+                            setDropdownVisible(!isDropdownVisible);
+                            localStorage.setItem("isLoggedIn", false);
+                            localStorage.setItem("user", null);
+                            navigate("/");
+                          }}
+                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                        >
+                          Dashboard
+                        </a>
+                      </li>
+                    </ul>
+                    <ul
+                      className="py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
+                      aria-labelledby="avatarButton"
+                    >
+                      <li
+                        onClick={() => setDropdownVisible(!isDropdownVisible)}
+                      >
+                        <a
+                          onClick={() => {
+                            setDropdownVisible(!isDropdownVisible);
+                            navigate("/diagnostics");
+                          }}
+                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                        >
+                          Graph
+                        </a>
+                      </li>
+                    </ul>
+                    <div className="py-1">
+                      <a
+                        onClick={() => {
+                          setDropdownVisible(!isDropdownVisible);
+                          localStorage.setItem("isLoggedIn", false);
+                          localStorage.setItem("user", null);
+                          navigate("/login");
+                        }}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white cursor-pointer"
+                      >
+                        Sign out
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+    <div className="h-full w-full bg-gradient-to-r from-cyan-100 to-cyan-500">
       {patient != null && userId != "" && (
-    <div className="w-full h-screen flex flex-col items-center">
-      <div className="w-full max-w-3xl  bg-white mb-4 flex flex-col items-center">
+    <div className="w-full h-full flex flex-col items-center p-20">
+      <div className="w-full mb-4 flex flex-col items-center bg-gradient-to-r from-cyan-100 to-cyan-500">
       <div>
-          <p class="max-w-2xl mb-6 font-regular text-black lg:mb-8 md:text-lg lg:text-xl dark:text-black">The below window contains all the data fetched from the device.</p>
-        
+          <p class="max-w-2xl mb-6 font-bold text-black text-5xl lg:mb-8 md:text-3xl lg:text-xl dark:text-black">The below window contains all the data fetched from the device.</p>
         </div>
-        <button
-              className="text-white bg-gray-800 hover:bg-gray-700 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2"
-              onClick={() => {
-                setAutoScroll(() => {
-                  return !autoScroll;
-                });
-              }}
-            >
-              {autoScroll ? "Auto Scroll Enabled" : "Auto Scroll Disabled"}
-            </button>
-    <div className="w-full h-screen bg-black text-white p-4 rounded-lg shadow-md mb-4">
+    <div className="w-full h-full bg-black text-white mx-4 rounded-2xl shadow-2xl ">
       {/* Replace with your log data content */}
       <div
-                className="w-full h-full bg-black text-white rounded p-3 overflow-scroll font-mono"
+                className="w-full h-full bg-black text-green-500 rounded-2xl p-3 font-mono shadow-2xl border-2"
                 key={userId}
               >
                 <ul>
@@ -168,6 +257,7 @@ async function fetchData(){
       )}
     {patient == null && userId != "" && <Spinner />}
     </div>
+    </>
   )
 }
 

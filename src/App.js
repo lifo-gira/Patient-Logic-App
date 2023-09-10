@@ -4,6 +4,7 @@ import Home from "./Home.js";
 import Header from "./Componenets/Header.jsx";
 import { useEffect, useState } from "react";
 import Diagno from "./Componenets/Diagno.jsx";
+import Live from "./Componenets/Live.jsx";
 
 function App() {
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));
@@ -16,6 +17,7 @@ function App() {
       <Route element={<Home />} path="/home" />
       <Route element={<Login />} path="/login" />
       <Route element={<Diagno />} path="/diagnostics" />
+      <Route element={<Live />} path="/live" />
     </Routes>
   );
 }

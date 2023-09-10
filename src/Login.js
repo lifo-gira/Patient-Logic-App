@@ -128,11 +128,11 @@ const Login = () => {
           </div>
         </div>
 
-        <div class="relative">
+        <div class="w-5/6">
           <img
             src={Cover}
             alt="img"
-            class="bg-cover h-screen rounded-l-lg md:block object-cover"
+            class="w-full h-screen rounded-l-lg md:block object-cover"
           />
 
 
