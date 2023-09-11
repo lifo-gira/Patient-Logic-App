@@ -46,7 +46,7 @@ const Hero = () => {
     }
   };
   return (
-    <section className="bg-gradient-to-r from-sky-50 to-sky-200 text-white py-16 w-full h-screen" >
+    <section className="bg-gradient-to-r from-sky-50 to-sky-200 text-white py-16 w-full h-full" >
       <div className="container mx-auto text-center">
         <h1 className="text-4xl text-black font-bold mb-4">Wearable Assistive Devices</h1>
         <p className="text-lg text-black mb-8">Assistance today, Ability tomorrow</p>
