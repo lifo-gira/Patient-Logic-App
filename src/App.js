@@ -5,6 +5,7 @@ import Header from "./Componenets/Header.jsx";
 import { useEffect, useState } from "react";
 import Diagno from "./Componenets/Diagno.jsx";
 import Live from "./Componenets/Live.jsx";
+import Test from "./Componenets/Test.jsx"
 
 function App() {
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));

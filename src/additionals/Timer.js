@@ -9,7 +9,7 @@ const Timer = ({ sock }) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            if (minutes === 1 && seconds === 0) {
+            if (minutes === 2 && seconds === 0) {
                 sock.close()
                 clearInterval(timer);
                 setTimerCompleted(true); // Set timerCompleted to true
@@ -35,7 +35,7 @@ const Timer = ({ sock }) => {
          } // No need to update progress if timer is completed
 
         const totalSeconds = minutes * 60 + seconds;
-        const totalDuration = 1 * 60; // Total duration in seconds (2 minutes)
+        const totalDuration = 2 * 60; // Total duration in seconds (2 minutes)
         const calculatedProgress = (totalSeconds / totalDuration) * 100;
         setProgress(calculatedProgress);
     }, [minutes, seconds, timerCompleted]);

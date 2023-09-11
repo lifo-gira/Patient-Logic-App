@@ -126,6 +126,7 @@ const Diagno = () => {
   const toggleChart = () => {
     if (!isPlaying) {
       // If the chart is stopped, start it
+      setIsPlaying(true);
       setIsTimerRunning(true); // Timer will start when the chart starts
       setCounter(-1);
       elapsedTime = -1;
@@ -166,8 +167,8 @@ const Diagno = () => {
       }
   
       setTimeout(() => {
-        setIsPlaying(false)
         setIsTimerRunning(false);
+        setIsPlaying(false)
         clearInterval(timerRef.current);
         timerRef.current = undefined;
         setProgress(0);
@@ -177,11 +178,12 @@ const Diagno = () => {
           setCounter(-1);
           setmetricArray([]);
         }
-      }, 124500); // 120000 milliseconds = 2 minutes
+      }, 61500); // 120000 milliseconds = 2 minutes
       flag = 0;
       setData([]);
     } else {
       // If the chart is running, stop it
+      setIsPlaying(false);
       setIsTimerRunning(false); // Stop the timer
       clearInterval(timerRef.current);
       timerRef.current = undefined;
@@ -262,6 +264,7 @@ const Diagno = () => {
 
   useEffect(() => {
     if (timer <= 0) {
+      setIsPlaying(false);
       setDownloadEnabled(true);
     }
   }, [timer]);
