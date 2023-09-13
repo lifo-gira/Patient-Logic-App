@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { json, useNavigate } from "react-router-dom";
 import Spinner from "./assets/Spinner";
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -6,12 +6,44 @@ import { GoogleLogin } from '@react-oauth/google';
 import jwt_decode from 'jwt-decode'
 import Cover from './assets/cover.jpg'
 import Google from './assets/googlelogo.png'
+import QR from './assets/qrcode.jpg'
 
 const Login = () => {
   const [userName, setuserName] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState();
   const navigate = useNavigate();
+  const [isPopupOpen, setPopupOpen] = useState(true);
+  const [code, setCode] = useState('');
+  const [isCodeValid, setCodeValid] = useState(false);
+  const sectionRef = useRef(null);
+
+  const openPopup = () => {
+    setPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setPopupOpen(false);
+    setCode('');
+  };
+
+  const handleCodeChange = (e) => {
+    setCode(e.target.value);
+  };
+
+  const verifyCode = () => {
+    // Implement your code verification logic here
+    // For example, check if the code is exactly 10 digits long
+    if (code.length === 10 && code=="ST12345678") {
+      setCodeValid(true);
+      navigate("/login");
+      closePopup();
+      // Navigate to the next page or perform the desired action here
+    } else {
+      // Handle invalid code
+      setCodeValid(false);
+    }
+  };
 
   async function login() {
     setStatus(<Spinner />);
@@ -41,6 +73,7 @@ const Login = () => {
   }
 
   return (
+    <section>
     <div class="w-full min-h-screen flex items-start' bg-gray-100">
       <div
         class="w-full relative flex flex-col bg-gradient-to-r from-transparent to-cyan-500  md:flex-row md:space-y-0"
@@ -104,24 +137,20 @@ const Login = () => {
               }}
             >
               Sign in
-            </button>
-            <GoogleOAuthProvider clientId="34802025607-cvh6a07ognvq5u5rms0ff9iak254b90k.apps.googleusercontent.com">
-              <GoogleLogin
-                onSuccess={credentialResponse => {
-                  const details = jwt_decode(credentialResponse.credential);
-                  console.log(details)
-                  console.log(credentialResponse);
-                  navigate("/home");
-                }}
-                onError={() => {
-                  console.log('Login Failed');
-                }}
-              />
-            </GoogleOAuthProvider>
+            </button> 
+
             <div class=" font-regular text-center text-gray-900">
               Dont'have an account?
               <span class="font-bold text-black cursor-pointer">Sign up for free</span>
             </div>
+
+            <button
+          onClick={openPopup}
+            class="w-full font-bold bg-black text-white p-2 rounded-lg mb-6 hover:bg-white hover:text-black hover:border hover:border-blue-300"
+          >
+            Install App
+          </button>
+
           </form>
           <div className="flex flex-row justify-center w-full h-10 p-2">
             {status}
@@ -139,6 +168,27 @@ const Login = () => {
         </div>
       </div>
     </div>
+
+    {isPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-gray-600 opacity-50"></div>
+          <div className="bg-white p-8 rounded-2xl shadow-lg z-50 w-96">
+            <h2 className="text-black text-2xl mb-4">Install your App by Scanning the QR</h2>
+           <img src={QR} alt="qr for app installation" />
+            <div className="mt-2">
+              <h3>Once after app installation close this window and login to dashboard</h3>
+              <button
+                className="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full mt-2"
+                onClick={closePopup}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </section>
   );
 };
 

@@ -57,7 +57,7 @@ const Diagno = () => {
       autoClose: 1500,
     });
   }
-  console.log(metricArray, "metricArray");
+  // console.log(metricArray, "metricArray");
 
   function handleClick() {
     // Call the first function
@@ -134,17 +134,21 @@ const Diagno = () => {
       // Create a new WebSocket connection when starting the chart
       const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
       newSocket.onmessage = (event) => {
-        console.log(event, "event");
+        // console.log(event, "event");
         const newData = JSON.parse(event.data);
-        console.log(newData, "newData");
+        // console.log(newData, "newData");
         const seriesCount = newData.series;
+        // console.log(seriesCount)
         // seriesCount = Updated_data.length
         for (let i = 0; i < seriesCount.length; i += 20) {
-          const slice = seriesCount.slice(i, i + 10);
+          const slice = seriesCount.slice(i, i + seriesCount.length);
+          console.log(slice)
           const mappedSlice = slice.map((val, index) => ({
             index: i + index,
             val: parseFloat(val),
+      
           }));
+          // console.log(mappedSlice)
           metricArray.push(...mappedSlice);
           console.log(metricArray, "metrics");
           // setmetricArray(mappedSlice)
