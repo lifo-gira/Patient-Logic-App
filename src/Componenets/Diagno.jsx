@@ -42,6 +42,7 @@ const Diagno = () => {
     Array.from({ length: 120 }, (_, i) => ({ index: i + 1, val: 0 }))
   );
   var [elapsedTime, setElapsedTime] = useState(-1);
+  const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(false);
 
   var flag = 0;
 
@@ -125,6 +126,7 @@ const Diagno = () => {
 
   const toggleChart = () => {
     if (!isPlaying) {
+      setIsStartButtonDisabled(true);
       // If the chart is stopped, start it
       setIsTimerRunning(true); // Timer will start when the chart starts
       setCounter(-1);
@@ -181,10 +183,12 @@ const Diagno = () => {
           setCounter(-1);
           setmetricArray([]);
         }
+        setIsStartButtonDisabled(false);
       }, 124500); // 120000 milliseconds = 2 minutes
       flag = 0;
       setData([]);
     } else {
+      setIsStartButtonDisabled(false);
       // If the chart is running, stop it
       setIsTimerRunning(false); // Stop the timer
       clearInterval(timerRef.current);
@@ -455,6 +459,7 @@ const Diagno = () => {
               isPlaying ? "bg-red-500" : "bg-green-500"
             }`}
             onClick={handleClick}
+            disabled={isStartButtonDisabled} 
           >
             {isPlaying ? <FaPause /> : <FaPlay />}
           </button>
