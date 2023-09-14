@@ -72,16 +72,28 @@ const Diagno = () => {
     console.log(metricArray, "metricArraygraph");
     console.log(counter, "counter");
     console.log(metricArray.length, "no of elemetns");
-    if (counter < metricArray.length) {
-      const newIndex = elapsedTime + 1;
-      return {
-        index: newIndex,
-        val: metricArray[counter].val,
-        ...dotAppearance,
-      };
-    } else {
-      return null;
+    const newIndex = elapsedTime + 1;
+    if (counter >= 0 && counter < metricArray.length) {
+      const metricItem = metricArray[counter];
+      if (metricItem && typeof metricItem === 'object' && 'val' in metricItem) {
+        return {
+          index: newIndex,
+          val: metricItem.val,
+          ...dotAppearance,
+        };
+      }
+    } else if (counter === metricArray.length) {
+      // Display the last value when counter equals the length of metricArray
+      const lastMetricItem = metricArray[metricArray.length - 1];
+      if (lastMetricItem && typeof lastMetricItem === 'object' && 'val' in lastMetricItem) {
+        return {
+          index: newIndex,
+          val: lastMetricItem.val,
+          ...dotAppearance,
+        };
+      }
     }
+    return null;
   };
 
   const updateChart = () => {
@@ -95,14 +107,17 @@ const Diagno = () => {
     }
   
     if (!isPlaying) {
-      // Only update the chart data, do not change isPlaying here
-      if (counter < metricArray.length) counter = counter + 1;
+      // Only update the chart data if data is available
+      if (counter <= metricArray.length) counter = counter + 1;
       const newDataPoint = generateNewDataPoint();
-      setCounter((prevCounter) => prevCounter + 1);
-      setData((prevData) => [...prevData, newDataPoint]);
-      elapsedTime += 1;
-      setChartData((prevData) => [...prevData, newDataPoint]);
-      setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
+  
+      if (newDataPoint) {
+        setCounter((prevCounter) => prevCounter + 1);
+        setData((prevData) => [...prevData, newDataPoint]);
+        elapsedTime += 1;
+        setChartData((prevData) => [...prevData, newDataPoint]);
+        setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
+      }
     }
   };
 
@@ -161,8 +176,14 @@ const Diagno = () => {
       newSocket.onopen = () => {
         console.log("Socket open");
       };
-      newSocket.onclose = () => {
-        console.log("Socket close");
+      newSocket.onclose = (event) => {
+        if (event.wasClean) {
+          console.log(
+            `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
+          );
+        } else {
+          console.error("WebSocket connection abruptly closed");
+        }
       };
   
       setSocket(newSocket); // Set the socket state to the new WebSocket instance
@@ -178,13 +199,13 @@ const Diagno = () => {
         timerRef.current = undefined;
         setProgress(0);
         if (newSocket) {
-          newSocket.close();
+          newSocket.close(1000, "Goodbye, WebSocket!");
           setSocket(null);
           setCounter(-1);
           setmetricArray([]);
         }
         setIsStartButtonDisabled(false);
-      }, 124500); // 120000 milliseconds = 2 minutes
+      }, 122500); // 120000 milliseconds = 2 minutes
       flag = 0;
       setData([]);
     } else {
@@ -197,7 +218,7 @@ const Diagno = () => {
       setProgress(0); // Reset the progress bar
   
       if (socket) {
-        socket.close();
+        socket.close(1000, "Goodbye, WebSocket!");
         setSocket(null);
         setCounter(-1);
         setmetricArray([]);
@@ -205,6 +226,16 @@ const Diagno = () => {
     }
   };
   
+  useEffect(() => {
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      if (socket) {
+        socket.close(1000, "Goodbye, WebSocket!");
+        setSocket(null);
+        // Remove any other event listeners or cleanup here
+      }
+    };
+  }, [socket]);
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
 

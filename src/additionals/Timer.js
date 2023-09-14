@@ -10,8 +10,8 @@ const Timer = ({ sock }) => {
     useEffect(() => {
         const timer = setInterval(() => {
             if (minutes === 2 && seconds === 0) {
-                sock.close()
-                clearInterval(timer);
+                // sock.close()
+                // clearInterval(timer);
                 setTimerCompleted(true); // Set timerCompleted to true
                 return;
             }
