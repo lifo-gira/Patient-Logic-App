@@ -19,6 +19,7 @@ import { ToastContainer, toast } from "react-toastify";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Live from "./Live";
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
 
 const Diagno = () => {
   const navigate = useNavigate();
@@ -37,13 +38,14 @@ const Diagno = () => {
   const [autoScroll, setAutoScroll] = useState(false);
 
   const [metricArray, setmetricArray] = useState([]);
-  const dotAppearance = isRunning ? { fill: "yellow", r: 5 } : { fill: "none" };
+  const dotAppearance = isPlaying ? { fill: "yellow", r: 5 } : { fill: "none" };
   const [chartData, setChartData] = useState(
     Array.from({ length: 120 }, (_, i) => ({ index: i + 1, val: 0 }))
   );
   var [elapsedTime, setElapsedTime] = useState(-1);
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(false);
-
+  // const [isRunning, setIsRunning] = useState(false);
+  const [key, setKey] = useState(0);
   var flag = 0;
 
   localStorage.setItem("lastCount", metricArray.length);
@@ -69,13 +71,13 @@ const Diagno = () => {
   }
 
   const generateNewDataPoint = () => {
-    console.log(metricArray, "metricArraygraph");
-    console.log(counter, "counter");
-    console.log(metricArray.length, "no of elemetns");
+    // console.log(metricArray, "metricArraygraph");
+    // console.log(counter, "counter");
+    // console.log(metricArray.length, "no of elemetns");
     const newIndex = elapsedTime + 1;
     if (counter >= 0 && counter < metricArray.length) {
       const metricItem = metricArray[counter];
-      if (metricItem && typeof metricItem === 'object' && 'val' in metricItem) {
+      if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
         return {
           index: newIndex,
           val: metricItem.val,
@@ -85,7 +87,11 @@ const Diagno = () => {
     } else if (counter === metricArray.length) {
       // Display the last value when counter equals the length of metricArray
       const lastMetricItem = metricArray[metricArray.length - 1];
-      if (lastMetricItem && typeof lastMetricItem === 'object' && 'val' in lastMetricItem) {
+      if (
+        lastMetricItem &&
+        typeof lastMetricItem === "object" &&
+        "val" in lastMetricItem
+      ) {
         return {
           index: newIndex,
           val: lastMetricItem.val,
@@ -99,18 +105,18 @@ const Diagno = () => {
   const updateChart = () => {
     if (counter >= metricArray.length) {
       if (flag < 1) {
-        showToastMessage();
+        // showToastMessage();
         flag += 1;
       }
       setCounter(counter - 1);
       return;
     }
-  
+
     if (!isPlaying) {
       // Only update the chart data if data is available
       if (counter <= metricArray.length) counter = counter + 1;
       const newDataPoint = generateNewDataPoint();
-  
+
       if (newDataPoint) {
         setCounter((prevCounter) => prevCounter + 1);
         setData((prevData) => [...prevData, newDataPoint]);
@@ -123,7 +129,6 @@ const Diagno = () => {
 
   useEffect(() => {
     if (isPlaying) {
-      setIsPlaying(true)
       const interval = setInterval(updateChart, 1000);
       return () => {
         clearInterval(interval);
@@ -141,91 +146,12 @@ const Diagno = () => {
 
   const toggleChart = () => {
     if (!isPlaying) {
-      setIsStartButtonDisabled(true);
-      // If the chart is stopped, start it
-      setIsTimerRunning(true); // Timer will start when the chart starts
-      setCounter(-1);
-      elapsedTime = -1;
-      updateChart();
-  
-      // Create a new WebSocket connection when starting the chart
-      const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
-      newSocket.onmessage = (event) => {
-        // console.log(event, "event");
-        const newData = JSON.parse(event.data);
-        // console.log(newData, "newData");
-        const seriesCount = newData.series;
-        // console.log(seriesCount)
-        // seriesCount = Updated_data.length
-        for (let i = 0; i < seriesCount.length; i += 20) {
-          const slice = seriesCount.slice(i, i + seriesCount.length);
-          console.log(slice)
-          const mappedSlice = slice.map((val, index) => ({
-            index: i + index,
-            val: parseFloat(val),
-      
-          }));
-          // console.log(mappedSlice)
-          metricArray.push(...mappedSlice);
-          console.log(metricArray, "metrics");
-          // setmetricArray(mappedSlice)
-        }
-        console.log(metricArray);
-        return metricArray;
-      };
-      newSocket.onopen = () => {
-        console.log("Socket open");
-      };
-      newSocket.onclose = (event) => {
-        if (event.wasClean) {
-          console.log(
-            `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
-          );
-        } else {
-          console.error("WebSocket connection abruptly closed");
-        }
-      };
-  
-      setSocket(newSocket); // Set the socket state to the new WebSocket instance
-  
-      if (!timerRef.current) {
-        timerRef.current = setInterval(updateChart, 1000);
-      }
-  
-      setTimeout(() => {
-        setIsPlaying(false)
-        setIsTimerRunning(false);
-        clearInterval(timerRef.current);
-        timerRef.current = undefined;
-        setProgress(0);
-        if (newSocket) {
-          newSocket.close(1000, "Goodbye, WebSocket!");
-          setSocket(null);
-          setCounter(-1);
-          setmetricArray([]);
-        }
-        setIsStartButtonDisabled(false);
-      }, 122500); // 120000 milliseconds = 2 minutes
-      flag = 0;
-      setData([]);
+      startTimer();
     } else {
-      setIsStartButtonDisabled(false);
-      // If the chart is running, stop it
-      setIsTimerRunning(false); // Stop the timer
-      clearInterval(timerRef.current);
-      timerRef.current = undefined;
-      flag = 0;
-      setProgress(0); // Reset the progress bar
-  
-      if (socket) {
-        socket.close(1000, "Goodbye, WebSocket!");
-        setSocket(null);
-        setCounter(-1);
-        setmetricArray([]);
-      }
+      stopTimer();
     }
   };
-  
+
   useEffect(() => {
     // Clean up the WebSocket connection when the component unmounts
     return () => {
@@ -245,7 +171,7 @@ const Diagno = () => {
 
   useEffect(() => {
     if (status) {
-      console.log(user);
+      // console.log(user);
     }
   }, [status]);
 
@@ -277,7 +203,7 @@ const Diagno = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
       pdf.save("chart.pdf");
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      // console.error("Error generating PDF:", error);
     }
   };
 
@@ -319,6 +245,112 @@ const Diagno = () => {
     } else {
       setIsBluetoothConnected(true); // Connected when playing
     }
+  };
+
+  const startTimer = () => {
+    setIsPlaying(true);
+    setKey((prevKey) => prevKey + 1);
+    setCounter(-1);
+    elapsedTime = -1;
+    updateChart();
+
+    // Create a new WebSocket connection when starting the chart
+    const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
+    newSocket.onmessage = (event) => {
+      // console.log(event, "event");
+      const newData = JSON.parse(event.data);
+      // console.log(newData, "newData");
+      const seriesCount = newData.series;
+      // console.log(seriesCount)
+      // seriesCount = Updated_data.length
+      for (let i = 0; i < seriesCount.length; i += 20) {
+        const slice = seriesCount.slice(i, i + seriesCount.length);
+        // console.log(slice);
+        const mappedSlice = slice.map((val, index) => ({
+          index: i + index,
+          val: parseFloat(val),
+        }));
+        // console.log(mappedSlice)
+        metricArray.push(...mappedSlice);
+        // console.log(metricArray, "metrics");
+        // setmetricArray(mappedSlice)
+      }
+      // console.log(metricArray);
+      return metricArray;
+    };
+    newSocket.onopen = () => {
+      // console.log("Socket open");
+    };
+    newSocket.onclose = (event) => {
+      if (event.wasClean) {
+        // console.log(
+        //   `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
+        // );
+      } else {
+        // console.error("WebSocket connection abruptly closed");
+      }
+    };
+
+    setSocket(newSocket); // Set the socket state to the new WebSocket instance
+
+    if (!timerRef.current) {
+      timerRef.current = setInterval(updateChart, 1000);
+    }
+
+    // setTimeout(() => {
+    //   setIsPlaying(false)
+    //   setIsTimerRunning(false);
+    //   clearInterval(timerRef.current);
+    //   timerRef.current = undefined;
+    //   setProgress(0);
+    //   if (newSocket) {
+    //     newSocket.close(1000, "Goodbye, WebSocket!");
+    //     setSocket(null);
+    //     setCounter(-1);
+    //     setmetricArray([]);
+    //   }
+    //   setIsStartButtonDisabled(false);
+    // }, 120000); // 120000 milliseconds = 2 minutes
+    flag = 0;
+    setData([]);
+  };
+
+  const stopTimer = () => {
+    setIsPlaying(false);
+    
+    setKey((prevKey) => prevKey + 1);
+    handleTimerStop();
+    flag = 0;
+    setProgress(0); // Reset the progress bar
+
+      setIsTimerRunning(false);
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+      setProgress(0);
+      if (socket) {
+        socket.close(1000, "Goodbye, WebSocket!");
+        setSocket(null);
+        setCounter(-1);
+        setmetricArray([]);
+      }
+  };
+
+  const handleTimerStop = () => {
+    setIsPlaying(false);
+    // setIsRunning(false); // Restart the timer
+    setKey((prevKey) => prevKey + 1);
+    setIsTimerRunning(false);
+    clearInterval(timerRef.current);
+    timerRef.current = undefined;
+    setProgress(0);
+    if (socket) {
+      socket.close(1000, "Goodbye, WebSocket!");
+      setSocket(null);
+      setCounter(-1);
+      setmetricArray([]);
+    }
+    // Your custom code to run when the timer stops or completes
+    // console.log("Timer stopped or completed");
   };
 
   return (
@@ -483,14 +515,14 @@ const Diagno = () => {
         </div>
 
         {/* Glass Morphic Section */}
-        <div className="w-3/4 h-[55rem] my-8 relative border-1 bg-opacity-30 bg-white shadow-xl backdrop-blur-3xl backdrop-brightness-90 rounded-3xl">
+        <div className="w-3/4 h-[85rem] my-8 relative border-1 bg-opacity-30 bg-white shadow-xl backdrop-blur-3xl backdrop-brightness-90 rounded-3xl">
           {/* Toggle Button (Top Left) */}
           <button
-            className={`m-2 flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white ${
+            className={`m-2 flex items-center justify-center w-20 h-20 rounded-full bg-blue-500 text-white ${
               isPlaying ? "bg-red-500" : "bg-green-500"
             }`}
             onClick={handleClick}
-            disabled={isStartButtonDisabled} 
+            // disabled={isStartButtonDisabled}
           >
             {isPlaying ? <FaPause /> : <FaPlay />}
           </button>
@@ -506,18 +538,44 @@ const Diagno = () => {
           </div>
 
           {/* Graph Import Area (Below) */}
-          <div className="mt-6 mx-4">
+          <div className="mt-0 mx-4">
             {/* Add your graph import area here */}
             {/* Example: <input type="file" accept=".png, .jpg, .jpeg" /> */}
 
-            <div className="w-full p-2 mb-4 flex flex-col">
+            <div className="w-full p-2 flex flex-col items-center">
               {/* Same as */}
-
+              <div className="p-0">
+                  <div className="w-full h-64">
+                    <CountdownCircleTimer
+                      key={key}
+                      isPlaying={isPlaying}
+                      duration={120} // 2 minutes
+                      colors={[["#3c005a"]]}
+                      size={230}
+                      strokeWidth={8}
+                      onComplete={() => {
+                        setIsPlaying(false);
+                        handleTimerStop();
+                        return [false, 0]; // Stop the timer and reset to 0
+                      }}
+                    >
+                      {({ remainingTime }) => (
+                        <div className="text-4xl">
+                          {`${Math.floor(remainingTime / 60)
+                            .toString()
+                            .padStart(2, "0")}:${(remainingTime % 60)
+                            .toString()
+                            .padStart(2, "0")}`}
+                        </div>
+                      )}
+                    </CountdownCircleTimer>
+                  </div>
+                </div>
               <div
-                className="flex flex-col items-center justify-start pb-1 pr-5 rounded w-full h-[700px]"
+                className="flex flex-col items-center justify-start pr-5 rounded w-full h-[900px]"
                 ref={chartRef}
               >
-                {isTimerRunning && <Timer sock={socket}/>}
+                
                 <ResponsiveContainer width="100%" height="80%">
                   <LineChart data={data} className={"mx-auto"}>
                     <Tooltip
@@ -566,12 +624,11 @@ const Diagno = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <br></br>
               <div className="flex justify-center">
                 <button
                   onClick={downloadAsPdf}
                   className={`
-      w-1/4 h-12 text-xl my-auto 
+      w-full h-12 text-xl p-4 py-2 mt-[-6rem]
       bg-gradient-to-r from-purple-500 to-blue-500
       hover:from-purple-600 hover:to-blue-600
       text-white font-bold mx-auto rounded-2xl
@@ -583,7 +640,7 @@ const Diagno = () => {
                 >
                   {isPlaying
                     ? "Cannot Download Chart"
-                    : "Download Chart as PDF"}
+                    : "Download Chart"}
                 </button>
               </div>
             </div>
