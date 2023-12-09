@@ -5,14 +5,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleLogin } from "@react-oauth/google";
 import jwt_decode from "jwt-decode";
 import Cover from "./assets/cover.jpg";
-import Google from "./assets/googlelogo.png";
 import QR from "./assets/qrcode.jpg";
 import Cookies from "js-cookie";
 import axios from "axios";
 // import FacebookLogin from 'react-facebook-login';
-import { FacebookLoginButton, LinkedInLoginButton } from "react-social-login-buttons";
-import { LoginSocialFacebook } from "reactjs-social-login";
-import FacebookLogin from "@greatsumini/react-facebook-login";
 // import LinkedInLogin from "react-linkedin-login";
 // import FacebookLogin from 'react-facebook-login';
 
