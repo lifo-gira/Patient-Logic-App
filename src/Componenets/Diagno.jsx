@@ -2,12 +2,9 @@ import React, { Suspense, useEffect, useRef, useState } from "react";
 import { FaPlay, FaPause } from "react-icons/fa";
 import classNames from "classnames";
 import Fit from "../assets/fit.jpg";
-import Timer from "../additionals/Timer";
 import Profile from "../assets/profile.jpg";
 import Logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
-import DatePicker from "react-datepicker";
-import TimePicker from "react-time-picker";
 import html2pdf from 'html2pdf.js';
 import {
   CartesianGrid,
@@ -23,18 +20,14 @@ import {
 } from "recharts";
 import { ToastContainer, toast } from "react-toastify";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import Live from "./Live";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import RecordRTC from "recordrtc";
-import StaticGraph from "./StaticGraph";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MathUtils } from "three";
 // Your code using GLTFLoader goes here
 
 import { OrbitControls } from "@react-three/drei";
-import { func } from "prop-types";
 
 const Diagno = () => {
   const temp = [1, 2, 3];
