@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { FaPlay, FaPause } from "react-icons/fa";
 import classNames from "classnames";
 import Fit from "../assets/fit.jpg";
@@ -6,11 +6,17 @@ import Timer from "../additionals/Timer";
 import Profile from "../assets/profile.jpg";
 import Logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import TimePicker from "react-time-picker";
+import html2pdf from 'html2pdf.js';
 import {
+  CartesianGrid,
   Label,
+  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
+  Scatter,
   Tooltip,
   XAxis,
   YAxis,
@@ -20,8 +26,18 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Live from "./Live";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
+import RecordRTC from "recordrtc";
+import StaticGraph from "./StaticGraph";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MathUtils } from "three";
+// Your code using GLTFLoader goes here
+
+import { OrbitControls } from "@react-three/drei";
+import { func } from "prop-types";
 
 const Diagno = () => {
+  const temp = [1, 2, 3];
   const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
@@ -36,8 +52,13 @@ const Diagno = () => {
   const [metrics, setMetrics] = useState([]);
   const messagesEndRef = useRef(null);
   const [autoScroll, setAutoScroll] = useState(false);
-
+  const [selectedTime, setSelectedTime] = useState(""); // State to store the selected time interval
+  const [fromDate, setFromDate] = useState(new Date());
+  const [fromTime, setFromTime] = useState("12:00");
+  const [toDate, setToDate] = useState(new Date());
+  const [toTime, setToTime] = useState("12:00");
   const [metricArray, setmetricArray] = useState([]);
+  const [isChartButtonClicked, setIsChartButtonClicked] = useState(false);
   const dotAppearance = isPlaying ? { fill: "yellow", r: 5 } : { fill: "none" };
   const [chartData, setChartData] = useState(
     Array.from({ length: 120 }, (_, i) => ({ index: i + 1, val: 0 }))
@@ -46,14 +67,43 @@ const Diagno = () => {
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(false);
   // const [isRunning, setIsRunning] = useState(false);
   const [key, setKey] = useState(0);
+  const [minAngle, setMinAngle] = useState(180);
+  const [maxAngle, setMaxAngle] = useState(0);
+  const [prevAngle, setPrevAngle] = useState(null);
+  const [currentAngle, setCurrentAngle] = useState(null);
+  const [minAnglePoint, setMinAnglePoint] = useState(null);
+  const [maxAnglePoint, setMaxAnglePoint] = useState(null);
+  const [mediaStream, setMediaStream] = useState(null);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
   var flag = 0;
-
+  const userId = user.user_id;
   localStorage.setItem("lastCount", metricArray.length);
   const [data, setData] = useState([]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   var [counter, setCounter] = useState(-1);
   const timerRef = useRef();
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [stackedMetricsArray, setStackedMetricsArray] = useState([]);
+  const timeIntervals = ["1", "1.5", "2"];
+  const [staticFragment, setstaticFragment] = useState([]);
+  const [stackedIndex, setstackedIndex] = useState([]);
+  const [isStopButtonClicked, setIsStopButtonClicked] = useState(false);
+  const handleFromDateTimeChange = (date, time) => {
+    setFromDate(date);
+    setFromTime(time);
+  };
+
+  const handleToDateTimeChange = (date, time) => {
+    setToDate(date);
+    setToTime(time);
+  };
+
+  const handleTimeChange = (event) => {
+    setSelectedTime(event.target.value);
+  };
+
   function showToastMessage() {
     toast.error("No more datas to be found", {
       position: toast.POSITION.TOP_RIGHT,
@@ -64,19 +114,28 @@ const Diagno = () => {
 
   function handleClick() {
     // Call the first function
-    togglePlay();
+    if (selectedTime) {
+      // Toggle the isPlaying state
+      setIsPlaying(!isPlaying);
+      togglePlay();
+      toggleChart();
+    } else {
+      // If no time interval is selected, you can choose to handle it accordingly
+      // For example, show a message to the user or disable the button
+      toast.error("Please select a time interval!")
+    }
 
     // Call the second function
-    toggleChart();
   }
-
+const [legValue,setlegValue] = useState([])
   const generateNewDataPoint = () => {
-    // console.log(metricArray, "metricArraygraph");
-    // console.log(counter, "counter");
-    // console.log(metricArray.length, "no of elemetns");
     const newIndex = elapsedTime + 1;
+    
     if (counter >= 0 && counter < metricArray.length) {
       const metricItem = metricArray[counter];
+      const legvalue = parseFloat(metricItem.val)
+      const rotationY = (legvalue) * (Math.PI / 180);
+      setTargetRotation([rotationY, 0, 0]);
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
         return {
           index: newIndex,
@@ -108,6 +167,7 @@ const Diagno = () => {
         // showToastMessage();
         flag += 1;
       }
+
       setCounter(counter - 1);
       return;
     }
@@ -116,14 +176,27 @@ const Diagno = () => {
       // Only update the chart data if data is available
       if (counter <= metricArray.length) counter = counter + 1;
       const newDataPoint = generateNewDataPoint();
-
       if (newDataPoint) {
+        const newAngle = newDataPoint.val;
+        // console.log(newAngle,counter)
+        processNewAngle(newDataPoint.val,newDataPoint.index);
+        setPrevAngle(currentAngle); // Store the current angle as the previous angle
+        setCurrentAngle(newAngle); // Update the current angle
+        if (newAngle < minAngle) {
+          setMinAngle(newAngle);
+          setMinAnglePoint(newDataPoint); // Set the point for the minimum angle
+        }
+        if (newAngle > maxAngle) {
+          setMaxAngle(newAngle);
+          setMaxAnglePoint(newDataPoint); // Set the point for the maximum angle
+        }
         setCounter((prevCounter) => prevCounter + 1);
         setData((prevData) => [...prevData, newDataPoint]);
         elapsedTime += 1;
         setChartData((prevData) => [...prevData, newDataPoint]);
         setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
       }
+      
     }
   };
 
@@ -186,6 +259,8 @@ const Diagno = () => {
   }, [metrics]);
 
   const chartRef = useRef(null);
+  const [imageSrc, setImageSrc] = useState(null);
+  
   const downloadAsPdf = async () => {
     try {
       const chartContainer = chartRef.current;
@@ -195,17 +270,79 @@ const Diagno = () => {
       });
 
       const imgData = canvas.toDataURL("image/jpeg");
-
-      const pdf = new jsPDF();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("chart.pdf");
+      setImageSrc(imgData);
+      // const pdf = new jsPDF();
+      // const imgProps = pdf.getImageProperties(imgData);
+      // const pdfWidth = pdf.internal.pageSize.getWidth();
+      // const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      // pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      // pdf.save("chart.pdf");
     } catch (error) {
       // console.error("Error generating PDF:", error);
     }
+  }
+
+  useEffect(() => {
+    // Trigger PDF generation when imageSrc is updated
+    if (imageSrc !== null) {
+      generatePdf();
+    }
+  }, [imageSrc]);
+
+    // new pdf generation
+    const [showNames, setShowNames] = useState(false);
+
+  const details = {
+    companyTitle: "Your Company",
+    patientName: "John Doe",
+    hospitalName: "Hospital XYZ",
+    date: "2023-11-30",
+    time: "10:00 AM",
+    loginId: "12345",
+    sensorId: "67890",
+    doctorName: "Dr. Smith",
+    assistantName: "Jane Doe",
+    graphImage: "path/to/graph.png",
   };
+
+  const handleShowNames = () => {
+    setShowNames(!showNames);
+  };
+
+  const generatePdf = () => {
+
+    const offScreenDiv = document.createElement("div");
+    downloadAsPdf();
+
+    const template = `
+      <div>
+        <h1>${details.companyTitle}</h1>
+        <p>Patient Name: ${details.patientName}</p>
+        <p>Hospital Name: ${details.hospitalName}</p>
+        <p>Date: ${details.date}</p>
+        <p>Time: ${details.time}</p>
+        <p>Login ID: ${details.loginId}</p>
+        <p>Sensor ID: ${details.sensorId}</p>
+        <p>Doctor Name: ${details.doctorName}</p>
+        <p>Assistant Name: ${details.assistantName}</p>
+        <br></br>
+        <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
+      </div>
+    `;
+
+
+    offScreenDiv.innerHTML = template;
+
+
+    html2pdf(offScreenDiv, {
+      margin: 10,
+      filename: "details.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    });
+  };
+
 
   useEffect(() => {
     let interval;
@@ -246,8 +383,18 @@ const Diagno = () => {
       setIsBluetoothConnected(true); // Connected when playing
     }
   };
+  // console.log(data,"DATA")
+
+  const formatTime = (date) => {
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   const startTimer = () => {
+    // startRecording();
+    setIsStopButtonClicked(false);
     setIsPlaying(true);
     setKey((prevKey) => prevKey + 1);
     setCounter(-1);
@@ -255,39 +402,56 @@ const Diagno = () => {
     updateChart();
 
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`wss:/api-h5zs.onrender.com/ws`);
+    const newSocket = new WebSocket(`wss:/api-backup-vap2.onrender.com/ws/${userId}`);
+    const startDateTime = new Date();
+    setStartDate(startDateTime.toLocaleDateString()); // Update startDate
+    setStartTime(formatTime(startDateTime)); // Update startTime
+
+    console.log("WebSocket started at:", startDateTime);
+    console.log("Start Date:", startDateTime.toLocaleDateString());
+    console.log("Start Time:", formatTime(startDateTime));
     newSocket.onmessage = (event) => {
       // console.log(event, "event");
       const newData = JSON.parse(event.data);
       // console.log(newData, "newData");
       const seriesCount = newData.series;
-      // console.log(seriesCount)
       // seriesCount = Updated_data.length
       for (let i = 0; i < seriesCount.length; i += 20) {
         const slice = seriesCount.slice(i, i + seriesCount.length);
         // console.log(slice);
+        stackedMetricsArray.push(...slice);
+        console.log(stackedMetricsArray, "STACKED");
         const mappedSlice = slice.map((val, index) => ({
           index: i + index,
           val: parseFloat(val),
         }));
+
         // console.log(mappedSlice)
         metricArray.push(...mappedSlice);
         // console.log(metricArray, "metrics");
         // setmetricArray(mappedSlice)
       }
+
       // console.log(metricArray);
       return metricArray;
     };
     newSocket.onopen = () => {
-      // console.log("Socket open");
+      console.log("Socket open");
     };
     newSocket.onclose = (event) => {
       if (event.wasClean) {
-        // console.log(
-        //   `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
-        // );
+        setTargetRotation([0, 0, 0]);
+        const newData = stackedMetricsArray[stackedMetricsArray.length - 1];
+        setStackedMetricsArray([...stackedMetricsArray, newData]);
+        staticvalue.push(...stackedMetricsArray);
+        console.log(staticvalue, "VALUE");
+        console.log(
+          `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
+        );
+        const endDate = new Date();
+        console.log("WebSocket closed at:", endDate);
       } else {
-        // console.error("WebSocket connection abruptly closed");
+        console.error("WebSocket connection abruptly closed");
       }
     };
 
@@ -316,27 +480,39 @@ const Diagno = () => {
   };
 
   const stopTimer = () => {
+    const jointAnalysisData = analyzeJointData(angles,times);
+    console.log(jointAnalysisData,"jointAnalysisData")
+    setTargetRotation([0, 0, 0]);
+    const endDateTime = new Date();
+    setEndDate(endDateTime.toLocaleDateString()); // Update endDate
+    setEndTime(formatTime(endDateTime)); // Update endTime
+
+    console.log("WebSocket closed at:", endDateTime);
+    console.log("Close Date:", endDateTime.toLocaleDateString());
+    console.log("Close Time:", formatTime(endDateTime));
+    stopRecording();
     setIsPlaying(false);
-    
+    setIsStopButtonClicked(true);
     setKey((prevKey) => prevKey + 1);
     handleTimerStop();
     flag = 0;
     setProgress(0); // Reset the progress bar
 
-      setIsTimerRunning(false);
-      clearInterval(timerRef.current);
-      timerRef.current = undefined;
-      setProgress(0);
-      if (socket) {
-        socket.close(1000, "Goodbye, WebSocket!");
-        setSocket(null);
-        setCounter(-1);
-        setmetricArray([]);
-      }
+    setIsTimerRunning(false);
+    clearInterval(timerRef.current);
+    timerRef.current = undefined;
+    setProgress(0);
+    if (socket) {
+      socket.close(1000, "Goodbye, WebSocket!");
+      setSocket(null);
+      setCounter(-1);
+      setmetricArray([]);
+    }
   };
 
   const handleTimerStop = () => {
     setIsPlaying(false);
+    setIsStopButtonClicked(true);
     // setIsRunning(false); // Restart the timer
     setKey((prevKey) => prevKey + 1);
     setIsTimerRunning(false);
@@ -352,6 +528,363 @@ const Diagno = () => {
     // Your custom code to run when the timer stops or completes
     // console.log("Timer stopped or completed");
   };
+
+  const startRecording = () => {
+    // setIsPlaying(true); // Start playing the chart
+    navigator.mediaDevices
+      .getDisplayMedia({ video: true, audio: false })
+      .then((stream) => {
+        const recorder = new RecordRTC(stream, {
+          type: "video",
+        });
+
+        recorder.startRecording();
+
+        setMediaStream(stream);
+        setMediaRecorder(recorder);
+        setIsRecording(true);
+      })
+      .catch((error) => {
+        console.error("Error accessing media devices:", error);
+      });
+  };
+
+  const stopRecording = () => {
+    setIsPlaying(false); // Stop playing the chart
+
+    if (mediaRecorder) {
+      mediaRecorder.stopRecording(() => {
+        const recordedBlobs = mediaRecorder.getBlob();
+        const blobs =
+          recordedBlobs instanceof Blob ? [recordedBlobs] : recordedBlobs;
+        setRecordedChunks(blobs);
+        setIsRecording(false);
+        mediaStream.getTracks().forEach((track) => track.stop());
+
+        // Automatically trigger the download
+        const blob = new Blob(blobs, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "recorded-video.webm";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+    }
+  };
+
+  const downloadVideo = () => {
+    const blob = new Blob(recordedChunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "recorded-video.webm";
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Date and Time For deletion
+  const [staticvalue, setstaticvalue] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState(new Date());
+  const [startTime, setStartTime] = useState("12:00:00");
+  const [endTime, setEndTime] = useState("13:00:00");
+
+  const handleStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(event.target.value);
+  };
+
+  const handleStartTimeChange = (event) => {
+    setStartTime(event.target.value);
+  };
+
+  const handleEndTimeChange = (event) => {
+    setEndTime(event.target.value);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Convert date and time to ISO format
+    const startDateTime = new Date(`${startDate} ${startTime}`);
+    const endDateTime = new Date(`${endDate} ${endTime}`);
+
+    // Create payload for the delete API
+    const deletePayload = {
+      device_id: "device1", // Add the device_id here
+      start_date: startDateTime.toISOString().split("T")[0],
+      start_time: startTime,
+      end_date: endDateTime.toISOString().split("T")[0],
+      end_time: endTime,
+    };
+    console.log(deletePayload);
+    try {
+      // Send an HTTP request to your delete API endpoint
+      const response = await fetch("https://api-backup-vap2.onrender.com/delete-data", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(deletePayload),
+      });
+      const responseData = await response.text();
+      console.log(responseData);
+      if (response.ok) {
+        // Handle success (e.g., show a success message)
+        toast.success("Data deleted successfully");
+      } else {
+        // Handle error (e.g., show an error message)
+        const errorData = await response.json();
+        toast.error(`Failed to delete data: ${errorData.error}`);
+      }
+    } catch (error) {
+      // Handle network or other errors
+      console.error("Error deleting data:", error);
+      toast.success("Data deleted successfully");
+    }
+  };
+
+  // Static-Graph--with progressbar
+
+  const initialData = {
+    labels: Array.from({ length: staticvalue.length }, (_, index) =>
+      (index + 1).toString()
+    ),
+    datasets: [
+      {
+        name: "Sales of the week",
+        data: staticvalue.map((value) => parseFloat(value)),
+      },
+    ],
+  };
+  // console.log(initialData,"INI")
+  const [isChartVisible, setChartVisibility] = useState(false);
+  const [sdata, setsData] = useState(initialData);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 6 }); // Initial visible range
+  const [progressbar, setProgressbar] = useState(0); // Progress for the range input
+
+  const handleButtonClick = () => {
+    const maxProgressValue = initialData.labels.length - 6; // Assuming the range is 6
+    setProgressbar(maxProgressValue);
+    updateVisibleRange(0, maxProgressValue + 6); // Assuming updateVisibleRange is a function to update the visible range
+    setChartVisibility(true);
+  };
+  
+
+  const handleProgressChange = (event) => {
+    const progressValue = parseInt(event.target.value, 10);
+    const newStart = progressValue;
+    const newEnd = Math.min(initialData.labels.length - 1, progressValue + 6);
+    updateVisibleRange(newStart, newEnd);
+    setProgressbar(progressValue);
+  };
+
+  const updateVisibleRange = (start, end) => {
+    setVisibleRange({ start, end });
+    const newData = {
+      labels: initialData.labels.slice(start, end + 1),
+      datasets: [
+        {
+          name: initialData.datasets[0].name,
+          data: initialData.datasets[0].data.slice(start, end + 1),
+        },
+      ],
+    };
+    setsData(newData);
+  };
+
+  // Call updateVisibleRange initially to set the initial visible data
+  useEffect(() => {
+    updateVisibleRange(0, 6);
+  }, []);
+
+  // WEBGL
+  const Model = ({ url, position, shouldRotate, setTargetRotation }) => {
+    const gltf = useLoader(GLTFLoader, url);
+    const modelRef = useRef();
+
+    useEffect(() => {
+      if (modelRef.current && shouldRotate) {
+        // Set the initial rotation to the target rotation
+        modelRef.current.rotation.set(
+          targetRotation[0],
+          targetRotation[1],
+          targetRotation[2]
+        );
+      }
+    }, [shouldRotate, targetRotation]);
+  
+    useFrame(() => {
+      if (modelRef.current && shouldRotate) {
+        const { rotation } = modelRef.current;
+    
+        if (rotation) {
+          modelRef.current.rotation.x = MathUtils.lerp(
+            rotation.x !== undefined ? rotation.x : 0,
+            targetRotation[0],
+            0.02  // Adjust the lerp factor for smoother motion
+          );
+          modelRef.current.rotation.y = MathUtils.lerp(
+            rotation.y !== undefined ? rotation.y : 0,
+            targetRotation[1],
+            0.02
+          );
+          modelRef.current.rotation.z = MathUtils.lerp(
+            rotation.z !== undefined ? rotation.z : 0,
+            targetRotation[2],
+            0.02
+          );
+        }
+      }
+    });
+  
+    return (
+      <group ref={modelRef} position={position}>
+        <primitive object={gltf.scene} scale={4} />
+      </group>
+    );
+  };
+  
+
+  const models = [
+    { url: "./legmodel.glb", position: [-0.2, 7, 7.9], shouldRotate: true },
+    { url: "./Thigh.glb", position: [-1.4, 3, 2.8], shouldRotate: false },
+    { url: "./Meter.glb", position: [-1.3, 3, 3], shouldRotate: false },
+  ];
+
+  const [targetRotation, setTargetRotation] = useState([0, 0, 0]);
+
+// for finding the cycles
+
+const [angles,setangles] = useState([]);
+const [times,settimes] = useState([]);
+let isSecondValueReceived = false;
+let temps=0
+let isFlexion = false;
+const [flexionCycles, setFlexionCycles] = useState(0);
+  const [extensionCycles, setExtensionCycles] = useState(0);
+  const [totalCycles, setTotalCycles] = useState(0);
+function processNewAngle(newAngle, newTime) {
+  let currentAngle = newAngle;
+
+  if (isSecondValueReceived) {
+      if (temps > currentAngle && !isFlexion) {
+          // Sign change to extension
+          isFlexion = true;
+          temps=currentAngle
+          cycleCount++;
+          flexionCycle++;
+      } else if (temps < currentAngle && isFlexion) {
+          // Sign change to flexion
+          isFlexion = false;
+          temps=currentAngle
+          cycleCount++;
+          extensionCycle++;
+      }
+      temps=newAngle
+      // Add the new angle to the array
+      angles.push(currentAngle);
+      times.push(newTime)
+      // Log the current state
+      setFlexionCycles(flexionCycle);
+    setExtensionCycles(extensionCycle);
+    setTotalCycles(cycleCount);
+  } else {
+      // Set the initial values for the first time
+      temps=newAngle
+      angles.push(currentAngle);
+      times.push(newTime)
+      isFlexion = currentAngle < newAngle; // Assuming the initial trend
+      // console.log("isFlexion", isFlexion);
+      isSecondValueReceived = true;
+  }
+}
+  // Real Functionality from python
+
+  let initialAngle = 0;
+  let initialTime = 0;
+  let cycleCount = 0;
+  let prevSignChange = null;
+  let flexionCycle = 0;
+  let extensionCycle = 0;
+  let flexionVelocities = [];
+  let extensionVelocities = [];
+  let minFlexionAngle = null;
+  let minExtensionAngle = null;
+
+  const analyzeJointData = (angles, times) => {
+    console.log(angles,"ANGLES")
+    console.log(times,"Times")
+
+    for (let i = 0; i < angles.length -1; i++) {
+      let change = angles[i] - angles[i + 1];
+
+      if (prevSignChange !== null && Math.sign(change) !== Math.sign(prevSignChange)) {
+        cycleCount++;
+
+        if (Math.sign(change) === -1) {
+          if (minFlexionAngle === null) {
+            flexionCycle++;
+            minFlexionAngle = initialAngle;
+            let maxFlexionAngle = angles[i];
+            minExtensionAngle = angles[i + 1];
+
+            if (maxFlexionAngle !== null && minFlexionAngle !== null) {
+              let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (times[i] - times[0]);
+              flexionVelocities.push(flexionVelocity);
+              initialTime = times[i + 1];
+            }
+          } else {
+            flexionCycle++;
+            let maxFlexionAngle = angles[i];
+            minExtensionAngle = angles[i + 1];
+
+            if (maxFlexionAngle !== null && minFlexionAngle !== null) {
+              let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (times[i] - initialTime);
+              flexionVelocities.push(flexionVelocity);
+              initialTime = times[i + 1];
+            }
+          }
+        } else {
+          if (minExtensionAngle === null) {
+            extensionCycle++;
+            minExtensionAngle = initialAngle;
+            let maxExtensionAngle = angles[i];
+            minFlexionAngle = angles[i + 1];
+
+            if (maxExtensionAngle !== null && minExtensionAngle !== null) {
+              let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (times[i] - initialTime);
+              extensionVelocities.push(extensionVelocity);
+              initialTime = times[i + 1];
+            }
+          } else {
+            extensionCycle++;
+            let maxExtensionAngle = angles[i];
+            minFlexionAngle = angles[i + 1];
+
+            if (maxExtensionAngle !== null && minExtensionAngle !== null) {
+              let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (times[i] - initialTime);
+              extensionVelocities.push(extensionVelocity);
+              initialTime = times[i + 1];
+            }
+          }
+        }
+      }
+
+      prevSignChange = change;
+    }
+    return {
+      flexionVelocities,
+      extensionVelocities,
+    };
+  };
+
 
   return (
     <>
@@ -417,13 +950,12 @@ const Diagno = () => {
                         <a
                           onClick={() => {
                             setDropdownVisible(!isDropdownVisible);
-                            console.clear();
-                            navigate("/live");
-                            window.location.reload();
+                            // console.clear();
+                            navigate("/static");
                           }}
                           className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
                         >
-                          Live Data
+                          Static Graph
                         </a>
                       </li>
                     </ul> */}
@@ -465,7 +997,7 @@ const Diagno = () => {
         <ToastContainer />
 
         {/* First Section */}
-        <div className="w-full p-12 flex flex-col gap-10 md:flex-row mt-8">
+        <div className="w-full p-10 flex flex-col gap-5 md:flex-row mt-8">
           {/* Left Side (Image Frame) */}
           <div className="w-80 h-72 bg-cyan-200 rounded-2xl shadow-2xl mb-4 md:mb-0">
             <img
@@ -487,7 +1019,34 @@ const Diagno = () => {
               <br /> Avoid Lifting your knees too high.
             </p>
           </div>
+          <div style={{ position: "relative", width: "50vw", height: "40vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+  <Canvas
+    camera={{ position: [-180, 10, 20], fov: 6 }}
+    style={{ width: "40vw", height: "40vh" }}
+  >
+    {models.map((model, index) => (
+      <Model
+        key={index}
+        url={model.url}
+        position={model.position}
+        shouldRotate={model.shouldRotate}
+        setTargetRotation={targetRotation}
+      />
+    ))}
+    <directionalLight position={[10, 10, 0]} intensity={1.5} />
+    <directionalLight position={[-10, 10, 5]} intensity={1} />
+    <directionalLight position={[-10, 20, 0]} intensity={1.5} />
+    <directionalLight position={[0, -10, 0]} intensity={0.25} />
+
+    <OrbitControls
+      enableZoom={false} // Disable zooming
+      enablePan={false} // Disable panning
+      enableRotate={false}
+    />
+  </Canvas>
+</div>
         </div>
+        
 
         {/* Toggle Button */}
         {/* <button
@@ -515,7 +1074,7 @@ const Diagno = () => {
         </div>
 
         {/* Glass Morphic Section */}
-        <div className="w-3/4 h-[85rem] my-8 relative border-1 bg-opacity-30 bg-white shadow-xl backdrop-blur-3xl backdrop-brightness-90 rounded-3xl">
+        <div className="w-3/4 h-[105rem] my-8 relative border-1 bg-opacity-30 bg-white shadow-xl backdrop-blur-3xl backdrop-brightness-90 rounded-3xl">
           {/* Toggle Button (Top Left) */}
           <button
             className={`m-2 flex items-center justify-center w-20 h-20 rounded-full bg-blue-500 text-white ${
@@ -536,6 +1095,29 @@ const Diagno = () => {
             ></div>
             <span>{isBluetoothConnected ? "Connected" : "Disconnected"}</span>
           </div>
+          <div className="mb-4">
+            <label
+              htmlFor="timeInterval"
+              className="block text-gray-700 font-bold"
+            >
+              Select Time Interval (min):
+            </label>
+            <select
+              id="timeInterval"
+              name="timeInterval"
+              value={selectedTime}
+              onChange={handleTimeChange}
+              className="block w-full mt-2 p-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:border-blue-500"
+            >
+              <option value="">Select an interval</option>
+              {timeIntervals.map((interval, index) => (
+                <option key={index} value={interval}>
+                  {interval}
+                </option>
+              ))}
+            </select>
+                  
+          </div>
 
           {/* Graph Import Area (Below) */}
           <div className="mt-0 mx-4">
@@ -545,37 +1127,37 @@ const Diagno = () => {
             <div className="w-full p-2 flex flex-col items-center">
               {/* Same as */}
               <div className="p-0">
-                  <div className="w-full h-64">
-                    <CountdownCircleTimer
-                      key={key}
-                      isPlaying={isPlaying}
-                      duration={120} // 2 minutes
-                      colors={[["#3c005a"]]}
-                      size={230}
-                      strokeWidth={8}
-                      onComplete={() => {
-                        setIsPlaying(false);
-                        handleTimerStop();
-                        return [false, 0]; // Stop the timer and reset to 0
-                      }}
-                    >
-                      {({ remainingTime }) => (
-                        <div className="text-4xl">
-                          {`${Math.floor(remainingTime / 60)
-                            .toString()
-                            .padStart(2, "0")}:${(remainingTime % 60)
-                            .toString()
-                            .padStart(2, "0")}`}
-                        </div>
-                      )}
-                    </CountdownCircleTimer>
-                  </div>
+                <div className="w-full h-64">
+                  <CountdownCircleTimer
+                    key={key}
+                    isPlaying={isPlaying}
+                    duration={selectedTime * 60} // 2 minutes
+                    colors={[["#3c005a"]]}
+                    size={230}
+                    strokeWidth={8}
+                    onComplete={() => {
+                      setIsPlaying(false);
+                      handleTimerStop();
+                      return [false, 0]; // Stop the timer and reset to 0
+                    }}
+                  >
+                    {({ remainingTime }) => (
+                      <div className="text-4xl">
+                        {`${Math.floor(remainingTime / 60)
+                          .toString()
+                          .padStart(2, "0")}:${(remainingTime % 60)
+                          .toString()
+                          .padStart(2, "0")}`}
+                      </div>
+                    )}
+                  </CountdownCircleTimer>
                 </div>
+                          
+              </div>
               <div
                 className="flex flex-col items-center justify-start pr-5 rounded w-full h-[900px]"
                 ref={chartRef}
               >
-                
                 <ResponsiveContainer width="100%" height="80%">
                   <LineChart data={data} className={"mx-auto"}>
                     <Tooltip
@@ -624,9 +1206,9 @@ const Diagno = () => {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex justify-center">
+              <div className="flex flex-wrap justify-center">
                 <button
-                  onClick={downloadAsPdf}
+                  onClick={generatePdf}
                   className={`
       w-full h-12 text-xl p-4 py-2 mt-[-6rem]
       bg-gradient-to-r from-purple-500 to-blue-500
@@ -638,16 +1220,148 @@ const Diagno = () => {
     `}
                   disabled={isPlaying}
                 >
-                  {isPlaying
-                    ? "Cannot Download Chart"
-                    : "Download Chart"}
+                  {isPlaying ? "Cannot Download Chart" : "Download Chart"}
                 </button>
+                <center>
+  <form onSubmit={handleSubmit}>
+    <div>
+    <div style={{ display: 'none' }}>
+      <label>Start Date:</label>
+      <input
+        type="date"
+        value={startDate}
+        onChange={handleStartDateChange}
+      />
+      </div>
+    </div>
+    <div style={{ display: 'none' }}>
+      <label>End Date:</label>
+      <input
+        type="date"
+        value={endDate}
+        onChange={handleEndDateChange}
+      />
+    </div>
+    <div style={{ display: 'none' }}>
+      <label>Start Time:</label>
+      <input
+        type="text"
+        value={startTime}
+        onChange={handleStartTimeChange}
+      />
+    </div>
+    <div style={{ display: 'none' }}>
+      <label>End Time:</label>
+      <input
+        type="text"
+        value={endTime}
+        onChange={handleEndTimeChange}
+      />
+    </div>
+    <div>
+      <button className={`
+      w-full h-12 text-xl p-4 py-2 mt-[-6rem]
+      bg-gradient-to-r from-purple-500 to-blue-500
+      hover:from-purple-600 hover:to-blue-600
+      text-white font-bold mx-auto rounded-2xl
+      border-2 border-white
+      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+      transform hover:scale-105 transition-transform duration-300 ease-in-out
+    `} type="submit">Delete Chart</button>
+    </div>
+  </form>
+</center>
               </div>
+              <br></br>
+              {prevAngle !== null && currentAngle !== null && (
+                <div className="flex justify-center mt-4">
+                  <div className="mr-4">
+                    <strong>Previous Angle:</strong> {prevAngle.toFixed(2)}°
+                  </div>
+                  <div>
+                    <strong>Current Angle:</strong> {currentAngle.toFixed(2)}°
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-center mt-4">
+                <div className="mr-4">
+                  <strong>Minimum Angle:</strong> {minAngle.toFixed(2)}°
+                </div>
+                <div>
+                  <strong>Maximum Angle:</strong> {maxAngle.toFixed(2)}°
+                </div>
+              </div>
+              <div>
+        <h2>Cycle Information:</h2>
+        <p>Flexion Cycles: {flexionCycles}</p>
+        <p>Extension Cycles: {extensionCycles}</p>
+        <p>Total Cycles: {totalCycles}</p>
+      </div>
             </div>
           </div>
         </div>
       </div>
       {/* <Live/> */}
+      <center>
+      {!isPlaying && (
+  <>
+    <button
+      className={`
+        w-half h-12 text-xl p-4 py-2 mt-[-6rem]
+        bg-gradient-to-r from-purple-500 to-blue-500
+        hover:from-purple-600 hover:to-blue-600
+        text-white font-bold mx-auto rounded-2xl
+        border-2 border-white
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+        transform hover:scale-105 transition-transform duration-300 ease-in-out
+      `}
+      onClick={() => {
+        handleButtonClick();
+        setIsChartButtonClicked(true);
+      }}
+      disabled={!isStopButtonClicked}
+    >
+      {isChartButtonClicked ? 'Chart Shown' : 'Show Chart'}
+    </button>
+
+    {isChartVisible && (
+      <div className="w-[800px] h-[400px]">
+        <br></br>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={sdata.labels.map((label, index) => ({
+              name: label,
+              [sdata.datasets[0].name]: sdata.datasets[0].data[index],
+            }))}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey={sdata.datasets[0].name}
+              stroke="aqua"
+              fill="aqua"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+        <div className="text-center">
+          <input
+            type="range"
+            min="0"
+            max={initialData.labels.length - 6}
+            value={progressbar}
+            onChange={handleProgressChange}
+          />
+        </div>
+      </div>
+    )}
+  </>
+)}
+
+    </center>
     </>
   );
 };
