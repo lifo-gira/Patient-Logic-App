@@ -472,9 +472,21 @@ const [legValue,setlegValue] = useState([])
     setData([]);
   };
 
+  const [jointExtensionVelocity,setjointExtensionVelocity]=useState([])
+  const [jointFlexionVelocity,setjointFlexionVelocity]=useState([])
+  const [jointExtensionVelocityValue,setjointExtensionVelocityValue]=useState([])
+  const [jointFlexionVelocityValue,setjointFlexionVelocityValue]=useState([])
+
   const stopTimer = () => {
     const jointAnalysisData = analyzeJointData(angles,times);
-    console.log(jointAnalysisData,"jointAnalysisData")
+    jointExtensionVelocity.push(jointAnalysisData.extensionVelocities[0])
+    jointFlexionVelocity.push(jointAnalysisData.flexionVelocities[0])
+    setjointExtensionVelocityValue(jointExtensionVelocity[0])
+    setjointFlexionVelocityValue(jointFlexionVelocity[0])
+
+console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
+console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
+
     setTargetRotation([0, 0, 0]);
     const endDateTime = new Date();
     setEndDate(endDateTime.toLocaleDateString()); // Update endDate
@@ -800,8 +812,8 @@ function processNewAngle(newAngle, newTime) {
 }
   // Real Functionality from python
 
-  let initialAngle = 0;
-  let initialTime = 0;
+  let initialAngle = angles[0];
+  let initialTime = times[0];
   let cycleCount = 0;
   let prevSignChange = null;
   let flexionCycle = 0;
@@ -811,70 +823,69 @@ function processNewAngle(newAngle, newTime) {
   let minFlexionAngle = null;
   let minExtensionAngle = null;
 
-  const analyzeJointData = (angles, times) => {
-    console.log(angles,"ANGLES")
-    console.log(times,"Times")
+  const analyzeJointData = (array, time) => {
+    console.log(array,"ANGLES")
+    console.log(time,"Times")
 
-    for (let i = 0; i < angles.length -1; i++) {
-      let change = angles[i] - angles[i + 1];
+    for (let i = 0; i < array.length - 1; i++) {
+      let change = array[i] - array[i + 1];
+
+      if (change === 0) {
+          continue;
+      }
 
       if (prevSignChange !== null && Math.sign(change) !== Math.sign(prevSignChange)) {
-        cycleCount++;
+          cycleCount++;
 
-        if (Math.sign(change) === -1) {
-          if (minFlexionAngle === null) {
-            flexionCycle++;
-            minFlexionAngle = initialAngle;
-            let maxFlexionAngle = angles[i];
-            minExtensionAngle = angles[i + 1];
-
-            if (maxFlexionAngle !== null && minFlexionAngle !== null) {
-              let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (times[i] - times[0]);
-              flexionVelocities.push(flexionVelocity);
-              initialTime = times[i + 1];
-            }
+          if (Math.sign(change) === -1) {
+              if (minFlexionAngle === null) {
+                  flexionCycle++;
+                  minFlexionAngle = initialAngle;
+                  let maxFlexionAngle = array[i];
+                  minExtensionAngle = array[i + 1];
+                  // Calculate flexion velocity
+                  let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (time[i] - initialTime);
+                  flexionVelocities.push(flexionVelocity);
+                  initialTime = time[i + 1];
+              } else {
+                  flexionCycle++;
+                  let maxFlexionAngle = array[i];
+                  minExtensionAngle = array[i + 1];
+                  // Calculate flexion velocity
+                  let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (time[i] - initialTime);
+                  flexionVelocities.push(flexionVelocity);
+                  initialTime = time[i + 1];
+              }
           } else {
-            flexionCycle++;
-            let maxFlexionAngle = angles[i];
-            minExtensionAngle = angles[i + 1];
-
-            if (maxFlexionAngle !== null && minFlexionAngle !== null) {
-              let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (times[i] - initialTime);
-              flexionVelocities.push(flexionVelocity);
-              initialTime = times[i + 1];
-            }
+              if (minExtensionAngle === null) {
+                  extensionCycle++;
+                  minExtensionAngle = initialAngle;
+                  let maxExtensionAngle = array[i];
+                  minFlexionAngle = array[i + 1];
+                  // Calculate extension velocity
+                  let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
+                  extensionVelocities.push(extensionVelocity);
+                  initialTime = time[i + 1];
+              } else {
+                  extensionCycle++;
+                  let maxExtensionAngle = array[i];
+                  minFlexionAngle = array[i + 1];
+                  // Calculate extension velocity
+                  let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
+                  extensionVelocities.push(extensionVelocity);
+                  initialTime = time[i + 1];
+              }
           }
-        } else {
-          if (minExtensionAngle === null) {
-            extensionCycle++;
-            minExtensionAngle = initialAngle;
-            let maxExtensionAngle = angles[i];
-            minFlexionAngle = angles[i + 1];
-
-            if (maxExtensionAngle !== null && minExtensionAngle !== null) {
-              let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (times[i] - initialTime);
-              extensionVelocities.push(extensionVelocity);
-              initialTime = times[i + 1];
-            }
-          } else {
-            extensionCycle++;
-            let maxExtensionAngle = angles[i];
-            minFlexionAngle = angles[i + 1];
-
-            if (maxExtensionAngle !== null && minExtensionAngle !== null) {
-              let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (times[i] - initialTime);
-              extensionVelocities.push(extensionVelocity);
-              initialTime = times[i + 1];
-            }
-          }
-        }
       }
 
       prevSignChange = change;
-    }
-    return {
-      flexionVelocities,
-      extensionVelocities,
+  }
+
+  console.log(flexionVelocities,"extensionVelocities")
+  console.log(extensionVelocities,"extensionVelocities")
+  return {
+      flexionVelocities: flexionVelocities,
+      extensionVelocities: extensionVelocities,
     };
   };
 
@@ -1285,10 +1296,12 @@ function processNewAngle(newAngle, newTime) {
                 </div>
               </div>
               <div>
-        <h2>Cycle Information:</h2>
-        <p>Flexion Cycles: {flexionCycles}</p>
-        <p>Extension Cycles: {extensionCycles}</p>
-        <p>Total Cycles: {totalCycles}</p>
+        <h2><b>Cycle Information:</b></h2>
+        <p><b>Flexion Cycles: {flexionCycles}</b></p>
+        <p><b>Extension Cycles: {extensionCycles}</b></p>
+        <p><b>Total Cycles: {totalCycles}</b></p>
+        <p><b>Flexion Velocities: {jointFlexionVelocityValue}</b></p>
+        <p><b>Extension Velocities: {jointExtensionVelocityValue}</b></p>
       </div>
             </div>
           </div>
