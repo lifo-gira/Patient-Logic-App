@@ -5,7 +5,7 @@ import Fit from "../assets/fit.jpg";
 import Profile from "../assets/profile.jpg";
 import Logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
-import html2pdf from 'html2pdf.js';
+import html2pdf from "html2pdf.js";
 import {
   CartesianGrid,
   Label,
@@ -23,7 +23,7 @@ import html2canvas from "html2canvas";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import RecordRTC from "recordrtc";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MathUtils } from "three";
 // Your code using GLTFLoader goes here
 
@@ -115,19 +115,19 @@ const Diagno = () => {
     } else {
       // If no time interval is selected, you can choose to handle it accordingly
       // For example, show a message to the user or disable the button
-      toast.error("Please select a time interval!")
+      toast.error("Please select a time interval!");
     }
 
     // Call the second function
   }
-const [legValue,setlegValue] = useState([])
+  const [legValue, setlegValue] = useState([]);
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
-    
+
     if (counter >= 0 && counter < metricArray.length) {
       const metricItem = metricArray[counter];
-      const legvalue = parseFloat(metricItem.val)
-      const rotationY = (legvalue) * (Math.PI / 180);
+      const legvalue = parseFloat(metricItem.val);
+      const rotationY = legvalue * (Math.PI / 180);
       setTargetRotation([rotationY, 0, 0]);
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
         return {
@@ -172,7 +172,7 @@ const [legValue,setlegValue] = useState([])
       if (newDataPoint) {
         const newAngle = newDataPoint.val;
         // console.log(newAngle,counter)
-        processNewAngle(newDataPoint.val,newDataPoint.index);
+        processNewAngle(newDataPoint.val, newDataPoint.index);
         setPrevAngle(currentAngle); // Store the current angle as the previous angle
         setCurrentAngle(newAngle); // Update the current angle
         if (newAngle < minAngle) {
@@ -189,7 +189,6 @@ const [legValue,setlegValue] = useState([])
         setChartData((prevData) => [...prevData, newDataPoint]);
         setElapsedTime((prevElapsedTime) => prevElapsedTime + 1);
       }
-      
     }
   };
 
@@ -253,7 +252,7 @@ const [legValue,setlegValue] = useState([])
 
   const chartRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
-  
+
   const downloadAsPdf = async () => {
     try {
       const chartContainer = chartRef.current;
@@ -273,7 +272,7 @@ const [legValue,setlegValue] = useState([])
     } catch (error) {
       // console.error("Error generating PDF:", error);
     }
-  }
+  };
 
   useEffect(() => {
     // Trigger PDF generation when imageSrc is updated
@@ -282,8 +281,8 @@ const [legValue,setlegValue] = useState([])
     }
   }, [imageSrc]);
 
-    // new pdf generation
-    const [showNames, setShowNames] = useState(false);
+  // new pdf generation
+  const [showNames, setShowNames] = useState(false);
 
   const details = {
     companyTitle: "Your Company",
@@ -302,30 +301,40 @@ const [legValue,setlegValue] = useState([])
     setShowNames(!showNames);
   };
 
-  const generatePdf = () => {
+  const [isActive, setIsActive] = useState(false);
 
+  const handleToggle = () => {
+    setIsActive(!isActive);
+  };
+
+  const generatePdf = () => {
     const offScreenDiv = document.createElement("div");
     downloadAsPdf();
 
-    const template = `
-      <div>
-        <h1>${details.companyTitle}</h1>
-        <p>Patient Name: ${details.patientName}</p>
-        <p>Hospital Name: ${details.hospitalName}</p>
-        <p>Date: ${details.date}</p>
-        <p>Time: ${details.time}</p>
-        <p>Login ID: ${details.loginId}</p>
-        <p>Sensor ID: ${details.sensorId}</p>
-        <p>Doctor Name: ${details.doctorName}</p>
-        <p>Assistant Name: ${details.assistantName}</p>
-        <br></br>
-        <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
-      </div>
-    `;
+    const commonDetails = `
+    <h1>${details.companyTitle}</h1>
+    <p>Patient Name: ${details.patientName}</p>
+    <p>Hospital Name: ${details.hospitalName}</p>
+    <p>Date: ${details.date}</p>
+    <p>Time: ${details.time}</p>
+    <p>Login ID: ${details.loginId}</p>
+    <p>Sensor ID: ${details.sensorId}</p>
+  `;
+    const doctorAssistantDetails = `
+    <p>Doctor Name: ${details.doctorName}</p>
+    <p>Assistant Name: ${details.assistantName}</p>
+  `;
 
+    const template = `
+    <div>
+      ${commonDetails}
+      ${isActive ? doctorAssistantDetails : ""}
+      <br></br>
+      <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
+    </div>
+  `;
 
     offScreenDiv.innerHTML = template;
-
 
     html2pdf(offScreenDiv, {
       margin: 10,
@@ -335,7 +344,6 @@ const [legValue,setlegValue] = useState([])
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     });
   };
-
 
   useEffect(() => {
     let interval;
@@ -395,7 +403,9 @@ const [legValue,setlegValue] = useState([])
     updateChart();
 
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`wss:/api-backup-vap2.onrender.com/ws/${userId}`);
+    const newSocket = new WebSocket(
+      `wss:/api-backup-vap2.onrender.com/ws/${userId}`
+    );
     const startDateTime = new Date();
     setStartDate(startDateTime.toLocaleDateString()); // Update startDate
     setStartTime(formatTime(startDateTime)); // Update startTime
@@ -472,20 +482,25 @@ const [legValue,setlegValue] = useState([])
     setData([]);
   };
 
-  const [jointExtensionVelocity,setjointExtensionVelocity]=useState([])
-  const [jointFlexionVelocity,setjointFlexionVelocity]=useState([])
-  const [jointExtensionVelocityValue,setjointExtensionVelocityValue]=useState([])
-  const [jointFlexionVelocityValue,setjointFlexionVelocityValue]=useState([])
+  const [jointExtensionVelocity, setjointExtensionVelocity] = useState([]);
+  const [jointFlexionVelocity, setjointFlexionVelocity] = useState([]);
+  const [jointExtensionVelocityValue, setjointExtensionVelocityValue] =
+    useState([]);
+  const [jointFlexionVelocityValue, setjointFlexionVelocityValue] = useState(
+    []
+  );
 
+  let [RedLineGraphData, setRedLineGraphData] = useState([]);
   const stopTimer = () => {
-    const jointAnalysisData = analyzeJointData(angles,times);
-    jointExtensionVelocity.push(jointAnalysisData.extensionVelocities[0])
-    jointFlexionVelocity.push(jointAnalysisData.flexionVelocities[0])
-    setjointExtensionVelocityValue(jointExtensionVelocity[0])
-    setjointFlexionVelocityValue(jointFlexionVelocity[0])
+    const jointAnalysisData = analyzeJointData(angles, times);
+    handleNumDropdownsChange(totalCycles);
+    jointExtensionVelocity.push(jointAnalysisData.extensionVelocities[0]);
+    jointFlexionVelocity.push(jointAnalysisData.flexionVelocities[0]);
+    setjointExtensionVelocityValue(jointExtensionVelocity[0]);
+    setjointFlexionVelocityValue(jointFlexionVelocity[0]);
 
-console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
-console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
+    console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
+    console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
 
     setTargetRotation([0, 0, 0]);
     const endDateTime = new Date();
@@ -631,13 +646,16 @@ console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
     console.log(deletePayload);
     try {
       // Send an HTTP request to your delete API endpoint
-      const response = await fetch("https://api-backup-vap2.onrender.com/delete-data", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(deletePayload),
-      });
+      const response = await fetch(
+        "https://api-backup-vap2.onrender.com/delete-data",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(deletePayload),
+        }
+      );
       const responseData = await response.text();
       console.log(responseData);
       if (response.ok) {
@@ -680,7 +698,6 @@ console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
     updateVisibleRange(0, maxProgressValue + 6); // Assuming updateVisibleRange is a function to update the visible range
     setChartVisibility(true);
   };
-  
 
   const handleProgressChange = (event) => {
     const progressValue = parseInt(event.target.value, 10);
@@ -724,16 +741,16 @@ console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
         );
       }
     }, [shouldRotate, targetRotation]);
-  
+
     useFrame(() => {
       if (modelRef.current && shouldRotate) {
         const { rotation } = modelRef.current;
-    
+
         if (rotation) {
           modelRef.current.rotation.x = MathUtils.lerp(
             rotation.x !== undefined ? rotation.x : 0,
             targetRotation[0],
-            0.02  // Adjust the lerp factor for smoother motion
+            0.02 // Adjust the lerp factor for smoother motion
           );
           modelRef.current.rotation.y = MathUtils.lerp(
             rotation.y !== undefined ? rotation.y : 0,
@@ -748,14 +765,13 @@ console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
         }
       }
     });
-  
+
     return (
       <group ref={modelRef} position={position}>
         <primitive object={gltf.scene} scale={4} />
       </group>
     );
   };
-  
 
   const models = [
     { url: "./legmodel.glb", position: [-0.2, 7, 7.9], shouldRotate: true },
@@ -765,56 +781,149 @@ console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
 
   const [targetRotation, setTargetRotation] = useState([0, 0, 0]);
 
-// for finding the cycles
+  // for finding the cycles
 
-const [angles,setangles] = useState([]);
-const [times,settimes] = useState([]);
-let isSecondValueReceived = false;
-let temps=0
-let isFlexion = false;
-const [flexionCycles, setFlexionCycles] = useState(0);
+  const [angles, setangles] = useState([]);
+  const [times, settimes] = useState([]);
+  let isSecondValueReceived = false;
+  let temps = 0;
+  let isFlexion = false;
+  const [flexionCycles, setFlexionCycles] = useState(0);
   const [extensionCycles, setExtensionCycles] = useState(0);
   const [totalCycles, setTotalCycles] = useState(0);
-function processNewAngle(newAngle, newTime) {
-  let currentAngle = newAngle;
 
-  if (isSecondValueReceived) {
+  function processNewAngle(newAngle, newTime) {
+    let currentAngle = newAngle;
+    let testcount = cycleCount;
+
+    if (isSecondValueReceived) {
+      console.log(newAngle, "newAngle");
       if (temps > currentAngle && !isFlexion) {
-          // Sign change to extension
-          isFlexion = true;
-          temps=currentAngle
-          cycleCount++;
-          flexionCycle++;
+        // Sign change to extension
+        isFlexion = true;
+        temps = currentAngle;
+        cycleCount++;
+        flexionCycle++;
+        // tempRow.push(createObject);
+        // highlightArray.push(tempRow)
+        // tempRow.length=0
+        // console.log(highlightArray, "tempRow");
+        // tempRow.push(createObject);
+        // console.log(tempRow, "tempRow");
       } else if (temps < currentAngle && isFlexion) {
-          // Sign change to flexion
-          isFlexion = false;
-          temps=currentAngle
-          cycleCount++;
-          extensionCycle++;
+        // Sign change to flexion
+        isFlexion = false;
+        temps = currentAngle;
+        cycleCount++;
+        extensionCycle++;
+        // tempRow.push(createObject);
+        // highlightArray.push(tempRow)
+        // tempRow.length=0
+        // console.log(highlightArray, "tempRow");
+        // tempRow.push(createObject);
+        // console.log(tempRow, "tempRow");
       }
-      temps=newAngle
+      // if (testcount == cycleCount) {
+      //   tempRow.push(createObject);
+      //   console.log(tempRow, "tempRow");
+      // }
+      temps = newAngle;
       // Add the new angle to the array
       angles.push(currentAngle);
-      times.push(newTime)
+      times.push(newTime);
       // Log the current state
       setFlexionCycles(flexionCycle);
-    setExtensionCycles(extensionCycle);
-    setTotalCycles(cycleCount);
-  } else {
+      setExtensionCycles(extensionCycle);
+      setTotalCycles(cycleCount);
+    } else {
+      // console.log(createObject,"newangle")
+      // tempRow.push(createObject);
+      // console.log(tempRow, "firstvalue");
       // Set the initial values for the first time
-      temps=newAngle
+      temps = newAngle;
       angles.push(currentAngle);
-      times.push(newTime)
-      isFlexion = currentAngle < newAngle; // Assuming the initial trend
-      // console.log("isFlexion", isFlexion);
+      times.push(newTime);
+      isFlexion = currentAngle < newAngle;
       isSecondValueReceived = true;
+    }
   }
-}
+
+  let tempRow = [];
+  let [highlightArray, sethighlightArray] = useState([]);
+
+  function processObjectArray(ObjectElements) {
+    console.log("Inside Fucntion");
+    for (let i = 0; i < ObjectElements.length - 1; i++) {
+      let change = ObjectElements[i].val - ObjectElements[i + 1].val;
+      tempRow.push(ObjectElements[i]);
+      if (i + 1 === ObjectElements.length - 1) {
+        tempRow.push(ObjectElements[i + 1]);
+        highlightArray.push(tempRow);
+        // console.log("final push highlightArray",highlightArray)
+      }
+
+      if (change === 0) {
+        continue;
+      }
+
+      if (
+        prevSignChange !== null &&
+        Math.sign(change) !== Math.sign(prevSignChange)
+      ) {
+        cycleCount++;
+        highlightArray.push(tempRow);
+        // console.log("highlightArray",highlightArray)
+        tempRow = [ObjectElements[i]];
+        // console.log("tempRow",tempRow)
+
+        if (Math.sign(change) === -1) {
+          if (minFlexionAngle === null) {
+            flexionCycle++;
+            minFlexionAngle = initialAngle;
+            let maxFlexionAngle = ObjectElements[i].val;
+            minExtensionAngle = ObjectElements[i + 1].val;
+            // Calculate flexion velocity
+            initialTime = ObjectElements[i + 1].index;
+          } else {
+            flexionCycle++;
+            let maxFlexionAngle = ObjectElements[i].val;
+            minExtensionAngle = ObjectElements[i + 1].val;
+            // Calculate flexion velocity
+            initialTime = ObjectElements[i + 1].index;
+          }
+        } else {
+          if (minExtensionAngle === null) {
+            extensionCycle++;
+            minExtensionAngle = initialAngle;
+            let maxExtensionAngle = ObjectElements[i].val;
+            minFlexionAngle = ObjectElements[i + 1].val;
+            // Calculate extension velocity
+            initialTime = ObjectElements[i + 1].index;
+          } else {
+            extensionCycle++;
+            let maxExtensionAngle = ObjectElements[i].val;
+            minFlexionAngle = ObjectElements[i + 1].val;
+            // Calculate extension velocity
+            initialTime = ObjectElements[i + 1].index;
+          }
+        }
+      }
+
+      prevSignChange = change;
+    }
+    // console.log("ObjectElements",ObjectElements)
+    // console.log(flexionVelocities, "extensionVelocities");
+    // console.log(extensionVelocities, "extensionVelocities");
+    return {
+      // flexionVelocities: flexionVelocities,
+      // extensionVelocities: extensionVelocities,
+    };
+  }
   // Real Functionality from python
 
   let initialAngle = angles[0];
   let initialTime = times[0];
-  let cycleCount = 0;
+  let cycleCount = 1;
   let prevSignChange = null;
   let flexionCycle = 0;
   let extensionCycle = 0;
@@ -823,72 +932,164 @@ function processNewAngle(newAngle, newTime) {
   let minFlexionAngle = null;
   let minExtensionAngle = null;
 
+  function ChartObject(val, index) {
+    const newObj = {
+      index: index,
+      val: val,
+    };
+    return newObj;
+  }
+
+  let ObjectElements = [];
+
   const analyzeJointData = (array, time) => {
-    console.log(array,"ANGLES")
-    console.log(time,"Times")
+    // console.log(array, "ANGLES");
+    // console.log(time, "Times");
 
     for (let i = 0; i < array.length - 1; i++) {
       let change = array[i] - array[i + 1];
+      const createObject = ChartObject(array[i], time[i]);
+      ObjectElements.push(createObject);
 
       if (change === 0) {
-          continue;
+        continue;
       }
 
-      if (prevSignChange !== null && Math.sign(change) !== Math.sign(prevSignChange)) {
-          cycleCount++;
+      if (
+        prevSignChange !== null &&
+        Math.sign(change) !== Math.sign(prevSignChange)
+      ) {
+        cycleCount++;
 
-          if (Math.sign(change) === -1) {
-              if (minFlexionAngle === null) {
-                  flexionCycle++;
-                  minFlexionAngle = initialAngle;
-                  let maxFlexionAngle = array[i];
-                  minExtensionAngle = array[i + 1];
-                  // Calculate flexion velocity
-                  let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (time[i] - initialTime);
-                  flexionVelocities.push(flexionVelocity);
-                  initialTime = time[i + 1];
-              } else {
-                  flexionCycle++;
-                  let maxFlexionAngle = array[i];
-                  minExtensionAngle = array[i + 1];
-                  // Calculate flexion velocity
-                  let flexionVelocity = -1 * (maxFlexionAngle - minFlexionAngle) / (time[i] - initialTime);
-                  flexionVelocities.push(flexionVelocity);
-                  initialTime = time[i + 1];
-              }
+        if (Math.sign(change) === -1) {
+          if (minFlexionAngle === null) {
+            flexionCycle++;
+            minFlexionAngle = initialAngle;
+            let maxFlexionAngle = array[i];
+            minExtensionAngle = array[i + 1];
+            // Calculate flexion velocity
+            let flexionVelocity =
+              (-1 * (maxFlexionAngle - minFlexionAngle)) /
+              (time[i] - initialTime);
+            flexionVelocities.push(flexionVelocity);
+            initialTime = time[i + 1];
           } else {
-              if (minExtensionAngle === null) {
-                  extensionCycle++;
-                  minExtensionAngle = initialAngle;
-                  let maxExtensionAngle = array[i];
-                  minFlexionAngle = array[i + 1];
-                  // Calculate extension velocity
-                  let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
-                  extensionVelocities.push(extensionVelocity);
-                  initialTime = time[i + 1];
-              } else {
-                  extensionCycle++;
-                  let maxExtensionAngle = array[i];
-                  minFlexionAngle = array[i + 1];
-                  // Calculate extension velocity
-                  let extensionVelocity = (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
-                  extensionVelocities.push(extensionVelocity);
-                  initialTime = time[i + 1];
-              }
+            flexionCycle++;
+            let maxFlexionAngle = array[i];
+            minExtensionAngle = array[i + 1];
+            // Calculate flexion velocity
+            let flexionVelocity =
+              (-1 * (maxFlexionAngle - minFlexionAngle)) /
+              (time[i] - initialTime);
+            flexionVelocities.push(flexionVelocity);
+            initialTime = time[i + 1];
           }
+        } else {
+          if (minExtensionAngle === null) {
+            extensionCycle++;
+            minExtensionAngle = initialAngle;
+            let maxExtensionAngle = array[i];
+            minFlexionAngle = array[i + 1];
+            // Calculate extension velocity
+            let extensionVelocity =
+              (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
+            extensionVelocities.push(extensionVelocity);
+            initialTime = time[i + 1];
+          } else {
+            extensionCycle++;
+            let maxExtensionAngle = array[i];
+            minFlexionAngle = array[i + 1];
+            // Calculate extension velocity
+            let extensionVelocity =
+              (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
+            extensionVelocities.push(extensionVelocity);
+            initialTime = time[i + 1];
+          }
+        }
       }
 
       prevSignChange = change;
-  }
-
-  console.log(flexionVelocities,"extensionVelocities")
-  console.log(extensionVelocities,"extensionVelocities")
-  return {
+    }
+    console.log("ObjectElements", ObjectElements);
+    // console.log(flexionVelocities, "extensionVelocities");
+    // console.log(extensionVelocities, "extensionVelocities");
+    processObjectArray(ObjectElements);
+    return {
       flexionVelocities: flexionVelocities,
       extensionVelocities: extensionVelocities,
     };
   };
 
+  // Highlighted graph
+
+  const [showRedLine, setShowRedLine] = useState(false);
+  const [numDropdowns, setNumDropdowns] = useState(1);
+
+  const handleNumDropdownsChange = (number) => {
+    const newValue = parseInt(number, 10);
+    setNumDropdowns(isNaN(newValue) ? 1 : newValue);
+  };
+
+  const redLineData = [
+    { index: 1, val: null },
+    { index: 2, val: null },
+    { index: 3, val: 30 },
+    { index: 4, val: 40 },
+    { index: 5, val: 50 },
+    { index: 6, val: null },
+    { index: 7, val: null },
+    { index: 8, val: null },
+    { index: 9, val: null },
+    { index: 10, val: null },
+    { index: 11, val: null },
+  ];
+
+  let PlotArray = [];
+  function GraphPlot(specificArray, size) {
+    console.log("INSIDE GraphPlot", specificArray, size);
+    for (let i = 0; i < size; i++) {
+      PlotArray.push({
+        index: i,
+        val: null,
+      });
+    }
+    // console.log(PlotArray.length,"length")
+    let ExtraArray = [];
+    for (let i = 0; i < specificArray.length; i++) {
+      ExtraArray.push(specificArray[i].index);
+    }
+    let k = 0;
+    let Index = specificArray[k].index;
+    let EndIndex = specificArray[specificArray.length - 1].index;
+    for (let i = 0; i < PlotArray.length; i++) {
+      if (ExtraArray.includes(PlotArray[i].index) && k < specificArray.length) {
+        PlotArray[i].val = specificArray[k].val;
+        k += 1;
+      }
+    }
+    // console.log("PlotArray",PlotArray)
+  }
+
+  const handleHighlightedGraph = () => {
+    console.log("RedLineGraphData", RedLineGraphData);
+    setShowRedLine((prev) => !prev);
+  };
+
+  const handleOptionChange = (event) => {
+    handleHighlightedGraph();
+    const selectedOption = event.target.value;
+
+    // Do something with the selected option, for example, log it
+    console.log("Selected option:", selectedOption);
+
+    // Update showRedLine state based on the selected option
+    setShowRedLine(true); // Set to false to hide the red line
+
+    // You can add more logic or state updates here based on the selected option
+    GraphPlot(highlightArray[parseInt(selectedOption, 10)], angles.length - 1);
+    setRedLineGraphData(PlotArray);
+    console.log("RedLineGraphData", RedLineGraphData);
+  };
 
   return (
     <>
@@ -1023,34 +1224,42 @@ function processNewAngle(newAngle, newTime) {
               <br /> Avoid Lifting your knees too high.
             </p>
           </div>
-          <div style={{ position: "relative", width: "50vw", height: "40vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-  <Canvas
-    camera={{ position: [-180, 10, 20], fov: 6 }}
-    style={{ width: "40vw", height: "40vh" }}
-  >
-    {models.map((model, index) => (
-      <Model
-        key={index}
-        url={model.url}
-        position={model.position}
-        shouldRotate={model.shouldRotate}
-        setTargetRotation={targetRotation}
-      />
-    ))}
-    <directionalLight position={[10, 10, 0]} intensity={1.5} />
-    <directionalLight position={[-10, 10, 5]} intensity={1} />
-    <directionalLight position={[-10, 20, 0]} intensity={1.5} />
-    <directionalLight position={[0, -10, 0]} intensity={0.25} />
+          <div
+            style={{
+              position: "relative",
+              width: "50vw",
+              height: "40vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Canvas
+              camera={{ position: [-180, 10, 20], fov: 6 }}
+              style={{ width: "40vw", height: "40vh" }}
+            >
+              {models.map((model, index) => (
+                <Model
+                  key={index}
+                  url={model.url}
+                  position={model.position}
+                  shouldRotate={model.shouldRotate}
+                  setTargetRotation={targetRotation}
+                />
+              ))}
+              <directionalLight position={[10, 10, 0]} intensity={1.5} />
+              <directionalLight position={[-10, 10, 5]} intensity={1} />
+              <directionalLight position={[-10, 20, 0]} intensity={1.5} />
+              <directionalLight position={[0, -10, 0]} intensity={0.25} />
 
-    <OrbitControls
-      enableZoom={false} // Disable zooming
-      enablePan={false} // Disable panning
-      enableRotate={false}
-    />
-  </Canvas>
-</div>
+              <OrbitControls
+                enableZoom={false} // Disable zooming
+                enablePan={false} // Disable panning
+                enableRotate={false}
+              />
+            </Canvas>
+          </div>
         </div>
-        
 
         {/* Toggle Button */}
         {/* <button
@@ -1162,8 +1371,29 @@ function processNewAngle(newAngle, newTime) {
                 className="flex flex-col items-center justify-start pr-5 rounded w-full h-[900px]"
                 ref={chartRef}
               >
+                <button onClick={handleHighlightedGraph}>
+                  {showRedLine ? "Hide Red Line" : "Show Red Line"}
+                </button>
+
+                <label className="block mb-2">
+                  Select an Option:
+                  <select
+                    className="border border-gray-300 p-2 w-full"
+                    onChange={handleOptionChange}
+                  >
+                    <option value="" disabled selected>
+                      Select an option
+                    </option>
+                    {Array.from({ length: numDropdowns }, (_, index) => (
+                      <option key={index} value={`${index + 1}`}>
+                        Option {index + 1}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
                 <ResponsiveContainer width="100%" height="80%">
-                  <LineChart data={data} className={"mx-auto"}>
+                  <LineChart className={"mx-auto"}>
                     <Tooltip
                       cursor={false}
                       wrapperStyle={{
@@ -1177,7 +1407,11 @@ function processNewAngle(newAngle, newTime) {
                       LabelStyle={{ color: "black" }}
                       itemStyle={{ color: "black" }}
                     />
-                    <XAxis dataKey="index" type="category">
+                    <XAxis
+                      dataKey="index"
+                      type="category"
+                      allowDuplicatedCategory={false}
+                    >
                       <Label
                         dy={10}
                         value="Time"
@@ -1198,6 +1432,7 @@ function processNewAngle(newAngle, newTime) {
                       />
                     </YAxis>
                     <Line
+                      data={data}
                       dataKey="val"
                       fill="black"
                       type="monotone"
@@ -1207,6 +1442,19 @@ function processNewAngle(newAngle, newTime) {
                       stroke="purple"
                       isAnimationActive={false}
                     />
+                    {showRedLine && (
+                      <Line
+                        data={RedLineGraphData}
+                        dataKey="val"
+                        fill="red"
+                        type="monotone"
+                        dot={{ fill: "yellow", r: 5 }}
+                        strokeWidth={3}
+                        stackId="2"
+                        stroke="red"
+                        isAnimationActive={false}
+                      />
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -1227,43 +1475,44 @@ function processNewAngle(newAngle, newTime) {
                   {isPlaying ? "Cannot Download Chart" : "Download Chart"}
                 </button>
                 <center>
-  <form onSubmit={handleSubmit}>
-    <div>
-    <div style={{ display: 'none' }}>
-      <label>Start Date:</label>
-      <input
-        type="date"
-        value={startDate}
-        onChange={handleStartDateChange}
-      />
-      </div>
-    </div>
-    <div style={{ display: 'none' }}>
-      <label>End Date:</label>
-      <input
-        type="date"
-        value={endDate}
-        onChange={handleEndDateChange}
-      />
-    </div>
-    <div style={{ display: 'none' }}>
-      <label>Start Time:</label>
-      <input
-        type="text"
-        value={startTime}
-        onChange={handleStartTimeChange}
-      />
-    </div>
-    <div style={{ display: 'none' }}>
-      <label>End Time:</label>
-      <input
-        type="text"
-        value={endTime}
-        onChange={handleEndTimeChange}
-      />
-    </div>
-    <div>
-      <button className={`
+                  <form onSubmit={handleSubmit}>
+                    <div>
+                      <div style={{ display: "none" }}>
+                        <label>Start Date:</label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={handleStartDateChange}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ display: "none" }}>
+                      <label>End Date:</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                      />
+                    </div>
+                    <div style={{ display: "none" }}>
+                      <label>Start Time:</label>
+                      <input
+                        type="text"
+                        value={startTime}
+                        onChange={handleStartTimeChange}
+                      />
+                    </div>
+                    <div style={{ display: "none" }}>
+                      <label>End Time:</label>
+                      <input
+                        type="text"
+                        value={endTime}
+                        onChange={handleEndTimeChange}
+                      />
+                    </div>
+                    <div>
+                      <button
+                        className={`
       w-full h-12 text-xl p-4 py-2 mt-[-6rem]
       bg-gradient-to-r from-purple-500 to-blue-500
       hover:from-purple-600 hover:to-blue-600
@@ -1271,10 +1520,14 @@ function processNewAngle(newAngle, newTime) {
       border-2 border-white
       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
       transform hover:scale-105 transition-transform duration-300 ease-in-out
-    `} type="submit">Delete Chart</button>
-    </div>
-  </form>
-</center>
+    `}
+                        type="submit"
+                      >
+                        Delete Chart
+                      </button>
+                    </div>
+                  </form>
+                </center>
               </div>
               <br></br>
               {prevAngle !== null && currentAngle !== null && (
@@ -1296,23 +1549,60 @@ function processNewAngle(newAngle, newTime) {
                 </div>
               </div>
               <div>
-        <h2><b>Cycle Information:</b></h2>
-        <p><b>Flexion Cycles: {flexionCycles}</b></p>
-        <p><b>Extension Cycles: {extensionCycles}</b></p>
-        <p><b>Total Cycles: {totalCycles}</b></p>
-        <p><b>Flexion Velocities: {jointFlexionVelocityValue}</b></p>
-        <p><b>Extension Velocities: {jointExtensionVelocityValue}</b></p>
-      </div>
+                <div className="flex items-center space-x-4 mb-4">
+                  <span className="text-gray-600 bold">
+                    <h1>Status:</h1>
+                  </span>
+                  <label
+                    className={`relative inline-block w-10 h-6 ${
+                      isActive ? "bg-blue-500" : "bg-gray-300"
+                    } rounded-full cursor-pointer transition-all duration-300`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="opacity-0 w-0 h-0"
+                      checked={isActive}
+                      onChange={handleToggle}
+                    />
+                    <span
+                      className={`absolute left-0 inline-block w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                        isActive ? "translate-x-full" : ""
+                      }`}
+                    ></span>
+                  </label>
+                  <span className="text-sm" id="statusText">
+                    <h1>{isActive ? "Active" : "Passive"}</h1>
+                  </span>
+                </div>
+                <h2>
+                  <b>Cycle Information:</b>
+                </h2>
+                <p>
+                  <b>Flexion Cycles: {flexionCycles}</b>
+                </p>
+                <p>
+                  <b>Extension Cycles: {extensionCycles}</b>
+                </p>
+                <p>
+                  <b>Total Cycles: {totalCycles}</b>
+                </p>
+                <p>
+                  <b>Flexion Velocities: {jointFlexionVelocityValue}</b>
+                </p>
+                <p>
+                  <b>Extension Velocities: {jointExtensionVelocityValue}</b>
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
       {/* <Live/> */}
       <center>
-      {!isPlaying && (
-  <>
-    <button
-      className={`
+        {!isPlaying && (
+          <>
+            <button
+              className={`
         w-half h-12 text-xl p-4 py-2 mt-[-6rem]
         bg-gradient-to-r from-purple-500 to-blue-500
         hover:from-purple-600 hover:to-blue-600
@@ -1321,53 +1611,52 @@ function processNewAngle(newAngle, newTime) {
         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
         transform hover:scale-105 transition-transform duration-300 ease-in-out
       `}
-      onClick={() => {
-        handleButtonClick();
-        setIsChartButtonClicked(true);
-      }}
-      disabled={!isStopButtonClicked}
-    >
-      {isChartButtonClicked ? 'Chart Shown' : 'Show Chart'}
-    </button>
+              onClick={() => {
+                handleButtonClick();
+                setIsChartButtonClicked(true);
+              }}
+              disabled={!isStopButtonClicked}
+            >
+              {isChartButtonClicked ? "Chart Shown" : "Show Chart"}
+            </button>
 
-    {isChartVisible && (
-      <div className="w-[800px] h-[400px]">
-        <br></br>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={sdata.labels.map((label, index) => ({
-              name: label,
-              [sdata.datasets[0].name]: sdata.datasets[0].data[index],
-            }))}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey={sdata.datasets[0].name}
-              stroke="aqua"
-              fill="aqua"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="text-center">
-          <input
-            type="range"
-            min="0"
-            max={initialData.labels.length - 6}
-            value={progressbar}
-            onChange={handleProgressChange}
-          />
-        </div>
-      </div>
-    )}
-  </>
-)}
-
-    </center>
+            {isChartVisible && (
+              <div className="w-[800px] h-[400px]">
+                <br></br>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={sdata.labels.map((label, index) => ({
+                      name: label,
+                      [sdata.datasets[0].name]: sdata.datasets[0].data[index],
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey={sdata.datasets[0].name}
+                      stroke="aqua"
+                      fill="aqua"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="text-center">
+                  <input
+                    type="range"
+                    min="0"
+                    max={initialData.labels.length - 6}
+                    value={progressbar}
+                    onChange={handleProgressChange}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </center>
     </>
   );
 };
