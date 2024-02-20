@@ -32,7 +32,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import SemiCircleProgressBar from "react-progressbar-semicircle";
 
 const Finalreport = () => {
   const [patientInfo, setPatientInfo] = useState(null);
@@ -668,11 +667,6 @@ const Finalreport = () => {
                     </Typography>
                   </div>
                   <div className="flex flex-col justify-center items-center h-3/4">
-                    <SemiCircleProgressBar
-                      percentage={33}
-                      strokeWidth={12}
-                      diameter={250}
-                    />
                     <Typography
                       variant="h3"
                       color="black"
@@ -706,12 +700,6 @@ const Finalreport = () => {
                     </Typography>
                   </div>
                   <div className="flex flex-col justify-center items-center h-3/4">
-                    <SemiCircleProgressBar
-                      percentage={75}
-                      strokeWidth={12}
-                      diameter={250}
-                      stroke={"#FF0000"}
-                    />
                     <Typography
                       variant="h3"
                       color="black"
