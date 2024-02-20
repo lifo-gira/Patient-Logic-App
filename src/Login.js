@@ -51,6 +51,8 @@ const Login = () => {
     }
   };
 
+  
+
   async function login() {
     setStatus(<Spinner />);
     const data = new URLSearchParams();
@@ -62,7 +64,7 @@ const Login = () => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     };
-    await fetch("https://api-backup-vap2.onrender.com/login?" + data, options)
+    await fetch("http://127.0.0.1:8000/login?" + data, options)
       .then((res) => res.json())
       .then((data) => {
         if (data == null) {
@@ -74,11 +76,54 @@ const Login = () => {
           localStorage.setItem("user", JSON.stringify(data));
           // console.log(JSON.stringify(data));
           localStorage.getItem("user");
-          navigate("/diagnostics");
+          var storedData = localStorage.getItem("user");
+
+          // Parse the stored data from JSON
+          var parsedData = JSON.parse(storedData);
+          console.log(parsedData)
+          // Access the user_id property
+          var userId = parsedData._id;
+          // var patient_id = parsedData._id;
+
+          fetchPatient(userId)
+          // navigate("/introduction");
         }
       })
       .catch((err) => console.log(err));
   }
+
+    const fetchPatient = async (patient_id) => {
+      console.log(patient_id)
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/check_patient/${patient_id}`);
+            const val = response.data
+            if(val==false){
+              navigate("/introduction");
+            }else{
+              fetchFlag(patient_id)
+            }
+        } catch (error) {
+            console.error("Error fetching patient:", error);
+        }
+    };
+
+    const fetchFlag = async (patient_id) => {
+      console.log(patient_id)
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/get_flags/${patient_id}`);
+            const val = response.data
+            if(val.flags==(-2)){
+              navigate("/diagnostics");
+            }else if(val.flags==(-1)){
+              navigate("/finalreport");
+            }else{
+              navigate("/profile");
+            }
+        } catch (error) {
+            console.error("Error fetching patient:", error);
+        }
+    };
+
 
   const responseGoogle = async (response) => {
     try {
@@ -108,6 +153,9 @@ const Login = () => {
         });
         localStorage.setItem("isLoggedIn", true);
         localStorage.setItem("user", JSON.stringify(callbackData));
+
+
+
         navigate("/diagnostics");
       } catch (error) {
         // Check if the error is related to a user not found

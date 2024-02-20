@@ -5,6 +5,8 @@ import Fit from "../assets/fit.jpg";
 import Profile from "../assets/profile.jpg";
 import Logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import { useReactToPrint } from "react-to-print";
+import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import html2pdf from "html2pdf.js";
 import {
   CartesianGrid,
@@ -26,8 +28,28 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MathUtils } from "three";
 // Your code using GLTFLoader goes here
-
 import { OrbitControls } from "@react-three/drei";
+import Profilebar from "./Profilebar";
+import Progresstimeline from "./Progresstimeline";
+import Maingraph from "./Maingraph";
+import Maingraphinfo from "./Maingraphinfo";
+import {
+  PlayIcon,
+  PauseIcon,
+  ArrowDownTrayIcon,
+  ArrowPathIcon,
+  ClockIcon,
+} from "@heroicons/react/24/solid";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Typography,
+} from "@material-tailwind/react";
+import CycleInfo from "./Cycleinfo";
+
+// import Profilebar from
 
 const Diagno = () => {
   const temp = [1, 2, 3];
@@ -60,8 +82,8 @@ const Diagno = () => {
   const [isStartButtonDisabled, setIsStartButtonDisabled] = useState(false);
   // const [isRunning, setIsRunning] = useState(false);
   const [key, setKey] = useState(0);
-  const [minAngle, setMinAngle] = useState(180);
-  const [maxAngle, setMaxAngle] = useState(0);
+  const [minAngles, setMinAnglse] = useState(180);
+  const [maxAngles, setMaxAngles] = useState(0);
   const [prevAngle, setPrevAngle] = useState(null);
   const [currentAngle, setCurrentAngle] = useState(null);
   const [minAnglePoint, setMinAnglePoint] = useState(null);
@@ -72,6 +94,7 @@ const Diagno = () => {
   const [isRecording, setIsRecording] = useState(false);
   var flag = 0;
   const userId = user.user_id;
+  const patient_id = user._id;
   localStorage.setItem("lastCount", metricArray.length);
   const [data, setData] = useState([]);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -87,12 +110,15 @@ const Diagno = () => {
     setFromDate(date);
     setFromTime(time);
   };
+  let RunTimer = 0;
+  const [highlightCount, sethighlightCount] = useState(0);
+  let highlightcounter = 0;
+  const [metricArrayLength, setmetricArrayLength] = useState();
 
   const handleToDateTimeChange = (date, time) => {
     setToDate(date);
     setToTime(time);
   };
-
   const handleTimeChange = (event) => {
     setSelectedTime(event.target.value);
   };
@@ -103,7 +129,6 @@ const Diagno = () => {
       autoClose: 1500,
     });
   }
-  // console.log(metricArray, "metricArray");
 
   function handleClick() {
     // Call the first function
@@ -124,8 +149,9 @@ const Diagno = () => {
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
 
-    if (counter >= 0 && counter < metricArray.length) {
-      const metricItem = metricArray[counter];
+    if (counter >= -1 && counter < metricArray.length) {
+      // console.log(metricArray,"metric")
+      const metricItem = metricArray[counter - 1];
       const legvalue = parseFloat(metricItem.val);
       const rotationY = legvalue * (Math.PI / 180);
       setTargetRotation([rotationY, 0, 0]);
@@ -175,14 +201,6 @@ const Diagno = () => {
         processNewAngle(newDataPoint.val, newDataPoint.index);
         setPrevAngle(currentAngle); // Store the current angle as the previous angle
         setCurrentAngle(newAngle); // Update the current angle
-        if (newAngle < minAngle) {
-          setMinAngle(newAngle);
-          setMinAnglePoint(newDataPoint); // Set the point for the minimum angle
-        }
-        if (newAngle > maxAngle) {
-          setMaxAngle(newAngle);
-          setMaxAnglePoint(newDataPoint); // Set the point for the maximum angle
-        }
         setCounter((prevCounter) => prevCounter + 1);
         setData((prevData) => [...prevData, newDataPoint]);
         elapsedTime += 1;
@@ -251,18 +269,34 @@ const Diagno = () => {
   }, [metrics]);
 
   const chartRef = useRef(null);
+  const cardRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
+  const [CardImage, setCardImage] = useState(null);
+  const [ComponentImage, setComponentImage] = useState(null);
 
   const downloadAsPdf = async () => {
     try {
       const chartContainer = chartRef.current;
+      const cardContainer = cardRef.current;
+      const componentContainer = componentRef.current;
 
       const canvas = await html2canvas(chartContainer, {
         scale: 2,
       });
 
+      const Cardcanvas = await html2canvas(cardContainer, {
+        scale: 2,
+      });
+
+      const componentcanvas = await html2canvas(componentContainer, {
+        scale: 2,
+      });
       const imgData = canvas.toDataURL("image/jpeg");
+      const imgCard = Cardcanvas.toDataURL("image/jpeg");
+      const imgComponent = componentcanvas.toDataURL("image/jpeg");
       setImageSrc(imgData);
+      setCardImage(imgCard);
+      setComponentImage(imgComponent);
       // const pdf = new jsPDF();
       // const imgProps = pdf.getImageProperties(imgData);
       // const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -277,7 +311,7 @@ const Diagno = () => {
   useEffect(() => {
     // Trigger PDF generation when imageSrc is updated
     if (imageSrc !== null) {
-      generatePdf();
+      handleDownload();
     }
   }, [imageSrc]);
 
@@ -295,6 +329,7 @@ const Diagno = () => {
     doctorName: "Dr. Smith",
     assistantName: "Jane Doe",
     graphImage: "path/to/graph.png",
+    cardImage: "path/to/card.png",
   };
 
   const handleShowNames = () => {
@@ -307,42 +342,182 @@ const Diagno = () => {
     setIsActive(!isActive);
   };
 
-  const generatePdf = () => {
-    const offScreenDiv = document.createElement("div");
-    downloadAsPdf();
+  const styles = StyleSheet.create({
+    page: { flexDirection: "row", padding: 20 },
+    graphContainer: {
+      flex: 1,
+      marginBottom: 15,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    },
+    graphView: { border: "1px dashed #000", padding: 15 },
+    graphTitle: {
+      fontSize: 16,
+      marginBottom: 5,
+      textAlign: "center",
+      marginTop: 5,
+    },
+  });
 
-    const commonDetails = `
-    <h1>${details.companyTitle}</h1>
-    <p>Patient Name: ${details.patientName}</p>
-    <p>Hospital Name: ${details.hospitalName}</p>
-    <p>Date: ${details.date}</p>
-    <p>Time: ${details.time}</p>
-    <p>Login ID: ${details.loginId}</p>
-    <p>Sensor ID: ${details.sensorId}</p>
-  `;
-    const doctorAssistantDetails = `
-    <p>Doctor Name: ${details.doctorName}</p>
-    <p>Assistant Name: ${details.assistantName}</p>
-  `;
+  const componentRef = useRef();
 
-    const template = `
-    <div>
-      ${commonDetails}
-      ${isActive ? doctorAssistantDetails : ""}
-      <br></br>
-      <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
-    </div>
-  `;
+  const handleDownload = () => {
+    try {
+      setShowRedLine(false);
+      downloadAsPdf();
+      const commonDetails = `
+        <h1>${details.companyTitle}</h1>
+        <p>Patient Name: ${details.patientName}</p>
+        <p>Hospital Name: ${details.hospitalName}</p>
+        <p>Date: ${details.date}</p>
+        <p>Time: ${details.time}</p>
+        <p>Login ID: ${details.loginId}</p>
+        <p>Sensor ID: ${details.sensorId}</p>
+      `;
+      const doctorAssistantDetails = `
+        <p>Doctor Name: ${details.doctorName}</p>
+        <p>Assistant Name: ${details.assistantName}</p>
+      `;
 
-    offScreenDiv.innerHTML = template;
+      const template = `
+        <div>
+          ${commonDetails}
+          ${isActive ? doctorAssistantDetails : ""}
+          <br></br>
+          <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
+          <img src="${CardImage}" alt="Card Image" style="width: 600px; height: 400px;" />
+        </div>
+      `;
+      const content = componentRef.current;
 
-    html2pdf(offScreenDiv, {
-      margin: 10,
-      filename: "details.pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      if (!content) {
+        console.error("Content not found for PDF generation");
+        return;
+      }
+
+      const combinedContent = document.createElement("div");
+
+      const offDetails = document.createElement("div");
+      offDetails.innerHTML = template;
+      combinedContent.appendChild(offDetails.cloneNode(true));
+
+      // Assuming content is a DOM element
+      combinedContent.appendChild(content.cloneNode(true));
+
+      // Log combined content for debugging
+      // console.log("Combined Content:", combinedContent.innerHTML);
+
+      html2pdf(combinedContent, {
+        margin: 10,
+        filename: "combined.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      // You might want to notify the user about the error
+    }
+  };
+
+  // const generatePdf = () => {
+  //   const offScreenDiv = document.createElement("div");
+  //   setShowRedLine(false);
+  //   downloadAsPdf();
+
+  //   const commonDetails = `
+  //   <h1>${details.companyTitle}</h1>
+  //   <p>Patient Name: ${details.patientName}</p>
+  //   <p>Hospital Name: ${details.hospitalName}</p>
+  //   <p>Date: ${details.date}</p>
+  //   <p>Time: ${details.time}</p>
+  //   <p>Login ID: ${details.loginId}</p>
+  //   <p>Sensor ID: ${details.sensorId}</p>
+  // `;
+  //   const doctorAssistantDetails = `
+  //   <p>Doctor Name: ${details.doctorName}</p>
+  //   <p>Assistant Name: ${details.assistantName}</p>
+  // `;
+
+  //   const template = `
+  //   <div>
+  //     ${commonDetails}
+  //     ${isActive ? doctorAssistantDetails : ""}
+  //     <br></br>
+  //     <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
+  //     <img src="${CardImage}" alt="Card Image" style="width: 600px; height: 400px;" />
+
+  //   </div>
+  // `;
+  //   handleDownload();
+  //   offScreenDiv.innerHTML = template;
+
+  //   html2pdf(offScreenDiv, {
+  //     margin: 10,
+  //     filename: "details.pdf",
+  //     image: { type: "jpeg", quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  //   });
+  // };
+
+  const generateContentforPdf = (index) => {
+    const indices = [];
+    const values = [];
+
+    highlightArray[index + 1].forEach((entry) => {
+      indices.push(entry.index);
+      values.push(entry.val);
     });
+    const minandmaxangle = findMinMaxAngles(values);
+
+    return (
+      <div>
+        <p>Minimum Angle : {minandmaxangle.minAngle}</p>
+        <br></br>
+        <p>Maximum Angle : {minandmaxangle.maxAngle}</p>
+        <br></br>
+        <p>
+          Flexion Velocity :{" "}
+          {Math.abs(
+            (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)}
+        </p>
+        <br></br>
+        <p>
+          Extension Velocity :{" "}
+          {Math.abs(
+            (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)}
+        </p>
+        <br></br>
+        <p>
+          Velocity :{" "}
+          {parseInt(
+            Math.abs(
+              (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+                indices[indices.length - 1] -
+                indices[0]
+            ).toFixed(2)
+          ) +
+            parseInt(
+              Math.abs(
+                (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+                  indices[indices.length - 1] -
+                  indices[0]
+              ).toFixed(2)
+            )}
+        </p>
+        <br></br>
+        <p>ROM : {minandmaxangle.maxAngle - minandmaxangle.minAngle}</p>
+        <br></br>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -394,18 +569,24 @@ const Diagno = () => {
   };
 
   const startTimer = () => {
+    pain.length = 0;
+    setStackedMetricsArray([]);
+    sethighlightCount([]);
+    cycleCount = 1;
+    resetCards();
+    tempRow.length = 0;
+    sethighlightArray([]);
+    setRedLineGraphData([]);
     // startRecording();
     setIsStopButtonClicked(false);
     setIsPlaying(true);
     setKey((prevKey) => prevKey + 1);
     setCounter(-1);
     elapsedTime = -1;
+    setElapsedTime(-1);
     updateChart();
-
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(
-      `wss:/api-backup-vap2.onrender.com/ws/${userId}`
-    );
+    const newSocket = new WebSocket(`ws://127.0.0.1:8000/ws/${userId}`);
     const startDateTime = new Date();
     setStartDate(startDateTime.toLocaleDateString()); // Update startDate
     setStartTime(formatTime(startDateTime)); // Update startTime
@@ -416,14 +597,14 @@ const Diagno = () => {
     newSocket.onmessage = (event) => {
       // console.log(event, "event");
       const newData = JSON.parse(event.data);
-      // console.log(newData, "newData");
       const seriesCount = newData.series;
+      // console.log(seriesCount, "seriesCount");
       // seriesCount = Updated_data.length
       for (let i = 0; i < seriesCount.length; i += 20) {
         const slice = seriesCount.slice(i, i + seriesCount.length);
-        // console.log(slice);
+        setmetricArrayLength(slice);
         stackedMetricsArray.push(...slice);
-        console.log(stackedMetricsArray, "STACKED");
+        // console.log(stackedMetricsArray, "STACKED");
         const mappedSlice = slice.map((val, index) => ({
           index: i + index,
           val: parseFloat(val),
@@ -431,7 +612,7 @@ const Diagno = () => {
 
         // console.log(mappedSlice)
         metricArray.push(...mappedSlice);
-        // console.log(metricArray, "metrics");
+        // console.log(metricArrayLength, "metrics");
         // setmetricArray(mappedSlice)
       }
 
@@ -447,7 +628,7 @@ const Diagno = () => {
         const newData = stackedMetricsArray[stackedMetricsArray.length - 1];
         setStackedMetricsArray([...stackedMetricsArray, newData]);
         staticvalue.push(...stackedMetricsArray);
-        console.log(staticvalue, "VALUE");
+        // console.log(staticvalue, "VALUE");
         console.log(
           `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
         );
@@ -491,17 +672,21 @@ const Diagno = () => {
   );
 
   let [RedLineGraphData, setRedLineGraphData] = useState([]);
+
   const stopTimer = () => {
-    const jointAnalysisData = analyzeJointData(angles, times);
+    const overllangles = findMinMaxAngles(angles);
+    setMinAnglse(overllangles.minAngle);
+    setMaxAngles(overllangles.maxAngle);
+    setShowRedLine(false);
+    const jointAnalysisData = analyzeJointData(angles, elapsedTime + 1);
     handleNumDropdownsChange(totalCycles);
     jointExtensionVelocity.push(jointAnalysisData.extensionVelocities[0]);
     jointFlexionVelocity.push(jointAnalysisData.flexionVelocities[0]);
     setjointExtensionVelocityValue(jointExtensionVelocity[0]);
     setjointFlexionVelocityValue(jointFlexionVelocity[0]);
-
-    console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
-    console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
-
+    handleExerciseSelection(useExercise, angles);
+    // console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
+    // console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
     setTargetRotation([0, 0, 0]);
     const endDateTime = new Date();
     setEndDate(endDateTime.toLocaleDateString()); // Update endDate
@@ -527,6 +712,7 @@ const Diagno = () => {
       setSocket(null);
       setCounter(-1);
       setmetricArray([]);
+      setangles([]);
     }
   };
 
@@ -544,6 +730,13 @@ const Diagno = () => {
       setSocket(null);
       setCounter(-1);
       setmetricArray([]);
+      setShowRedLine(false);
+      // const jointAnalysisData = analyzeJointData(angles, times);
+      // handleNumDropdownsChange(totalCycles);
+      // jointExtensionVelocity.push(jointAnalysisData.extensionVelocities[0]);
+      // jointFlexionVelocity.push(jointAnalysisData.flexionVelocities[0]);
+      // setjointExtensionVelocityValue(jointExtensionVelocity[0]);
+      // setjointFlexionVelocityValue(jointFlexionVelocity[0]);
     }
     // Your custom code to run when the timer stops or completes
     // console.log("Timer stopped or completed");
@@ -793,12 +986,19 @@ const Diagno = () => {
   const [totalCycles, setTotalCycles] = useState(0);
 
   function processNewAngle(newAngle, newTime) {
+    highlightcounter += 1;
+    sethighlightCount(highlightcounter);
     let currentAngle = newAngle;
     let testcount = cycleCount;
 
     if (isSecondValueReceived) {
-      console.log(newAngle, "newAngle");
-      if (temps > currentAngle && !isFlexion) {
+      // console.log(newAngle, "newAngle");
+      if (
+        temps > currentAngle &&
+        !isFlexion &&
+        currentAngle != null &&
+        temps != null
+      ) {
         // Sign change to extension
         isFlexion = true;
         temps = currentAngle;
@@ -810,7 +1010,12 @@ const Diagno = () => {
         // console.log(highlightArray, "tempRow");
         // tempRow.push(createObject);
         // console.log(tempRow, "tempRow");
-      } else if (temps < currentAngle && isFlexion) {
+      } else if (
+        temps < currentAngle &&
+        isFlexion &&
+        currentAngle != null &&
+        temps != null
+      ) {
         // Sign change to flexion
         isFlexion = false;
         temps = currentAngle;
@@ -849,16 +1054,18 @@ const Diagno = () => {
   }
 
   let tempRow = [];
-  let [highlightArray, sethighlightArray] = useState([]);
+  const [highlightArray, sethighlightArray] = useState([]);
 
   function processObjectArray(ObjectElements) {
-    console.log("Inside Fucntion");
+    let tempRow = [];
+    let highlightArray = [];
+    console.log("Inside Fucntion", ObjectElements);
     for (let i = 0; i < ObjectElements.length - 1; i++) {
       let change = ObjectElements[i].val - ObjectElements[i + 1].val;
       tempRow.push(ObjectElements[i]);
       if (i + 1 === ObjectElements.length - 1) {
         tempRow.push(ObjectElements[i + 1]);
-        highlightArray.push(tempRow);
+        // highlightArray.push(tempRow);
         // console.log("final push highlightArray",highlightArray)
       }
 
@@ -868,16 +1075,18 @@ const Diagno = () => {
 
       if (
         prevSignChange !== null &&
-        Math.sign(change) !== Math.sign(prevSignChange)
+        Math.sign(change) !== Math.sign(prevSignChange) &&
+        ObjectElements[i].val != null
       ) {
         cycleCount++;
-        highlightArray.push(tempRow);
+        // highlightArray.push(tempRow);
         // console.log("highlightArray",highlightArray)
         tempRow = [ObjectElements[i]];
-        // console.log("tempRow",tempRow)
+        highlightArray.push(tempRow);
+        console.log("tempRow", tempRow);
 
         if (Math.sign(change) === -1) {
-          if (minFlexionAngle === null) {
+          if (minFlexionAngle === null && ObjectElements[i].val != null) {
             flexionCycle++;
             minFlexionAngle = initialAngle;
             let maxFlexionAngle = ObjectElements[i].val;
@@ -892,14 +1101,14 @@ const Diagno = () => {
             initialTime = ObjectElements[i + 1].index;
           }
         } else {
-          if (minExtensionAngle === null) {
+          if (minExtensionAngle === null && ObjectElements[i].val != null) {
             extensionCycle++;
             minExtensionAngle = initialAngle;
             let maxExtensionAngle = ObjectElements[i].val;
             minFlexionAngle = ObjectElements[i + 1].val;
             // Calculate extension velocity
             initialTime = ObjectElements[i + 1].index;
-          } else {
+          } else if (ObjectElements[i].val) {
             extensionCycle++;
             let maxExtensionAngle = ObjectElements[i].val;
             minFlexionAngle = ObjectElements[i + 1].val;
@@ -911,12 +1120,14 @@ const Diagno = () => {
 
       prevSignChange = change;
     }
+    sethighlightArray(highlightArray);
+    // console.log(highlightArray,"highlight")
     // console.log("ObjectElements",ObjectElements)
     // console.log(flexionVelocities, "extensionVelocities");
     // console.log(extensionVelocities, "extensionVelocities");
     return {
-      // flexionVelocities: flexionVelocities,
-      // extensionVelocities: extensionVelocities,
+      flexionCycle: flexionCycle,
+      extensionCycle: extensionCycle,
     };
   }
   // Real Functionality from python
@@ -942,27 +1153,33 @@ const Diagno = () => {
 
   let ObjectElements = [];
 
-  const analyzeJointData = (array, time) => {
-    // console.log(array, "ANGLES");
-    // console.log(time, "Times");
-
-    for (let i = 0; i < array.length - 1; i++) {
+  const analyzeJointData = (array, fulltime) => {
+    let time = [];
+    for (let i = 0; i < fulltime; i++) {
+      time[i] = i;
+    }
+    console.log(array, "ANGLES");
+    console.log(time, "Times");
+    // handleExerciseSelection(useExercise, array);
+    for (let i = 0; i < array.length; i++) {
+      // console.log(array.length, "ANGLES");
       let change = array[i] - array[i + 1];
       const createObject = ChartObject(array[i], time[i]);
+      // console.log(createObject,"create")
       ObjectElements.push(createObject);
-
       if (change === 0) {
         continue;
       }
 
       if (
         prevSignChange !== null &&
-        Math.sign(change) !== Math.sign(prevSignChange)
+        Math.sign(change) !== Math.sign(prevSignChange) &&
+        array[i] != null
       ) {
         cycleCount++;
 
         if (Math.sign(change) === -1) {
-          if (minFlexionAngle === null) {
+          if (minFlexionAngle === null && array[i] != null) {
             flexionCycle++;
             minFlexionAngle = initialAngle;
             let maxFlexionAngle = array[i];
@@ -985,7 +1202,7 @@ const Diagno = () => {
             initialTime = time[i + 1];
           }
         } else {
-          if (minExtensionAngle === null) {
+          if (minExtensionAngle === null && array[i] != null) {
             extensionCycle++;
             minExtensionAngle = initialAngle;
             let maxExtensionAngle = array[i];
@@ -995,7 +1212,7 @@ const Diagno = () => {
               (maxExtensionAngle - minExtensionAngle) / (time[i] - initialTime);
             extensionVelocities.push(extensionVelocity);
             initialTime = time[i + 1];
-          } else {
+          } else if (array[i] != null) {
             extensionCycle++;
             let maxExtensionAngle = array[i];
             minFlexionAngle = array[i + 1];
@@ -1010,9 +1227,9 @@ const Diagno = () => {
 
       prevSignChange = change;
     }
-    console.log("ObjectElements", ObjectElements);
+    // console.log("ObjectElements", ObjectElements);
     // console.log(flexionVelocities, "extensionVelocities");
-    // console.log(extensionVelocities, "extensionVelocities");
+    // console.log(ObjectElements, "ObjectElements");
     processObjectArray(ObjectElements);
     return {
       flexionVelocities: flexionVelocities,
@@ -1030,23 +1247,10 @@ const Diagno = () => {
     setNumDropdowns(isNaN(newValue) ? 1 : newValue);
   };
 
-  const redLineData = [
-    { index: 1, val: null },
-    { index: 2, val: null },
-    { index: 3, val: 30 },
-    { index: 4, val: 40 },
-    { index: 5, val: 50 },
-    { index: 6, val: null },
-    { index: 7, val: null },
-    { index: 8, val: null },
-    { index: 9, val: null },
-    { index: 10, val: null },
-    { index: 11, val: null },
-  ];
-
   let PlotArray = [];
   function GraphPlot(specificArray, size) {
-    console.log("INSIDE GraphPlot", specificArray, size);
+    // console.log("specificArray", specificArray);
+    // console.log("size", size);
     for (let i = 0; i < size; i++) {
       PlotArray.push({
         index: i,
@@ -1055,9 +1259,11 @@ const Diagno = () => {
     }
     // console.log(PlotArray.length,"length")
     let ExtraArray = [];
+    // console.log("size", size);
     for (let i = 0; i < specificArray.length; i++) {
       ExtraArray.push(specificArray[i].index);
     }
+    // console.log("ExtraArray", ExtraArray);
     let k = 0;
     let Index = specificArray[k].index;
     let EndIndex = specificArray[specificArray.length - 1].index;
@@ -1067,596 +1273,1127 @@ const Diagno = () => {
         k += 1;
       }
     }
-    // console.log("PlotArray",PlotArray)
+    // console.log("PlotArray", PlotArray);
   }
 
   const handleHighlightedGraph = () => {
-    console.log("RedLineGraphData", RedLineGraphData);
+    // console.log("RedLineGraphData", RedLineGraphData);
     setShowRedLine((prev) => !prev);
   };
 
-  const handleOptionChange = (event) => {
+  // Card Generator
+
+  const totalCards = totalCycles;
+  const cardsPerPage = 50;
+
+  const [startIndex, setStartIndex] = useState(0);
+  const [CardAngle, setCardAngle] = useState([]);
+  const [CardTime, setCardTime] = useState([]);
+
+  function findMinMaxAngles(arr) {
+    if (!arr || arr.length === 0) {
+      return { minAngle: null, maxAngle: null };
+    }
+
+    let minAngle = arr[0];
+    let maxAngle = arr[0];
+
+    for (let i = 1; i < arr.length; i++) {
+      if (arr[i] < minAngle) {
+        minAngle = arr[i];
+      } else if (arr[i] > maxAngle) {
+        maxAngle = arr[i];
+      }
+    }
+
+    return { minAngle, maxAngle };
+  }
+
+  const pain = [];
+
+  const generateParagraph = (index) => {
+    const indices = [];
+    const values = [];
+    highlightArray[index].forEach((entry) => {
+      indices.push(entry.index);
+      values.push(entry.val);
+    });
+
+    const minandmaxangle = findMinMaxAngles(values);
+    const velocityforPain =
+      parseInt(
+        Math.abs(
+          (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+            indices[indices.length - 1] -
+            indices[0]
+        ).toFixed(2)
+      ) +
+      parseInt(
+        Math.abs(
+          (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+            indices[indices.length - 1] -
+            indices[0]
+        ).toFixed(2)
+      );
+    if (velocityforPain < 10) {
+      pain.push(1);
+    } else if (velocityforPain > 10 && velocityforPain < 20) {
+      pain.push(2);
+    } else if (velocityforPain > 20 && velocityforPain < 30) {
+      pain.push(3);
+    } else if (velocityforPain > 30 && velocityforPain < 40) {
+      pain.push(4);
+    } else if (velocityforPain > 40 && velocityforPain < 50) {
+      pain.push(5);
+    } else if (velocityforPain > 50 && velocityforPain < 60) {
+      pain.push(6);
+    } else if (velocityforPain > 60 && velocityforPain < 70) {
+      pain.push(7);
+    } else if (velocityforPain > 70 && velocityforPain < 80) {
+      pain.push(8);
+    } else if (velocityforPain > 80 && velocityforPain < 90) {
+      pain.push(9);
+    } else if (velocityforPain > 90 && velocityforPain < 100) {
+      pain.push(10);
+    } else if (velocityforPain > 100 && velocityforPain < 110) {
+      pain.push(11);
+    } else if (velocityforPain > 110 && velocityforPain < 120) {
+      pain.push(12);
+    } else if (velocityforPain > 120 && velocityforPain < 130) {
+      pain.push(13);
+    } else if (velocityforPain > 130 && velocityforPain < 140) {
+      pain.push(14);
+    } else if (velocityforPain > 140 && velocityforPain < 150) {
+      pain.push(15);
+    } else if (velocityforPain > 150 && velocityforPain < 160) {
+      pain.push(16);
+    } else if (velocityforPain > 160 && velocityforPain < 170) {
+      pain.push(17);
+    } else if (velocityforPain > 170 && velocityforPain < 180) {
+      pain.push(18);
+    } else {
+      pain.push(19);
+    }
+    return `
+    <div style="text-align: center; font-size: 3rem; padding: 0.5rem;">
+        ${pain[index]}<sub class="text-base">Pain</sub>
+    </div>
+    Minimum Angle: ${minandmaxangle.minAngle}<br>
+    Maximum Angle: ${minandmaxangle.maxAngle}<br>
+    Flexion Velocity: ${Math.abs(
+      (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+        indices[indices.length - 1] -
+        indices[0]
+    ).toFixed(2)}<br>
+    Extension Velocity: ${Math.abs(
+      (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+        indices[indices.length - 1] -
+        indices[0]
+    ).toFixed(2)}<br>
+    Velocity: ${velocityforPain}<br>
+    ROM: ${minandmaxangle.maxAngle - minandmaxangle.minAngle}<br>
+`;
+  };
+
+  const resetCards = () => {
+    // Reset state variables related to cards
+    setStartIndex(0);
+    setCardAngle([]);
+    setCardTime([]);
+  };
+
+  const handleCardClick = (cardIndex) => {
+    console.log(highlightArray);
+    GraphPlot(highlightArray[parseInt(cardIndex, 10)], elapsedTime + 1);
     handleHighlightedGraph();
-    const selectedOption = event.target.value;
-
-    // Do something with the selected option, for example, log it
-    console.log("Selected option:", selectedOption);
-
-    // Update showRedLine state based on the selected option
-    setShowRedLine(true); // Set to false to hide the red line
-
-    // You can add more logic or state updates here based on the selected option
-    GraphPlot(highlightArray[parseInt(selectedOption, 10)], angles.length - 1);
+    setShowRedLine(true);
     setRedLineGraphData(PlotArray);
-    console.log("RedLineGraphData", RedLineGraphData);
+  };
+
+  const generateCards = () => {
+    const cards = [];
+    const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
+    // console.log(highlightArray)
+    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
+      const paragraph = generateParagraph(i);
+
+      cards.push(
+        <div key={i} className="card" onClick={() => handleCardClick(i)}>
+          <Card
+            key={i}
+            color={pain[i] > 10 ? "red" : "green"}
+            variant="gradient"
+            className="border-black w-full max-w-[15rem] p-2 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300"
+          >
+            <CardHeader
+              floated={false}
+              shadow={false}
+              color="transparent"
+              className="m-0 mb-1 rounded-none border-b border-white/10 pb-2 text-center "
+            >
+              <Typography
+                variant="small"
+                color="black"
+                className="font-bold uppercase"
+              >
+                CYCLE {i + 1}
+              </Typography>
+              {/* <Typography
+                variant="h1"
+                color="black"
+                className="mt-2 flex justify-center gap-1 text-4xl font-bold"
+              >
+                {pain[i]} <span className="self-end text-base">Pain</span>
+              </Typography> */}
+            </CardHeader>
+            <CardBody className="pt-0 pb-2">
+              <ul className="flex flex-col">
+                <li className="flex items-center justify-between">
+                  <Typography
+                    dangerouslySetInnerHTML={{ __html: paragraph }}
+                    color="black"
+                    className="text-base font-medium font-bold"
+                  ></Typography>
+                </li>
+              </ul>
+            </CardBody>
+          </Card>
+        </div>
+      );
+    }
+    return cards;
+  };
+
+  const handleWheel = (event) => {
+    if (event.deltaY > 0) {
+      handleNextClick();
+    } else {
+      handlePrevClick();
+    }
+  };
+
+  const handleNextClick = () => {
+    setStartIndex((prevIndex) =>
+      Math.min(prevIndex + cardsPerPage, totalCards - cardsPerPage)
+    );
+  };
+
+  const handlePrevClick = () => {
+    setStartIndex((prevIndex) => Math.max(0, prevIndex - cardsPerPage));
+  };
+
+  // new design
+
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [isrenderscreen, setIsrenderscreen] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const [isChecked, setIsChecked] = useState(true);
+  const [isLegChecked, setIsLegChecked] = useState(true);
+  const [isConnected, setIsConnected] = useState(false);
+  // const [isPlaying, setIsPlaying] = useState(false);
+  // const [key, setKey] = useState(0);
+  const [selectedMinute, setSelectedMinute] = useState("");
+  const [selectedSecond, setSelectedSecond] = useState("");
+  // const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  // const [isrenderscreen, setIsrenderscreen] = useState(true);
+
+  // const timeIntervals = ["1", "1.5", "2"];
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+      // if(screenWidth>=595){
+      //   setIsrenderscreen(true);
+      // }else{
+      //   setIsrenderscreen(false);
+      // }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const handleCheckboxChange = () => {
+    setIsChecked(!isChecked);
+  };
+  const handleLegCheckboxChange = () => {
+    setIsLegChecked(!isLegChecked);
+  };
+  const handleDeviceStatus = () => {
+    setIsConnected(!isConnected);
+  };
+  const handlePlayPauseClick = () => {
+    if (selectedMinute * 60 + selectedSecond) {
+      // Toggle the isPlaying state
+      setIsPlaying(!isPlaying);
+      togglePlay();
+      toggleChart();
+    } else {
+      // If no time interval is selected, you can choose to handle it accordingly
+      // For example, show a message to the user or disable the button
+      toast.error("Please select a time interval!");
+    }
+  };
+  // const handleTimerStop = () => {
+  //   setIsPlaying(false);
+  //   // setIsRunning(false); // Restart the timer
+  //   setKey((prevKey) => prevKey + 1);
+  // };
+  const handleMinuteChange = (event) => {
+    setSelectedMinute(
+      parseInt(event.target.value) > 0 ? parseInt(event.target.value) || 0 : ""
+    );
+  };
+  const handleSecondChange = (event) => {
+    setSelectedSecond(
+      parseInt(event.target.value) > 0 ? parseInt(event.target.value) || 0 : ""
+    );
+  };
+
+  const [runningArray, setrunningArray] = useState([]);
+  const [squatsArray, setsquatsArray] = useState([]);
+  const [pushupsArray, setpushupsArray] = useState([]);
+  const [pullupsArray, setpullupsArray] = useState([]);
+  const [leghipArray, setleghipArray] = useState([]);
+
+  const [useExercise, setuseExercise] = useState("");
+
+  useEffect(() => {
+    setrunningArray(runningArray);
+    setsquatsArray(squatsArray);
+    setpushupsArray(pushupsArray);
+    setpullupsArray(pullupsArray);
+    setleghipArray(leghipArray);
+    // console.log(runningArray,"runningArray")
+    // console.log(squatsArray,"squatsArray")
+    // console.log(pushupsArray,"pushupsArray")
+    // console.log(pullupsArray,"pullupsArray")
+    // console.log(leghipArray,"leghipArray")
+  }, [runningArray, squatsArray, pushupsArray, pullupsArray, leghipArray]);
+
+  function handleExerciseSelection(chosenExercise, simple) {
+    console.log(`${chosenExercise} is chosen.`);
+    setuseExercise(chosenExercise);
+    console.log(simple, "simple");
+    console.log(highlightArray);
+    // Update the respective state array based on the chosen exercise
+    switch (chosenExercise) {
+      case "Running":
+        setrunningArray(simple);
+        break;
+      case "Squats":
+        setsquatsArray(simple);
+        break;
+      case "PushUps":
+        setpushupsArray(simple);
+        break;
+      case "PullUps":
+        setpullupsArray(simple);
+        break;
+      case "Leg Hip Rotation":
+        setleghipArray(simple);
+        break;
+      default:
+        // Handle other exercises if needed
+        break;
+    }
+  }
+
+  const isExerciseDataValid =
+    runningArray?.length > 0 &&
+    squatsArray?.length > 0 &&
+    pushupsArray?.length > 0 &&
+    pullupsArray?.length > 0 &&
+    leghipArray?.length > 0;
+
+    const handleCompleteSubmit = () => {
+      // Call the function to update exercise data only if data is valid
+      if (isExerciseDataValid) {
+        updateExerciseData();
+        // Add any other logic for the button click event as needed
+      }
+    };
+
+  const updateExerciseData = async () => {
+    const exerciseData = {
+      running: {values: runningArray, pain: [], rom: 90},
+      pushups: {values: pushupsArray, pain: [], rom: 0},
+      squats: {values: squatsArray, pain: [], rom: 0},
+      pullups: {values: pullupsArray, pain: [], rom: 0},
+      LegHipRotation: {values: leghipArray, pain: [], rom: 0},
+    };
+    const new_flag=-1
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/update-exercise-info/${patient_id}/${new_flag}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(exerciseData),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Exercise data updated successfully");
+
+        navigate("/finalreport")
+        // Handle success as needed
+      } else {
+        console.error("Failed to update exercise data");
+        // Handle error as needed
+      }
+    } catch (error) {
+      console.error("Error updating exercise data:", error);
+      // Handle error as needed
+    }
   };
 
   return (
     <>
-      <header class="fixed w-full">
-        <nav class="bg-gray-100 border-gray-500 py-1 dark:bg-gray-900">
-          <div class="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
-            <a href="#" class="flex items-center">
-              <img src={Logo} class="h-6 mr-3 sm:h-9" alt="Landwind Logo" />
-            </a>
-            <div class="flex items-center lg:order-2">
-              <div className="relative">
-                <button
-                  id="avatarButton"
-                  type="button"
-                  onClick={() => setDropdownVisible(!isDropdownVisible)}
-                  className="w-10 h-10 rounded-full cursor-pointer"
-                >
-                  <img
-                    src={Profile}
-                    alt="User dropdown"
-                    className="object-cover w-full h-full rounded-full"
-                  />
-                </button>
-                {isDropdownVisible && (
-                  <div
-                    id="userDropdown"
-                    className="absolute top-12 right-0 z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600"
-                  >
-                    <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                      <div>{}</div>
-                      <div className="font-medium truncate">
-                        bonnie@gmail.com
+      <div>
+        <Profilebar />
+        <div className="flex items-center">
+          <Progresstimeline onStepClick={handleExerciseSelection} />
+          <button
+            className="ml-4 mt-4 bg-gray-500 text-white px-4 py-2 rounded-md mr-[20rem]"
+            onClick={handleCompleteSubmit}
+            disabled={!isExerciseDataValid}
+
+          >
+            Submit
+          </button>
+        </div>
+
+        <div
+          className={
+            screenWidth < 1242 && screenWidth >= 720
+              ? "w-full px-4"
+              : screenWidth < 720 && screenWidth >= 595
+              ? "w-full px-4"
+              : screenWidth < 595
+              ? "w-full px-4"
+              : "flex justify-center"
+          }
+        >
+          <div className={screenWidth >= 1242 ? "w-3/4 pl-12" : "w-full"}>
+            <div className="mt-8">
+              <div>
+                {(screenWidth >= 595 ? isrenderscreen : !isrenderscreen) && (
+                  <div className={"w-full"}>
+                    <div className="flex justify-center items-center flex-col sm:flex-row">
+                      <div className="w-full sm:w-1/3 pl-7 mb-2 sm:mb-0 ">
+                        <div className="flex justify-start items-center">
+                          <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
+                            <input
+                              type="checkbox"
+                              checked={isActive}
+                              onChange={handleToggle}
+                              className="sr-only"
+                            />
+                            <span className="label flex items-center text-xs font-semibold text-black">
+                              PASSIVE
+                            </span>
+                            <span
+                              className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                                isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
+                              }`}
+                            >
+                              <span
+                                className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                  isActive ? "translate-x-[20px]" : ""
+                                }`}
+                              ></span>
+                            </span>
+                            <span className="label flex items-center text-xs font-semibold text-black">
+                              ACTIVE
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="w-full sm:w-1/3 p-2 mb-2 sm:mb-0 justify-center items-center">
+                        <div className="flex justify-center items-center">
+                          <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
+                            <input
+                              type="checkbox"
+                              checked={isLegChecked}
+                              onChange={handleLegCheckboxChange}
+                              className="sr-only"
+                            />
+                            <span className="label flex items-center text-xs font-semibold text-black">
+                              LEFT LEG
+                            </span>
+                            <span
+                              className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                                isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
+                              }`}
+                            >
+                              <span
+                                className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                  isLegChecked ? "translate-x-[20px]" : ""
+                                }`}
+                              ></span>
+                            </span>
+                            <span className="label flex items-center text-xs font-semibold text-black">
+                              RIGHT LEG
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="w-full sm:w-1/3 pr-3">
+                        <div className="flex justify-end items-center">
+                          <button
+                            style={{
+                              width: "120px",
+                              height: "24px",
+                              borderRadius: "20px",
+                              cursor: "pointer",
+                              position: "relative",
+                              overflow: "hidden",
+                              transition: "background-color 1s ease-in",
+                            }}
+                            className={`${
+                              isBluetoothConnected
+                                ? "bg-green-500 animate-flash"
+                                : "bg-gray-400"
+                            } text-black text-xs font-semibold rounded-full justify-center `}
+                            onClick={handleDeviceStatus}
+                          >
+                            {isBluetoothConnected
+                              ? "CONNECTED"
+                              : "DISCONNECTED"}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <ul
-                      className="py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
-                      aria-labelledby="avatarButton"
-                    >
-                      <li
-                        onClick={() => setDropdownVisible(!isDropdownVisible)}
-                      >
-                        <a
-                          onClick={() => {
-                            setDropdownVisible(!isDropdownVisible);
-                            localStorage.setItem("isLoggedIn", false);
-                            localStorage.setItem("user", null);
-                            console.clear();
-                            navigate("/");
-                          }}
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+
+                    <div className="flex justify-center items-center">
+                      <div className="w-1/3 pl-5 flex justify-start items-end">
+                        <button
+                          className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
+                          onClick={handlePlayPauseClick}
                         >
-                          Dashboard
-                        </a>
-                      </li>
-                    </ul>
-                    {/* <ul
-                      className="py-2 text-sm text-gray-700 dark:text-gray-200 cursor-pointer"
-                      aria-labelledby="avatarButton"
-                    >
-                      <li
-                        onClick={() => setDropdownVisible(!isDropdownVisible)}
-                      >
-                        <a
+                          {isPlaying ? (
+                            <PauseIcon className="h-7 w-7" />
+                          ) : (
+                            <PlayIcon className="h-7 w-7" />
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="w-1/3 ">
+                        <div className="flex justify-center items-center">
+                          {!isPlaying && (
+                            <div className="w-full flex justify-center items-center gap-1">
+                              <div className="flex flex-col items-center">
+                                <input
+                                  type="number"
+                                  value={selectedMinute}
+                                  onChange={handleMinuteChange}
+                                  className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
+                                  placeholder="00"
+                                />
+                                <span className="w-full text-center text-black font-bold text-[10px]">
+                                  minutes
+                                </span>
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <input
+                                  type="number"
+                                  value={selectedSecond}
+                                  onChange={handleSecondChange}
+                                  className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
+                                  placeholder="00"
+                                />
+                                <span className="w-full text-center text-black font-bold text-[10px]">
+                                  seconds
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {isPlaying && (
+                            <CountdownCircleTimer
+                              key={key}
+                              isPlaying={isPlaying}
+                              duration={selectedMinute * 60 + selectedSecond} // 2 minutes
+                              colors={[["#3c005a"]]}
+                              size={60}
+                              strokeWidth={3}
+                              onComplete={() => {
+                                setIsPlaying(false);
+                                handleTimerStop();
+                                return [false, 0]; // Stop the timer and reset to 0
+                              }}
+                            >
+                              {({ remainingTime }) => (
+                                <div className="font-semibold text-base">
+                                  {`${Math.floor(remainingTime / 60)
+                                    .toString()
+                                    .padStart(2, "0")}:${(remainingTime % 60)
+                                    .toString()
+                                    .padStart(2, "0")}`}
+                                </div>
+                              )}
+                            </CountdownCircleTimer>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="w-1/3 pr-3 flex justify-end gap-12">
+                        <button
+                          className=" text-black font-bold  rounded-full"
                           onClick={() => {
-                            setDropdownVisible(!isDropdownVisible);
-                            // console.clear();
-                            navigate("/static");
+                            // Add logic for reset action here
+                            setData([]);
+                            setShowRedLine(false);
+                            generateCards();
+                            setSelectedMinute("");
+                            setSelectedSecond("");
+                            setKey((prevKey) => prevKey + 1);
                           }}
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
                         >
-                          Static Graph
-                        </a>
-                      </li>
-                    </ul> */}
-                    <div className="py-1">
-                      <a
-                        onClick={() => {
-                          setDropdownVisible(!isDropdownVisible);
-                          localStorage.setItem("isLoggedIn", false);
-                          localStorage.setItem("user", null);
-                          console.clear();
-                          navigate("/login");
+                          <ArrowPathIcon className="h-6 w-6  inline" />
+                        </button>
+
+                        <button
+                          className=" text-black font-bold  rounded-full"
+                          onClick={handleDownload}
+                          disabled={isPlaying}
+                        >
+                          <ArrowDownTrayIcon className="h-6 w-6  inline" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex mt-2 border-dashed border-gray-300 border-4 rounded-3xl">
+                      <div
+                        className="flex flex-col justify-center items-center w-full pt-4"
+                        ref={chartRef}
+                      >
+                        <div className="w-full pl-6 font-bold text-2xl">
+                          Levels Report
+                        </div>
+                        <div className="w-full">
+                          <div className="flex flex-col items-center justify-start rounded w-full h-[400px]">
+                            <ResponsiveContainer
+                              width="100%"
+                              height="100%"
+                              className={"pr-4"}
+                            >
+                              <LineChart>
+                                <Tooltip
+                                  cursor={false}
+                                  wrapperStyle={{
+                                    backgroundColor: "transparent",
+                                    padding: "5px",
+                                    borderRadius: 4,
+                                    overflow: "hidden",
+                                    fill: "black",
+                                    boxShadow:
+                                      "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+                                  }}
+                                  LabelStyle={{ color: "black" }}
+                                  itemStyle={{ color: "black" }}
+                                />
+                                <Legend
+                                  wrapperStyle={{
+                                    top: -30,
+                                    left: 20,
+                                    position: "absolute",
+                                  }}
+                                  iconType="circle"
+                                  iconSize={6}
+                                />
+                                <Line
+                                  data={data}
+                                  type="monotone"
+                                  dataKey="val"
+                                  dot={{ fill: "yellow", r: 5 }}
+                                  strokeDasharray="25 10"
+                                  stroke="#8884d8"
+                                  strokeWidth={2.5}
+                                  stackId="2"
+                                  isAnimationActive={false}
+                                />
+                                {showRedLine && (
+                                  <Line
+                                    data={RedLineGraphData}
+                                    type="monotone"
+                                    dataKey="val"
+                                    dot={{ fill: "yellow", r: 5 }}
+                                    strokeDasharray="25 10"
+                                    stroke="red"
+                                    stackId="2"
+                                    strokeWidth={2.5}
+                                    isAnimationActive={false}
+                                  />
+                                )}
+                                <XAxis
+                                  dataKey="index"
+                                  type="category"
+                                  allowDuplicatedCategory={false}
+                                  axisLine={false}
+                                >
+                                  <Label
+                                    dy={10}
+                                    value="Time"
+                                    domain={[1, elapsedTime + 20]}
+                                    position="insideBottom"
+                                    style={{ textAnchor: "middle" }}
+                                    tick={{ fill: "black" }}
+                                    ticks={[1, 20, 40, 60, 80, 100, 120]}
+                                  />
+                                </XAxis>
+                                <YAxis axisLine={false}>
+                                  <Label
+                                    angle={-90}
+                                    value="Angle"
+                                    position="insideLeft"
+                                    style={{ textAnchor: "middle" }}
+                                    tick={{ fill: "black" }}
+                                  />
+                                </YAxis>
+                                <CartesianGrid
+                                  strokearray="1"
+                                  horizontal="true"
+                                  vertical=""
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {(screenWidth < 595 ? isrenderscreen : !isrenderscreen) && (
+                  <div className="grid grid-rows-6 w-full">
+                    <div className="flex justify-center">
+                      <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-40 justify-start">
+                        <input
+                          type="checkbox"
+                          checked={isActive}
+                          onChange={handleToggle}
+                          className="sr-only"
+                        />
+                        <span className="label flex items-center text-xs font-semibold text-black">
+                          PASSIVE
+                        </span>
+                        <span
+                          className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                            isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
+                          }`}
+                        >
+                          <span
+                            className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                              isActive ? "translate-x-[20px]" : ""
+                            }`}
+                          ></span>
+                        </span>
+                        <span className="label flex items-center text-xs font-semibold text-black">
+                          ACTIVE
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-full justify-center">
+                        <input
+                          type="checkbox"
+                          checked={isLegChecked}
+                          onChange={handleLegCheckboxChange}
+                          className="sr-only"
+                        />
+                        <span className="label flex items-center text-xs font-semibold text-black">
+                          LEFT LEG
+                        </span>
+                        <span
+                          className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                            isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
+                          }`}
+                        >
+                          <span
+                            className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                              isLegChecked ? "translate-x-[20px]" : ""
+                            }`}
+                          ></span>
+                        </span>
+                        <span className="label flex items-center text-xs font-semibold text-black">
+                          RIGHT LEG
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-center items-center">
+                      <button
+                        style={{
+                          width: "120px",
+                          height: "24px",
+                          borderRadius: "20px",
+                          cursor: "pointer",
+                          position: "relative",
+                          overflow: "hidden",
+                          transition: "background-color 1s ease-in",
                         }}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white cursor-pointer"
+                        className={`${
+                          isBluetoothConnected
+                            ? "bg-green-500 animate-flash"
+                            : "bg-gray-400"
+                        } text-black text-xs font-semibold rounded-full justify-center `}
+                        onClick={handleDeviceStatus}
                       >
-                        Sign out
-                      </a>
+                        {isBluetoothConnected ? "CONNECTED" : "DISCONNECTED"}
+                      </button>
+                    </div>
+
+                    <div className="flex justify-center gap-12 py-1">
+                      <button
+                        className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
+                        onClick={handlePlayPauseClick}
+                      >
+                        {isPlaying ? (
+                          <PauseIcon className="h-7 w-7" />
+                        ) : (
+                          <PlayIcon className="h-7 w-7" />
+                        )}
+                      </button>
+                      <button
+                        className=" text-black font-bold  rounded-full"
+                        onClick={() => {
+                          setSelectedMinute("");
+                          setSelectedSecond("");
+                          setKey((prevKey) => prevKey + 1);
+                        }}
+                      >
+                        <ArrowPathIcon className="h-6 w-7  inline" />
+                      </button>
+
+                      <button
+                        className=" text-black font-bold  rounded-full"
+                        onClick={handleDownload}
+                      >
+                        <ArrowDownTrayIcon className="h-6 w-7  inline" />
+                      </button>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-center items-center">
+                        {!isPlaying && (
+                          <div className="w-full flex justify-center items-center gap-1 py-1">
+                            <div className="flex flex-col items-center">
+                              <input
+                                type="number"
+                                value={selectedMinute}
+                                onChange={handleMinuteChange}
+                                className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
+                                placeholder="00"
+                              />
+                              <span className="w-full text-center text-black font-bold text-[10px]">
+                                minutes
+                              </span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                              <input
+                                type="number"
+                                value={selectedSecond}
+                                onChange={handleSecondChange}
+                                className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
+                                placeholder="00"
+                              />
+                              <span className="w-full text-center text-black font-bold text-[10px]">
+                                seconds
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {isPlaying && (
+                          <CountdownCircleTimer
+                            key={key}
+                            isPlaying={isPlaying}
+                            duration={selectedMinute * 60 + selectedSecond} // 2 minutes
+                            colors={[["#3c005a"]]}
+                            size={60}
+                            strokeWidth={3}
+                            onComplete={() => {
+                              setIsPlaying(false);
+                              handleTimerStop();
+                              return [false, 0]; // Stop the timer and reset to 0
+                            }}
+                          >
+                            {({ remainingTime }) => (
+                              <div className="font-semibold text-base">
+                                {`${Math.floor(remainingTime / 60)
+                                  .toString()
+                                  .padStart(2, "0")}:${(remainingTime % 60)
+                                  .toString()
+                                  .padStart(2, "0")}`}
+                              </div>
+                            )}
+                          </CountdownCircleTimer>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        </nav>
-      </header>
-      <div className="flex flex-col justify-center items-center bg-gradient-to-r from-cyan-100 to-cyan-500 ">
-        <ToastContainer
-          position="top-right"
-          autoClose={7000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
 
-        <ToastContainer />
-
-        {/* First Section */}
-        <div className="w-full p-10 flex flex-col gap-5 md:flex-row mt-8">
-          {/* Left Side (Image Frame) */}
-          <div className="w-80 h-72 bg-cyan-200 rounded-2xl shadow-2xl mb-4 md:mb-0">
-            <img
-              src={Fit}
-              alt="fit"
-              className="w-full h-full object-cover rounded-3xl p-3"
-            />
-          </div>
-
-          {/* Right Side (Heading and Paragraph) */}
-          <div className="md:ml-8">
-            <h1 className="text-5xl font-semibold font-sans">MOVEMENT</h1>
-            <br />
-            <p className="text-black text-2xl font-sans">
-              Keep your head straight and your neck relaxed.
-              <br /> Relax your shoulders and keep them back and down.
-              <br /> Bend your arms at 90 angle and keep your hands relaxed.
-              <br /> Lean forward slightly without bending the waist.
-              <br /> Avoid Lifting your knees too high.
-            </p>
-          </div>
           <div
-            style={{
-              position: "relative",
-              width: "50vw",
-              height: "40vh",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+            className={
+              screenWidth >= 1242 ? "w-1/4 px-5 self-end" : "w-full mt-4"
+            }
           >
-            <Canvas
-              camera={{ position: [-180, 10, 20], fov: 6 }}
-              style={{ width: "40vw", height: "40vh" }}
-            >
-              {models.map((model, index) => (
-                <Model
-                  key={index}
-                  url={model.url}
-                  position={model.position}
-                  shouldRotate={model.shouldRotate}
-                  setTargetRotation={targetRotation}
-                />
-              ))}
-              <directionalLight position={[10, 10, 0]} intensity={1.5} />
-              <directionalLight position={[-10, 10, 5]} intensity={1} />
-              <directionalLight position={[-10, 20, 0]} intensity={1.5} />
-              <directionalLight position={[0, -10, 0]} intensity={0.25} />
-
-              <OrbitControls
-                enableZoom={false} // Disable zooming
-                enablePan={false} // Disable panning
-                enableRotate={false}
-              />
-            </Canvas>
-          </div>
-        </div>
-
-        {/* Toggle Button */}
-        {/* <button
-        className={`mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg`}
-        onClick={togglePlay}
-      >
-        {isPlaying ? 'Pause' : 'Play'}
-      </button> */}
-
-        <div
-          onClick={() => setisLeg(!isLeg)}
-          className={classNames(
-            "flex w-20 h-10 bg-gray-600 mt-4 rounded-full transition-all duration-500 cursor-pointer",
-            { "bg-green-500": isLeg }
-          )}
-        >
-          <span
-            className={classNames(
-              "h-10 w-10 text-3xl font-extrabold text-center my-auto bg-white rounded-full transition-all duration-500 shadow-lg cursor-pointer",
-              { "ml-10": isLeg }
-            )}
-          >
-            {isLeg ? "R" : "L"}
-          </span>
-        </div>
-
-        {/* Glass Morphic Section */}
-        <div className="w-3/4 h-[105rem] my-8 relative border-1 bg-opacity-30 bg-white shadow-xl backdrop-blur-3xl backdrop-brightness-90 rounded-3xl">
-          {/* Toggle Button (Top Left) */}
-          <button
-            className={`m-2 flex items-center justify-center w-20 h-20 rounded-full bg-blue-500 text-white ${
-              isPlaying ? "bg-red-500" : "bg-green-500"
-            }`}
-            onClick={handleClick}
-            // disabled={isStartButtonDisabled}
-          >
-            {isPlaying ? <FaPause /> : <FaPlay />}
-          </button>
-
-          {/* Bluetooth Connection (Top Right) */}
-          <div className="absolute top-4 right-4 flex items-center">
-            <div
-              className={`w-4 h-4 rounded-full mr-2 ${
-                isBluetoothConnected ? "bg-green-500" : "bg-red-500"
-              }`}
-            ></div>
-            <span>{isBluetoothConnected ? "Connected" : "Disconnected"}</span>
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="timeInterval"
-              className="block text-gray-700 font-bold"
-            >
-              Select Time Interval (min):
-            </label>
-            <select
-              id="timeInterval"
-              name="timeInterval"
-              value={selectedTime}
-              onChange={handleTimeChange}
-              className="block w-full mt-2 p-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:border-blue-500"
-            >
-              <option value="">Select an interval</option>
-              {timeIntervals.map((interval, index) => (
-                <option key={index} value={interval}>
-                  {interval}
-                </option>
-              ))}
-            </select>
-                  
-          </div>
-
-          {/* Graph Import Area (Below) */}
-          <div className="mt-0 mx-4">
-            {/* Add your graph import area here */}
-            {/* Example: <input type="file" accept=".png, .jpg, .jpeg" /> */}
-
-            <div className="w-full p-2 flex flex-col items-center">
-              {/* Same as */}
-              <div className="p-0">
-                <div className="w-full h-64">
-                  <CountdownCircleTimer
-                    key={key}
-                    isPlaying={isPlaying}
-                    duration={selectedTime * 60} // 2 minutes
-                    colors={[["#3c005a"]]}
-                    size={230}
-                    strokeWidth={8}
-                    onComplete={() => {
-                      setIsPlaying(false);
-                      handleTimerStop();
-                      return [false, 0]; // Stop the timer and reset to 0
-                    }}
+            <div className="">
+              <div ref={cardRef}>
+                {(screenWidth >= 1242 ? isrenderscreen : !isrenderscreen) && (
+                  <Card
+                    color="gray"
+                    variant="gradient"
+                    className="w-full  px-6"
                   >
-                    {({ remainingTime }) => (
-                      <div className="text-4xl">
-                        {`${Math.floor(remainingTime / 60)
-                          .toString()
-                          .padStart(2, "0")}:${(remainingTime % 60)
-                          .toString()
-                          .padStart(2, "0")}`}
-                      </div>
-                    )}
-                  </CountdownCircleTimer>
-                </div>
-                          
-              </div>
-              <div
-                className="flex flex-col items-center justify-start pr-5 rounded w-full h-[900px]"
-                ref={chartRef}
-              >
-                <button onClick={handleHighlightedGraph}>
-                  {showRedLine ? "Hide Red Line" : "Show Red Line"}
-                </button>
-
-                <label className="block mb-2">
-                  Select an Option:
-                  <select
-                    className="border border-gray-300 p-2 w-full"
-                    onChange={handleOptionChange}
-                  >
-                    <option value="" disabled selected>
-                      Select an option
-                    </option>
-                    {Array.from({ length: numDropdowns }, (_, index) => (
-                      <option key={index} value={`${index + 1}`}>
-                        Option {index + 1}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <ResponsiveContainer width="100%" height="80%">
-                  <LineChart className={"mx-auto"}>
-                    <Tooltip
-                      cursor={false}
-                      wrapperStyle={{
-                        backgroundColor: "transparent",
-                        padding: "5px",
-                        borderRadius: 4,
-                        overflow: "hidden",
-                        fill: "black",
-                        boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-                      }}
-                      LabelStyle={{ color: "black" }}
-                      itemStyle={{ color: "black" }}
-                    />
-                    <XAxis
-                      dataKey="index"
-                      type="category"
-                      allowDuplicatedCategory={false}
+                    <CardHeader
+                      floated={false}
+                      shadow={false}
+                      color="transparent"
+                      className=" mb-4 rounded-none border-b border-white/10 pb-1 mt-0 text-center"
                     >
-                      <Label
-                        dy={10}
-                        value="Time"
-                        domain={[1, elapsedTime + 20]}
-                        position="insideBottom"
-                        style={{ textAnchor: "middle" }}
-                        tick={{ fill: "black" }}
-                        ticks={[1, 20, 40, 60, 80, 100, 120]}
-                      />
-                    </XAxis>
-                    <YAxis>
-                      <Label
-                        angle={-90}
-                        value="Angle"
-                        position="insideLeft"
-                        style={{ textAnchor: "middle" }}
-                        tick={{ fill: "black" }}
-                      />
-                    </YAxis>
-                    <Line
-                      data={data}
-                      dataKey="val"
-                      fill="black"
-                      type="monotone"
-                      dot={{ fill: "yellow", r: 5 }}
-                      strokeWidth={3}
-                      stackId="2"
-                      stroke="purple"
-                      isAnimationActive={false}
-                    />
-                    {showRedLine && (
-                      <Line
-                        data={RedLineGraphData}
-                        dataKey="val"
-                        fill="red"
-                        type="monotone"
-                        dot={{ fill: "yellow", r: 5 }}
-                        strokeWidth={3}
-                        stackId="2"
-                        stroke="red"
-                        isAnimationActive={false}
-                      />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap justify-center">
-                <button
-                  onClick={generatePdf}
-                  className={`
-      w-full h-12 text-xl p-4 py-2 mt-[-6rem]
-      bg-gradient-to-r from-purple-500 to-blue-500
-      hover:from-purple-600 hover:to-blue-600
-      text-white font-bold mx-auto rounded-2xl
-      border-2 border-white
-      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-      transform hover:scale-105 transition-transform duration-300 ease-in-out
-    `}
-                  disabled={isPlaying}
-                >
-                  {isPlaying ? "Cannot Download Chart" : "Download Chart"}
-                </button>
-                <center>
-                  <form onSubmit={handleSubmit}>
-                    <div>
-                      <div style={{ display: "none" }}>
-                        <label>Start Date:</label>
-                        <input
-                          type="date"
-                          value={startDate}
-                          onChange={handleStartDateChange}
-                        />
+                      <Typography
+                        variant="h1"
+                        color="white"
+                        className="mt-6 flex justify-center gap-1 text-7xl font-normal"
+                      >
+                        <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5" />
+                        {elapsedTime}
+                        <p className="text-lg flex items-end">sec</p>
+                      </Typography>
+                    </CardHeader>
+                    <CardBody className="p-0">
+                      <ul className="flex flex-col gap-3.5">
+                        <li className="flex justify-center items-center gap-4">
+                          <Typography className="font-normal text-2xl">
+                            {isActive ? "Active" : "Passive"}
+                          </Typography>
+                          <Typography className="font-normal text-2xl">
+                            /
+                          </Typography>
+                          <Typography className="font-normal text-2xl">
+                            {!isLegChecked ? "Left Leg" : "Right Leg"}
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">
+                            Maximum Angle
+                          </Typography>
+                          <Typography className="font-normal">
+                            {maxAngles}°
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">
+                            Minimum Angle
+                          </Typography>
+                          <Typography className="font-normal">
+                            {minAngles}°
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">
+                            Flexion Cycle
+                          </Typography>
+                          <Typography className="font-normal">
+                            {flexionCycles}
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">
+                            Extension Cycle
+                          </Typography>
+                          <Typography className="font-normal">
+                            {extensionCycles}
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">
+                            Velocity
+                          </Typography>
+                          <Typography className="font-normal">
+                            {(maxAngles + minAngles) / 2}
+                          </Typography>
+                        </li>
+                        <li className="flex items-center gap-4 justify-between">
+                          <Typography className="font-normal">ROM</Typography>
+                          <Typography className="font-normal">
+                            {maxAngles - minAngles}
+                          </Typography>
+                        </li>
+                      </ul>
+                    </CardBody>
+                    <CardFooter className="pt-4 w-full">
+                      <div className="w-full flex gap-3">
+                        <Typography className="font-bold">Note:</Typography>
+                        <Typography>Angles in degrees</Typography>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                )}
+
+                {(screenWidth < 1242 ? isrenderscreen : !isrenderscreen) && (
+                  <Card color="gray" variant="gradient" className="w-full px-6">
+                    <div
+                      className={`grid grid-rows-3 gap-2 ${
+                        screenWidth >= 1205
+                          ? "grid-cols-5"
+                          : screenWidth < 1205 && screenWidth >= 845
+                          ? "grid-cols-3"
+                          : screenWidth < 845 && screenWidth >= 595
+                          ? "grid-cols-2"
+                          : "grid-cols-1"
+                      }`}
+                    >
+                      {/* Merged cell spanning 2 rows in the 1st column */}
+                      <div className="col-span-1 row-span-2 flex justify-center items-center">
+                        <CardHeader
+                          floated={false}
+                          shadow={false}
+                          color="transparent"
+                          className="mx-auto rounded-none border-b border-white/10 pb-2 mt-0 text-center"
+                        >
+                          <Typography
+                            variant="h1"
+                            color="white"
+                            className={` flex justify-center gap-1 font-normal ${
+                              screenWidth >= 845 ? "text-7xl" : "text-6xl"
+                            }`}
+                          >
+                            <ClockIcon
+                              className={`${
+                                screenWidth >= 845 ? "w-7 h-7" : "w-6 h-6"
+                              }`}
+                            />
+                            120
+                            <p
+                              className={`flex items-end ${
+                                screenWidth >= 845 ? "text-lg" : "text-base"
+                              }`}
+                            >
+                              sec
+                            </p>
+                          </Typography>
+                        </CardHeader>
+                        {/* Card Body and Footer content goes here */}
+                      </div>
+
+                      {/* Columns 2 to 5 for CardBody content */}
+                      {/* {info.map((data, index) => (
+                        <div key={index} className="col-span-1">
+
+                          <CardBody>
+                            <ul className="flex flex-col">
+                              <li className="flex justify-between items-center w-full">
+                                <Typography className="font-normal text-base sm:text-lg">
+                                  {data.key}
+                                </Typography>
+
+                                <Typography className="font-normal text-base sm:text-lg">
+                                  {data.value}
+                                </Typography>
+                              </li>
+                            </ul>
+                          </CardBody>
+                        </div>
+                      ))} */}
+
+                      {/* Centered CardFooter in the 3rd row */}
+                      <div className="col-span-1 row-span-1 flex items-center justify-center">
+                        <CardFooter>
+                          <div className="flex gap-3">
+                            <Typography className="font-bold text-base sm:text-lg">
+                              Note:
+                            </Typography>
+                            <Typography className="text-base sm:text-lg">
+                              Angles in degrees
+                            </Typography>
+                          </div>
+                        </CardFooter>
                       </div>
                     </div>
-                    <div style={{ display: "none" }}>
-                      <label>End Date:</label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={handleEndDateChange}
-                      />
-                    </div>
-                    <div style={{ display: "none" }}>
-                      <label>Start Time:</label>
-                      <input
-                        type="text"
-                        value={startTime}
-                        onChange={handleStartTimeChange}
-                      />
-                    </div>
-                    <div style={{ display: "none" }}>
-                      <label>End Time:</label>
-                      <input
-                        type="text"
-                        value={endTime}
-                        onChange={handleEndTimeChange}
-                      />
-                    </div>
-                    <div>
-                      <button
-                        className={`
-      w-full h-12 text-xl p-4 py-2 mt-[-6rem]
-      bg-gradient-to-r from-purple-500 to-blue-500
-      hover:from-purple-600 hover:to-blue-600
-      text-white font-bold mx-auto rounded-2xl
-      border-2 border-white
-      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-      transform hover:scale-105 transition-transform duration-300 ease-in-out
-    `}
-                        type="submit"
-                      >
-                        Delete Chart
-                      </button>
-                    </div>
-                  </form>
-                </center>
-              </div>
-              <br></br>
-              {prevAngle !== null && currentAngle !== null && (
-                <div className="flex justify-center mt-4">
-                  <div className="mr-4">
-                    <strong>Previous Angle:</strong> {prevAngle.toFixed(2)}°
-                  </div>
-                  <div>
-                    <strong>Current Angle:</strong> {currentAngle.toFixed(2)}°
-                  </div>
-                </div>
-              )}
-              <div className="flex justify-center mt-4">
-                <div className="mr-4">
-                  <strong>Minimum Angle:</strong> {minAngle.toFixed(2)}°
-                </div>
-                <div>
-                  <strong>Maximum Angle:</strong> {maxAngle.toFixed(2)}°
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center space-x-4 mb-4">
-                  <span className="text-gray-600 bold">
-                    <h1>Status:</h1>
-                  </span>
-                  <label
-                    className={`relative inline-block w-10 h-6 ${
-                      isActive ? "bg-blue-500" : "bg-gray-300"
-                    } rounded-full cursor-pointer transition-all duration-300`}
-                  >
-                    <input
-                      type="checkbox"
-                      className="opacity-0 w-0 h-0"
-                      checked={isActive}
-                      onChange={handleToggle}
-                    />
-                    <span
-                      className={`absolute left-0 inline-block w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
-                        isActive ? "translate-x-full" : ""
-                      }`}
-                    ></span>
-                  </label>
-                  <span className="text-sm" id="statusText">
-                    <h1>{isActive ? "Active" : "Passive"}</h1>
-                  </span>
-                </div>
-                <h2>
-                  <b>Cycle Information:</b>
-                </h2>
-                <p>
-                  <b>Flexion Cycles: {flexionCycles}</b>
-                </p>
-                <p>
-                  <b>Extension Cycles: {extensionCycles}</b>
-                </p>
-                <p>
-                  <b>Total Cycles: {totalCycles}</b>
-                </p>
-                <p>
-                  <b>Flexion Velocities: {jointFlexionVelocityValue}</b>
-                </p>
-                <p>
-                  <b>Extension Velocities: {jointExtensionVelocityValue}</b>
-                </p>
+                  </Card>
+                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
-      {/* <Live/> */}
-      <center>
         {!isPlaying && (
-          <>
-            <button
-              className={`
-        w-half h-12 text-xl p-4 py-2 mt-[-6rem]
-        bg-gradient-to-r from-purple-500 to-blue-500
-        hover:from-purple-600 hover:to-blue-600
-        text-white font-bold mx-auto rounded-2xl
-        border-2 border-white
-        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-        transform hover:scale-105 transition-transform duration-300 ease-in-out
-      `}
-              onClick={() => {
-                handleButtonClick();
-                setIsChartButtonClicked(true);
-              }}
-              disabled={!isStopButtonClicked}
-            >
-              {isChartButtonClicked ? "Chart Shown" : "Show Chart"}
-            </button>
-
-            {isChartVisible && (
-              <div className="w-[800px] h-[400px]">
-                <br></br>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={sdata.labels.map((label, index) => ({
-                      name: label,
-                      [sdata.datasets[0].name]: sdata.datasets[0].data[index],
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey={sdata.datasets[0].name}
-                      stroke="aqua"
-                      fill="aqua"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-                <div className="text-center">
-                  <input
-                    type="range"
-                    min="0"
-                    max={initialData.labels.length - 6}
-                    value={progressbar}
-                    onChange={handleProgressChange}
-                  />
-                </div>
+          <div className="w-full">
+            {highlightArray.length > 0 && (
+              <div
+                style={{
+                  overflowX: "auto",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                }}
+                className="py-2 gap-4 ml-4"
+              >
+                {generateCards()}
               </div>
             )}
-          </>
+          </div>
         )}
-      </center>
+      </div>
+      {/* <div style={{ display: 'none' }}> */}
+      <div style={{ display: "none" }}>
+        <Page size="A4" style={styles.page} ref={componentRef}>
+          {highlightArray.map(
+            (data, index) =>
+              index >= 1 && (
+                <View key={index} style={styles.graphContainer}>
+                  <Text style={styles.graphTitle}>Graph ${index}</Text>
+                  <View style={styles.graphView}>
+                    <LineChart
+                      width={460}
+                      height={250}
+                      data={data}
+                      margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                    >
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="val" stroke="#8884d8" />
+                    </LineChart>
+                  </View>
+                  <br></br>
+                  <div className="border-black">
+                    {generateContentforPdf(index - 1)}
+                  </div>
+                </View>
+              )
+          )}
+        </Page>
+      </div>
+
+      {/* </div> */}
     </>
   );
 };

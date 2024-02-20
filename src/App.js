@@ -6,6 +6,10 @@ import { useEffect, useState } from "react";
 import Diagno from "./Componenets/Diagno.jsx";
 import Live from "./Componenets/Live.jsx";
 import Test from "./Componenets/Test.jsx"
+import Profilebar from "./Introduction/Profilebar.jsx";
+import Finalreport from "./Introduction/Finalreport.jsx";
+import Profile from "./Componenets/patient/Profile.jsx";
+import VideoCall from "./Componenets/patient/VideoCall.js"
 
 function App() {
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));
@@ -18,6 +22,10 @@ function App() {
       <Route element={<Home />} path="/home" />
       <Route element={<Login />} path="/login" />
       <Route element={<Diagno />} path="/diagnostics" />
+      <Route element={<Profile />} path="/profile" />
+      <Route element={<Profilebar />} path="/introduction" />
+      <Route element={<Finalreport />} path="/finalreport" />
+      <Route element={<VideoCall />} path="/videocall" />
       {/* <Route element={<Live />} path="/live" /> */}
     </Routes>
   );
