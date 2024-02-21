@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Loading from "../Assets/loading.json"
+import Loading from "../assets/loading.json"
 import Lottie from 'react-lottie-player'
 import Typewriter from 'typewriter-effect';
 

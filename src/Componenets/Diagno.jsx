@@ -48,6 +48,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import CycleInfo from "./Cycleinfo";
+import Flashscreen from "../additionals/Flashscreen";
 
 // import Profilebar from
 
@@ -1621,23 +1622,25 @@ const Diagno = () => {
     pullupsArray?.length > 0 &&
     leghipArray?.length > 0;
 
-    const handleCompleteSubmit = () => {
-      // Call the function to update exercise data only if data is valid
-      if (isExerciseDataValid) {
-        updateExerciseData();
-        // Add any other logic for the button click event as needed
-      }
-    };
+  const [showFlashscreen, setShowFlashscreen] = useState(false);
+
+  const handleCompleteSubmit = () => {
+    // Call the function to update exercise data only if data is valid
+    if (isExerciseDataValid) {
+      updateExerciseData();
+      // Add any other logic for the button click event as needed
+    }
+  };
 
   const updateExerciseData = async () => {
     const exerciseData = {
-      running: {values: runningArray, pain: [], rom: 90},
-      pushups: {values: pushupsArray, pain: [], rom: 0},
-      squats: {values: squatsArray, pain: [], rom: 0},
-      pullups: {values: pullupsArray, pain: [], rom: 0},
-      LegHipRotation: {values: leghipArray, pain: [], rom: 0},
+      running: { values: runningArray, pain: [], rom: 90 },
+      pushups: { values: pushupsArray, pain: [], rom: 0 },
+      squats: { values: squatsArray, pain: [], rom: 0 },
+      pullups: { values: pullupsArray, pain: [], rom: 0 },
+      LegHipRotation: { values: leghipArray, pain: [], rom: 0 },
     };
-    const new_flag=-1
+    const new_flag = -1;
     try {
       const response = await fetch(
         `http://127.0.0.1:8000/update-exercise-info/${patient_id}/${new_flag}`,
@@ -1653,7 +1656,13 @@ const Diagno = () => {
       if (response.ok) {
         console.log("Exercise data updated successfully");
 
-        navigate("/finalreport")
+        setShowFlashscreen(true); // Display the Flashscreen component
+
+        setTimeout(() => {
+          setShowFlashscreen(false); // Hide the Flashscreen component after 5 seconds
+          // Navigate to the finalreport page here if needed
+          navigate("/finalreport");
+        }, 7000);
         // Handle success as needed
       } else {
         console.error("Failed to update exercise data");
@@ -1670,15 +1679,19 @@ const Diagno = () => {
       <div>
         <Profilebar />
         <div className="flex items-center">
-          <Progresstimeline onStepClick={handleExerciseSelection} />
-          <button
-            className="ml-4 mt-4 bg-gray-500 text-white px-4 py-2 rounded-md mr-[20rem]"
-            onClick={handleCompleteSubmit}
-            disabled={!isExerciseDataValid}
-
-          >
-            Submit
-          </button>
+          {!showFlashscreen && (
+            <Progresstimeline onStepClick={handleExerciseSelection} />
+          )}
+          {showFlashscreen && <Flashscreen />}
+          {!showFlashscreen && (
+            <button
+              className="ml-4 mt-4 bg-gray-500 text-white px-4 py-2 rounded-md mr-[20rem]"
+              onClick={handleCompleteSubmit}
+              disabled={!isExerciseDataValid}
+            >
+              Submit
+            </button>
+          )}
         </div>
 
         <div

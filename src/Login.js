@@ -67,6 +67,7 @@ const Login = () => {
     await fetch("http://127.0.0.1:8000/login?" + data, options)
       .then((res) => res.json())
       .then((data) => {
+        console.log(data)
         if (data == null) {
           setStatus(<h3 className="text-[#bf2f2f]">Invalid Credentials</h3>);
         } else {

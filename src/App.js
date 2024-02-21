@@ -10,6 +10,7 @@ import Profilebar from "./Introduction/Profilebar.jsx";
 import Finalreport from "./Introduction/Finalreport.jsx";
 import Profile from "./Componenets/patient/Profile.jsx";
 import VideoCall from "./Componenets/patient/VideoCall.js"
+import Flashscreen from "./additionals/Flashscreen.jsx";
 
 function App() {
   const [status, setStatus] = useState(localStorage.getItem("isLoggedIn"));
@@ -26,6 +27,7 @@ function App() {
       <Route element={<Profilebar />} path="/introduction" />
       <Route element={<Finalreport />} path="/finalreport" />
       <Route element={<VideoCall />} path="/videocall" />
+      {/* <Route element={<Flashscreen />} path="/flashscreen" /> */}
       {/* <Route element={<Live />} path="/live" /> */}
     </Routes>
   );

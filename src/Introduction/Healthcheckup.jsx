@@ -17,12 +17,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 
 const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
-  const [selectedRange, setSelectedRange] = useState(null);
   const [isView,setIsview]=useState(false);
-
-  const handleButtonClick = (range) => {
-    setSelectedRange(range);
-  };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -61,22 +56,27 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
   const [weight, setweight] = useState("");
   const [bmi, setbmi] = useState(null);
 
-  const handleheight = (event) => {
-    setheight(event.target.value);
-    handlebmi();
+  const handleHeightChange = (e) => {
+    const newHeight = e.target.value;
+    setheight(newHeight);
+    calculateBMI(newHeight, weight);
+    console.log('Height:', newHeight);
   };
-  const handleweight = (event) => {
-    setweight(event.target.value);
-    handlebmi();
+
+  const handleWeightChange = (e) => {
+    const newWeight = e.target.value;
+    setweight(newWeight);
+    calculateBMI(height, newWeight);
+    console.log('Weight:', newWeight);
   };
-  const handlebmi = () => {
+
+  const calculateBMI = (height, weight) => {
+    // Convert height to meters
     const heightInMeters = height / 100;
-    const bmiValue = weight / (heightInMeters * heightInMeters);
-    if ((height === 0 || height === '') || (weight === '0' || weight === '')) {
-      setbmi("NA");
-    } else {
-      setbmi(bmiValue.toFixed(2));
-    }
+    // Calculate BMI
+    const newBMI = (weight / (heightInMeters * heightInMeters)).toFixed(2);
+    setbmi(newBMI);
+    console.log('BMI:', newBMI);
   };
 
   const onNextClickHandler = () => {
@@ -86,8 +86,10 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
     // Call the original onNextClick handler
 
     onDataSubmit({
-      selectedRange,
       selectedDate: selectedDate.format("DD/MM/YYYY"),
+      height: height,
+      weight: weight,
+      bmi: bmi
     });
 
     onNextClick();
@@ -95,37 +97,35 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
 
   return (
     <Card className={`w-full  flex-col ${screenWidth<835?"h-full pb-4 mb-8":"h-[32rem] p-0"}`}>
-      <Typography variant="h4" color="blue-gray" className={` py-2 ${screenWidth<970?"w-full ":"mr-auto pl-12 "}`}>
+      <Typography variant="h4" color="blue-gray" className={`py-2 ${screenWidth < 970 ? "w-full" : "mr-auto pl-12"}`}>
         Update your height and weight from your recent report
       </Typography>
-      <CardBody className={`flex flex-row px-5 pt-2 pb-0 ${screenWidth<835?"flex-col w-full h-full justify-center":""}`}>
-        <div className={`${screenWidth<835?"w-full":"w-1/2"}`}>
+      <CardBody className={`flex flex-row px-5 pt-2 pb-0 ${screenWidth < 835 ? "flex-col w-full h-full justify-center" : ""}`}>
+        <div className={`${screenWidth < 835 ? "w-full" : "w-1/2"}`}>
           <Typography
             color="blue-gray"
-            className={`text-start text-lg font-medium mb-6 px-8 ${screenWidth<350?"w-full text-center":""}`}
+            className={`text-start text-lg font-medium mb-6 px-8 ${screenWidth < 350 ? "w-full text-center" : ""}`}
           >
             Choose your height and weight
           </Typography>
-          <div className={`flex flex-col w-full gap-6 ${screenWidth<350?"px-2":"px-8"}`}>
-          <input
+          <div className={`flex flex-col w-full gap-6 ${screenWidth < 350 ? "px-2" : "px-8"}`}>
+            <input
               type="number"
               placeholder="height in cm"
-              className={`w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold`}
+              className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold"
               value={height}
-              onChange={handleheight}
+              onChange={handleHeightChange}
             />
 
             <input
               type="number"
               placeholder="weight in Kg"
-              className={`w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold`}
+              className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold"
               value={weight}
-              onChange={handleweight}
+              onChange={handleWeightChange}
             />
 
-            <div
-              className={`w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold`}
-            >
+            <div className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold">
               Your BMI : {bmi}
             </div>
           </div>

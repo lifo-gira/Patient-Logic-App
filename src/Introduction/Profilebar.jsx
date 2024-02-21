@@ -31,15 +31,14 @@ import ChatbotComponent from "./ChatbotComponent";
 const Profilebar = () => {
   var storedData = localStorage.getItem("user");
 
-// Parse the stored data from JSON
-var parsedData = JSON.parse(storedData);
-console.log(parsedData)
-// Access the user_id property
-var userId = parsedData.user_id;
-var patient_id = parsedData._id;
+  // Parse the stored data from JSON
+  var parsedData = JSON.parse(storedData);
+  console.log(parsedData);
+  // Access the user_id property
+  var userId = parsedData.user_id;
+  var patient_id = parsedData._id;
 
-// Now, userId contains the value of the user_id property
-
+  // Now, userId contains the value of the user_id property
 
   const profileMenuItems = [
     {
@@ -154,10 +153,25 @@ var patient_id = parsedData._id;
   };
 
   // Callback function to update healthCheckup in the profileData state
+  // Callback function to update healthCheckup in the profileData state
   const handleHealthCheckup = (data) => {
-    setProfileData((prevData) => ({ ...prevData, healthCheckup: data }));
-  };
+    setHealthCheckupData(data); // Store health checkup data locally if needed
 
+    // Extract height, weight, and BMI from the received data
+    const { Height, Weight, BMI, ...healthCheckup } = data;
+
+    // Update profileData state with health checkup details including height, weight, and BMI
+    setProfileData((prevData) => ({
+      ...prevData,
+      healthCheckup: {
+        ...healthCheckup,
+        Height: Height,
+        Weight: Weight,
+        BMI: BMI,
+      },
+    }));
+  };
+  console.log(healthCheckupData);
   // Callback function to update reports in the profileData state
   const handleReports = (data) => {
     setProfileData((prevData) => ({ ...prevData, reports: data }));
@@ -183,63 +197,68 @@ var patient_id = parsedData._id;
   }, [profileData, navigate]);
 
   const sendDataToFastAPI = async () => {
+    console.log(profileData.healthCheckup.bmi,"height")
     try {
-        const response = await fetch("http://127.0.0.1:8000/patient-info/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
+      const response = await fetch("http://127.0.0.1:8000/patient-info/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          patient_id: patient_id,
+          doctor_id: "",
+          profession: "",
+          PersonalDetails: {
+            categories: profileData.categories,
+            healthcheckup: profileData.healthCheckup,
+            PatientDetails: profileData.patientDetails,
+            Reports: profileData.reports,
+            Height: profileData.healthCheckup.height, // Assuming height is stored in healthCheckup
+            Weight: profileData.healthCheckup.weight, // Assuming weight is stored in healthCheckup
+            BMI: profileData.healthCheckup.bmi,
+            Age: 22,
+          },
+          Exercises: {
+            running: {
+              values: [5.0, 6.0, 7.0],
+              pain: ["None", "Minimal", "Moderate"],
+              rom: 90,
             },
-            body: JSON.stringify({
-                user_id: userId,
-                patient_id: patient_id,
-                doctor_id: "",
-                profession: "",
-                PersonalDetails: {
-                    categories: profileData.categories,
-                    healthcheckup: profileData.healthCheckup,
-                    PatientDetails: profileData.patientDetails,
-                    Reports: profileData.reports,
-                    Height: 175,
-                    Weight: 70,
-                    BMI: 23,
-                    Age: 22,
-                },
-                Exercises: {
-                    running: {values: [5.0, 6.0, 7.0], pain: ["None", "Minimal", "Moderate"], rom: 90},
-                    pushups: {values: [], pain: [], rom: 0},
-                    squats: {values: [], pain: [], rom: 0},
-                    pullups: {values: [], pain: [], rom: 0},
-                    LegHipRotation: {values: [], pain: [], rom: 0},
-                },
-                exercises_given: {
-                    running: {rep: 10, set: 3},
-                    pushups: {rep: 12, set: 3},
-                    squats: {rep: 15, set: 3},
-                    pullups: {rep: 8, set: 3},
-                },
-                health_tracker: {
-                    exercise_tracker: true,
-                    meeting_link: "https://example.com/meeting",
-                    schedule_start_date: "2024-02-10",
-                    schedule_end_date: "2024-03-10",
-                },
-                PDF: "path/to/patient_file.pdf",
-                doctor_assigned: "DoctorName",
-                flag: -2,
-            }),
-        });
+            pushups: { values: [], pain: [], rom: 0 },
+            squats: { values: [], pain: [], rom: 0 },
+            pullups: { values: [], pain: [], rom: 0 },
+            LegHipRotation: { values: [], pain: [], rom: 0 },
+          },
+          exercises_given: {
+            running: { rep: 10, set: 3 },
+            pushups: { rep: 12, set: 3 },
+            squats: { rep: 15, set: 3 },
+            pullups: { rep: 8, set: 3 },
+          },
+          health_tracker: {
+            exercise_tracker: true,
+            meeting_link: "https://example.com/meeting",
+            schedule_start_date: "2024-02-10",
+            schedule_end_date: "2024-03-10",
+          },
+          PDF: "path/to/patient_file.pdf",
+          doctor_assigned: "DoctorName",
+          flag: -2,
+        }),
+      });
 
-        // Handle response here if needed
-        if (response.ok) {
-                const result = await response.json();
-                console.log(result);
-              } else {
-                console.error("Failed to send data to FastAPI");
-              }
-            } catch (error) {
-              console.error("Error during data submission:", error);
-            }
-};
+      // Handle response here if needed
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);
+      } else {
+        console.error("Failed to send data to FastAPI");
+      }
+    } catch (error) {
+      console.error("Error during data submission:", error);
+    }
+  };
 
   // const sendDataToFastAPI = async () => {
   //   try {
