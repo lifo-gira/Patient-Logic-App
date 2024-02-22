@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import {
   Card,
   Typography,
@@ -34,6 +34,7 @@ import {
   PlayIcon,
   ArrowPathIcon,
   ArrowDownTrayIcon,
+  PaperAirplaneIcon,
 } from "@heroicons/react/24/solid";
 import {
   BarChart,
@@ -59,10 +60,14 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import html2canvas from "html2canvas";
 import { html2pdf } from "html2pdf.js";
 import RecordRTC from "recordrtc";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import AWS from "./awsConfig";
 import { useNavigate } from "react-router-dom";
 import { MathUtils } from "three";
 import { ClockIcon } from "@mui/x-date-pickers";
+import ModelRender from "./ModelRender";
 
 const Exercise = ({ onBack }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
@@ -98,7 +103,9 @@ const Exercise = ({ onBack }) => {
   useEffect(() => {
     const fetchPatientInfo = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/patient-info/${patient_id}`);
+        const response = await fetch(
+          `http://127.0.0.1:8000/patient-info/${patient_id}`
+        );
         if (!response.ok) {
           if (response.status === 404) {
             setError("Patient not found.");
@@ -109,10 +116,12 @@ const Exercise = ({ onBack }) => {
           const data = await response.json();
           // Extracting exercise names from the given data
           const exercises = Object.keys(data.exercises_given);
-          const updatedExer = exercises.map(exercise => ({
+          const updatedExer = exercises.map((exercise) => ({
             name: exercise,
-            rep: data.exercises_given[exercise].set * data.exercises_given[exercise].rep || 0,
-            img: null // Assuming img is not provided in the API response
+            rep:
+              data.exercises_given[exercise].set *
+                data.exercises_given[exercise].rep || 0,
+            img: null, // Assuming img is not provided in the API response
           }));
           setExer(updatedExer);
         }
@@ -154,7 +163,7 @@ const Exercise = ({ onBack }) => {
   const [isdisplay, setisdisplay] = useState(false);
   const [rep, setrep] = useState(0);
   const [exerc, setexerc] = useState("Exercise");
-  
+
   const exercise = Array.from(
     { length: rep },
     (_, index) => `Milestone ${index}`
@@ -266,6 +275,7 @@ const Exercise = ({ onBack }) => {
     // Call the second function
   }
   const [legValue, setlegValue] = useState([]);
+  const [rotationX, setRotationX] = useState(0);
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
 
@@ -273,8 +283,8 @@ const Exercise = ({ onBack }) => {
       // console.log(metricArray,"metric")
       const metricItem = metricArray[counter - 1];
       const legvalue = parseFloat(metricItem.val);
-      const rotationY = legvalue * (Math.PI / 180);
-      setTargetRotation([rotationY, 0, 0]);
+      // const rotation = legvalue;
+      setRotationX(legvalue);
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
         return {
           index: newIndex,
@@ -808,7 +818,7 @@ const Exercise = ({ onBack }) => {
     // console.log(jointExtensionVelocityValue, "jointExtensionVelocityValue");
     // console.log(jointFlexionVelocityValue, "jointFlexionVelocityValue");
 
-    setTargetRotation([0, 0, 0]);
+    setRotationX(0);
     const endDateTime = new Date();
     setEndDate(endDateTime.toLocaleDateString()); // Update endDate
     setEndTime(formatTime(endDateTime)); // Update endTime
@@ -1700,14 +1710,14 @@ const Exercise = ({ onBack }) => {
     setpushupsArray(pushupsArray);
     setpullupsArray(pullupsArray);
     setleghipArray(leghipArray);
-    console.log(runningArray,"runningArray")
-    console.log(squatsArray,"squatsArray")
-    console.log(pushupsArray,"pushupsArray")
-    console.log(pullupsArray,"pullupsArray")
-    console.log(leghipArray,"leghipArray")
+    console.log(runningArray, "runningArray");
+    console.log(squatsArray, "squatsArray");
+    console.log(pushupsArray, "pushupsArray");
+    console.log(pullupsArray, "pullupsArray");
+    console.log(leghipArray, "leghipArray");
   }, [runningArray, squatsArray, pushupsArray, pullupsArray, leghipArray]);
 
-  const [grapharray,setgrapharray] = useState([])
+  const [grapharray, setgrapharray] = useState([]);
 
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
@@ -1715,7 +1725,7 @@ const Exercise = ({ onBack }) => {
     console.log(simple, "simple");
     console.log(highlightArray);
     // Update the respective state array based on the chosen exercise
-    setgrapharray(simple)
+    setgrapharray(simple);
     switch (chosenExercise) {
       case "running":
         setrunningArray(simple);
@@ -1745,34 +1755,57 @@ const Exercise = ({ onBack }) => {
     pullupsArray?.length > 0 &&
     leghipArray?.length > 0;
 
+  const handledisplay = (count, exe, flag) => {
+    loadModel(exe);
+    setrep(count);
+    setexerc(exe);
+    setisdisplay(flag);
+    console.log(exe, "exerc");
+    console.log(grapharray);
+    switch (exe) {
+      case "running":
+        setrunningArray(runningArray);
+        break;
+      case "squats":
+        setsquatsArray(squatsArray);
+        break;
+      case "pushups":
+        setpushupsArray(pushupsArray);
+        break;
+      case "pullups":
+        setpullupsArray(pullupsArray);
+        break;
+      case "leghip":
+        setleghipArray(leghipArray);
+        break;
+      default:
+        break;
+    }
+    setuseExercise(exe);
+  };
 
-    const handledisplay = (count, exe, flag) => {
-      setrep(count);
-      setexerc(exe);
-      setisdisplay(flag);
-      console.log(exe,"exerc")
-      console.log(grapharray)
-      switch (exe) {
-        case "running":
-          setrunningArray(runningArray);
-          break;
-        case "squats":
-          setsquatsArray(squatsArray);
-          break;
-        case "pushups":
-          setpushupsArray(pushupsArray);
-          break;
-        case "pullups":
-          setpullupsArray(pullupsArray);
-          break;
-        case "leghip":
-          setleghipArray(leghipArray);
-          break;
-        default:
-          break;
-      }
-      setuseExercise(exe);
+  const loadModel = async (exe) => {
+    const s3 = new AWS.S3();
+    console.log(s3, "Model");
+    const params = {
+      Bucket: "blenderbuck",
+      Key: exe+".glb", // Replace with your actual model file name
     };
+
+    try {
+      console.log("Inside fetch");
+      const data = await s3.getObject(params).promise();
+      const loader = new GLTFLoader();
+      const glbData = await loader.loadAsync(
+        URL.createObjectURL(new Blob([data.Body]))
+      );
+      console.log("Parsed GLB Data:", glbData); // Log parsed data
+      // setModel(glbData.scene);
+      setGlbData(URL.createObjectURL(new Blob([data.Body])));
+    } catch (error) {
+      console.error("Error fetching or parsing model:", error);
+    }
+  };
 
   const handleCompleteSubmit = () => {
     // Call the function to update exercise data only if data is valid
@@ -1805,7 +1838,7 @@ const Exercise = ({ onBack }) => {
 
       if (response.ok) {
         console.log("Exercise data updated successfully");
-        toast.success("Report sent to Doctor")
+        toast.success("Report sent to Doctor");
         // Handle success as needed
       } else {
         console.error("Failed to update exercise data");
@@ -1817,17 +1850,47 @@ const Exercise = ({ onBack }) => {
     }
   };
 
+  // AWS CODE
+
+  const [glbData, setGlbData] = useState(null);
+
+  // useEffect(() => {
+  //   const loadModel = async () => {
+  //     const s3 = new AWS.S3();
+  //     console.log(s3, "Model");
+  //     const params = {
+  //       Bucket: "blenderbuck",
+  //       Key: "ProneModelsLegMechanic.glb", // Replace with your actual model file name
+  //     };
+
+  //     try {
+  //       console.log("Inside fetch");
+  //       const data = await s3.getObject(params).promise();
+  //       const loader = new GLTFLoader();
+  //       const glbData = await loader.loadAsync(
+  //         URL.createObjectURL(new Blob([data.Body]))
+  //       );
+  //       console.log("Parsed GLB Data:", glbData); // Log parsed data
+  //       // setModel(glbData.scene);
+  //       setGlbData(URL.createObjectURL(new Blob([data.Body])));
+  //     } catch (error) {
+  //       console.error("Error fetching or parsing model:", error);
+  //     }
+  //   };
+  //   loadModel();
+  // }, []);
+
   return (
     <div
-      className={`w-full h-full bg-gradient-to-r from-blue-gray-500 to-blue-gray-800 ${
-        screenWidth < 1105 ? "flex flex-col gap-4 pt-4" : "flex flex-col gap-2"
+      className={`w-full h-full bg-gradient-to-r from-darkblue to-navyblue ${
+        screenWidth < 1105 ? "flex flex-col gap-4 pt-4" : "flex flex-col gap-4"
       }`}
     >
       <div
         className={` w-full   ${
           screenWidth < 1105
             ? "flex flex-col h-full gap-4"
-            : "flex flex-row h-3/5"
+            : "flex flex-row h-3/5 gap-4 px-2"
         }`}
       >
         <div
@@ -1887,61 +1950,63 @@ const Exercise = ({ onBack }) => {
               </Select>
             </div> */}
           </div>
-          <div
-            className={`w-full h-5/6 py-4 rounded-3xl overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
-              backdropFilter: "blur(20px)",
-              borderRadius: "1rem",
-              border: "1px solid rgba(255, 255, 255, 0.18)",
-              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-            }}
-          >
-            {exer.map((item, index) => (
-              <div className={`w-full h-20 flex flex-row py-2`} key={index}>
-                <div
-                  className={`w-1/6 h-full flex items-center justify-center`}
-                >
-                  <Typography
-                    variant="h4"
-                    color="white"
-                    className="flex text-start px-5"
+          <div className="w-full h-5/6 rounded-3xl pl-6">
+            <div
+              className={`w-full h-full py-4 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                backdropFilter: "blur(20px)",
+                borderRadius: "1rem",
+                border: "1px solid rgba(255, 255, 255, 0.18)",
+                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+              }}
+            >
+              {exer.map((item, index) => (
+                <div className={`w-full h-20 flex flex-row py-2`} key={index}>
+                  <div
+                    className={`w-1/6 h-full flex items-center justify-center`}
                   >
-                    {index + 1}
-                  </Typography>
-                </div>
-                <div className={`w-4/6 h-full  flex flex-row`}>
-                  <div className={`w-1/2 h-full `}>
-                    <img src="" alt="" className={`w-full h-full px-4`} />
-                  </div>
-                  <div className={`w-1/2 h-full  flex flex-col`}>
                     <Typography
-                      variant="h6"
+                      variant="h4"
                       color="white"
-                      className="flex text-start w-full h-1/2 items-center"
+                      className="flex text-start px-5"
                     >
-                      {item.name}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      color="white"
-                      className="flex text-start w-full h-1/2 items-center"
-                    >
-                      Set - {item.rep}
+                      {index + 1}
                     </Typography>
                   </div>
+                  <div className={`w-4/6 h-full  flex flex-row`}>
+                    <div className={`w-1/2 h-full `}>
+                      <img src="" alt="" className={`w-full h-full px-4`} />
+                    </div>
+                    <div className={`w-1/2 h-full  flex flex-col`}>
+                      <Typography
+                        variant="h6"
+                        color="white"
+                        className="flex text-start w-full h-1/2 items-center"
+                      >
+                        {item.name}
+                      </Typography>
+                      <Typography
+                        variant="h6"
+                        color="white"
+                        className="flex text-start w-full h-1/2 items-center"
+                      >
+                        Set - {item.rep}
+                      </Typography>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-1/6 h-full  flex justify-center items-center`}
+                  >
+                    <PlayCircleIcon
+                      color="white"
+                      className={`w-9 h-9 cursor-pointer`}
+                      onClick={() => handledisplay(item.rep, item.name, true)}
+                    />
+                  </div>
                 </div>
-                <div
-                  className={`w-1/6 h-full  flex justify-center items-center`}
-                >
-                  <PlayCircleIcon
-                    color="white"
-                    className={`w-9 h-9 cursor-pointer`}
-                    onClick={() => handledisplay(item.rep, item.name, true)}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
         {isdisplay && (
@@ -1959,73 +2024,103 @@ const Exercise = ({ onBack }) => {
                 {exerc}
               </Typography>
             </div>
-
-            <div
-              className={`w-full h-5/6 `}
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(20px)",
-                borderRadius: "1rem",
-                border: "1px solid rgba(255, 255, 255, 0.18)",
-                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-              }}
-            >
-              <div className={`w-full h-full rounded-3x felx flex-col`}>
-                <div className={`w-full h-1/6 `}>
-                  <div className="flex items-center flex-wrap w-full h-full px-4">
-                    {exercise.map((milestone, step) => (
-                      <React.Fragment key={step}>
-                        {step > 0 && (
-                          <div className="flex-1 h-[3.5px] bg-gray-300">
+            <div className="w-full h-5/6 pr-6">
+              <div
+                className={`w-full h-full `}
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  backdropFilter: "blur(20px)",
+                  borderRadius: "1rem",
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                }}
+              >
+                <div className={`w-full h-full rounded-3x felx flex-col`}>
+                  <div className={`w-full h-1/6 `}>
+                    <div className="flex items-center flex-wrap w-full h-full px-4">
+                      {exercise.map((milestone, step) => (
+                        <React.Fragment key={step}>
+                          {step > 0 && (
+                            <div className="flex-1 h-[3.5px] bg-gray-300">
+                              <div
+                                className={`h-full bg-black transition-all rounded-full ${
+                                  activeStep > step
+                                    ? "bg-green-500"
+                                    : "bg-red-300"
+                                }`}
+                                style={{
+                                  width: "100%",
+                                  transitionDuration: "0.3s",
+                                }}
+                              />
+                            </div>
+                          )}
+                          <div key={step} className="relative group">
                             <div
-                              className={`h-full bg-black transition-all rounded-full ${
+                              className={`h-6 w-10 flex items-center justify-center rounded-full border-2 cursor-pointer transform transition-all bg-black ring-0 ring-gray-600 hover:ring-[6px] group-focus:ring-4 ring-opacity-20 duration-200 shadow-md ${
                                 activeStep > step
-                                  ? "bg-green-500"
-                                  : "bg-red-300"
+                                  ? "border-green-500 bg-green-500 text-black font-bold"
+                                  : "border-red-500 bg-red-500"
                               }`}
                               style={{
-                                width: "100%",
-                                transitionDuration: "0.3s",
+                                fontSize: "10px",
+                                margin: "0px",
+                                clipPath:
+                                  "polygon(50% 0%, 80% 50%, 50% 100%, 20% 50%)",
                               }}
+                            >
+                              {step}
+                            </div>
+                          </div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={`w-full h-5/6`}>
+                    <div className="w-full h-full">
+                      <Canvas
+                        camera={{
+                          position: [-45, 0, -5],
+                          fov: 2,
+                          near: 10,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <ModelRender
+                              rotat={rotationX}
+                              model={glbData}
+                              position={[2, 0, 0]}
+                              scale={1}
+                              rotation={[0, -0.2, 0]}
                             />
-                          </div>
-                        )}
-                        <div key={step} className="relative group">
-                          <div
-                            className={`h-6 w-10 flex items-center justify-center rounded-full border-2 cursor-pointer transform transition-all bg-black ring-0 ring-gray-600 hover:ring-[6px] group-focus:ring-4 ring-opacity-20 duration-200 shadow-md ${
-                              activeStep > step
-                                ? "border-green-500 bg-green-500 text-black font-bold"
-                                : "border-red-500 bg-red-500"
-                            }`}
-                            style={{
-                              fontSize: "10px",
-                              margin: "0px",
-                              clipPath:
-                                "polygon(50% 0%, 80% 50%, 50% 100%, 20% 50%)",
-                            }}
-                          >
-                            {step}
-                          </div>
-                        </div>
-                      </React.Fragment>
-                    ))}
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                          <OrbitControls />
+                        </Suspense>
+                      </Canvas>
+                    </div>
                   </div>
                 </div>
-                <div className={`w-full h-5/6`}></div>
               </div>
             </div>
           </div>
         )}
       </div>
       <div
-        className={` w-full   gap-2 py-2 px-2 ${
+        className={` w-full gap-6 pt-2 pb-4 px-2 ${
           screenWidth < 900 ? "h-full flex flex-col" : "h-2/5 flex flex-row"
         }`}
       >
+        <div className={`  rounded-2xl ${
+            screenWidth < 900 ? "w-full h-60" : "w-1/6 pl-8 h-full"
+          }`}>
         <div
-          className={`  rounded-2xl ${
-            screenWidth < 900 ? "w-full h-60" : "w-2/6 h-full"
-          }`}
+          className={`w-full h-full`}
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.15)",
             backdropFilter: "blur(20px)",
@@ -2034,8 +2129,8 @@ const Exercise = ({ onBack }) => {
             boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
           }}
         >
-          <div className="flex justify-center items-center pt-10">
-            <div className="w-1/3 pl-5 flex justify-start items-end">
+          <div className="w-full h-full flex flex-col justify-center items-start">
+            <div className="w-full h-1/3 flex justify-center flex-row gap-6">
               <button
                 className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
                 onClick={handlePlayPauseClick}
@@ -2046,9 +2141,6 @@ const Exercise = ({ onBack }) => {
                   <PlayIcon className="h-[4rem] w-[4rem]" />
                 )}
               </button>
-            </div>
-
-            <div className="w-1/3 flex-col">
               <div className="flex justify-center items-center">
                 {!isPlaying && (
                   <div className="w-full flex justify-center items-center gap-1">
@@ -2085,7 +2177,7 @@ const Exercise = ({ onBack }) => {
                     isPlaying={isPlaying}
                     duration={selectedMinute * 60 + selectedSecond} // 2 minutes
                     colors={[["#ffffff"]]}
-                    size={130}
+                    size={100}
                     strokeWidth={8}
                     onComplete={() => {
                       setIsPlaying(false);
@@ -2094,7 +2186,7 @@ const Exercise = ({ onBack }) => {
                     }}
                   >
                     {({ remainingTime }) => (
-                      <div className="font-semibold text-base">
+                      <div className="font-semibold text-lg">
                         {`${Math.floor(remainingTime / 60)
                           .toString()
                           .padStart(2, "0")}:${(remainingTime % 60)
@@ -2105,8 +2197,11 @@ const Exercise = ({ onBack }) => {
                   </CountdownCircleTimer>
                 )}
               </div>
+            </div>
+
+            <div className="w-full h-1/3 flex-col flex justify-center items-center">
               <div className="flex justify-center items-center">
-                <div className="w-1/3 pr-3 flex justify-end gap-12">
+                <div className="w-full flex justify-end gap-12">
                   <button
                     className=" text-black font-bold  rounded-full"
                     onClick={() => {
@@ -2117,9 +2212,10 @@ const Exercise = ({ onBack }) => {
                       setSelectedMinute("");
                       setSelectedSecond("");
                       setKey((prevKey) => prevKey + 1);
+                      setRotationX(0);
                     }}
                   >
-                    <ArrowPathIcon className="h-6 w-6  inline" />
+                    <ArrowPathIcon className="h-12 w-12  inline" />
                   </button>
 
                   <button
@@ -2127,17 +2223,19 @@ const Exercise = ({ onBack }) => {
                     onClick={handleDownload}
                     disabled={isPlaying}
                   >
-                    <ArrowDownTrayIcon className="h-6 w-6  inline" />
+                    <ArrowDownTrayIcon className="h-12 w-12  inline" />
                   </button>
-
-                  <button onClick={updateExerciseData}>Update Exercise Data</button>
                 </div>
               </div>
             </div>
+            <div className="w-full h-1/3 flex flex-col items-center justify-center">
+              <button className="text-2xl font-semibold flex flex-row gap-8" onClick={updateExerciseData}>Submit <PaperAirplaneIcon className="w-8 h-8"/></button>
+            </div>
           </div>
         </div>
+        </div>
         <div
-          className={`  ${screenWidth < 900 ? "w-full h-60" : "w-3/6 h-full"}`}
+          className={`  ${screenWidth < 900 ? "w-full h-60" : "w-4/6 h-full"}`}
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.15)",
             backdropFilter: "blur(20px)",
@@ -2218,7 +2316,7 @@ const Exercise = ({ onBack }) => {
                       ticks={[1, 20, 40, 60, 80, 100, 120]}
                     />
                   </XAxis>
-                  <YAxis axisLine={false}  tick={{ fill: "white" }}>
+                  <YAxis axisLine={false} tick={{ fill: "white" }}>
                     <Label
                       angle={-90}
                       value="Angle"
@@ -2237,8 +2335,9 @@ const Exercise = ({ onBack }) => {
             </div>
           </div>
         </div>
+        <div className={` ${screenWidth < 900 ? "w-full  h-60" : "w-2/6 pr-8  h-full"}`}>
         <div
-          className={` ${screenWidth < 900 ? "w-full  h-60" : "w-2/6  h-full"}`}
+          className={`w-full h-full`}
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.15)",
             backdropFilter: "blur(20px)",
@@ -2247,7 +2346,7 @@ const Exercise = ({ onBack }) => {
             boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
           }}
         >
-          <Card color="transparent" className="w-full px-6">
+          <Card color="transparent" className="w-full h-full px-10">
             <CardHeader
               floated={false}
               shadow={false}
@@ -2332,6 +2431,7 @@ const Exercise = ({ onBack }) => {
               </div>
             </CardFooter> */}
           </Card>
+        </div>
         </div>
       </div>
     </div>

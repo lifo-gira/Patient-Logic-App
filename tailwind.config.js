@@ -7,7 +7,10 @@ export default withMT({
   theme: {
     extend: {colors:{
       pixelf:'#7f35f8',
-      pixele:'#ff0cf5'
+      pixele:'#ff0cf5',
+      darkblue:'#4D75C9',
+      navyblue:'#292F3C',
+      blackblue:'#22262F'
   },
   keyframes: {
     blink: {

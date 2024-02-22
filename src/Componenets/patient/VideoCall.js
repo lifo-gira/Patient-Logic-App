@@ -4,14 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useState } from "react";
 
-var storedData = localStorage.getItem("user");
-// Parse the stored data from JSON
-var parsedData = JSON.parse(storedData);
-
-// Access the user_id property
-var userId = parsedData._id;
-var userName = parsedData.user_id;
-
 // function randomID(len) {
 //     let result = '';
 //     if (result) return result;
@@ -32,6 +24,13 @@ export function getUrlParams(url = window.location.href) {
 }
 
 export default function VideoCall() {
+  var storedData = localStorage.getItem("user");
+// Parse the stored data from JSON
+var parsedData = JSON.parse(storedData);
+
+// Access the user_id property
+var userId = parsedData._id;
+var userName = parsedData.user_id;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documentId, setdocumentId] = useState([]);
@@ -66,7 +65,7 @@ export default function VideoCall() {
   }, [documentId]);
 
   const navigate = useNavigate();
-  const roomID = getUrlParams().get("roomID") || documentId;
+  const roomID = getUrlParams().get("roomID") || "documentId";
 
   let myMeeting = async (element) => {
     // generate Kit Token
@@ -75,9 +74,9 @@ export default function VideoCall() {
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
-      documentId,
-      userId,
-      userName
+      "documentId",
+      "12345",
+      "test123"
     );
 
     // Create instance object from Kit Token.
