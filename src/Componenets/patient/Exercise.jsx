@@ -114,16 +114,11 @@ const Exercise = ({ onBack }) => {
             throw new Error("Error fetching patient information.");
           }
         } else {
-          const data = await response.json();
+          const datas = await response.json();
           // Extracting exercise names from the given data
-          const exercises = Object.keys(data.exercises_given);
-          const updatedExer = exercises.map((exercise) => ({
-            name: exercise,
-            rep:
-              data.exercises_given[exercise].set *
-                data.exercises_given[exercise].rep || 0,
-            img: null, // Assuming img is not provided in the API response
-          }));
+          const exercises = datas.exercises_given
+          const updatedExer = exercises.data
+          console.log(updatedExer)
           setExer(updatedExer);
         }
         setLoading(false);
@@ -2044,7 +2039,7 @@ const Exercise = ({ onBack }) => {
               >
                 <div className={`w-full h-full rounded-3x felx flex-col`}>
                   <div className={`w-full h-1/6 `}>
-                    <div className="flex items-center flex-wrap w-full h-full px-4">
+                    {/* <div className="flex items-center flex-wrap w-full h-full px-4">
                       {exercise.map((milestone, step) => (
                         <React.Fragment key={step}>
                           {step > 0 && (
@@ -2081,7 +2076,7 @@ const Exercise = ({ onBack }) => {
                           </div>
                         </React.Fragment>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                   <div className={`w-full h-5/6`}>
                     <div className="w-full h-full">
