@@ -64,7 +64,7 @@ const Login = () => {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     };
-    await fetch("http://127.0.0.1:8000/login?" + data, options)
+    await fetch("https://api-backup-vap2.onrender.com/login?" + data, options)
       .then((res) => res.json())
       .then((data) => {
         console.log(data)
@@ -96,7 +96,7 @@ const Login = () => {
     const fetchPatient = async (patient_id) => {
       console.log(patient_id)
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/check_patient/${patient_id}`);
+            const response = await axios.get(`https://api-backup-vap2.onrender.com/check_patient/${patient_id}`);
             const val = response.data
             if(val==false){
               navigate("/introduction");
@@ -111,7 +111,7 @@ const Login = () => {
     const fetchFlag = async (patient_id) => {
       console.log(patient_id)
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/get_flags/${patient_id}`);
+            const response = await axios.get(`https://api-backup-vap2.onrender.com/get_flags/${patient_id}`);
             const val = response.data
             if(val.flags==(-2)){
               navigate("/diagnostics");

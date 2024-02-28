@@ -44,7 +44,7 @@ const Finalreport = () => {
 
   // Access the user_id property
   var userId = parsedData._id;
-  console.log(userId)
+  console.log(userId);
   const data = [
     {
       name: "18-24",
@@ -170,11 +170,10 @@ const Finalreport = () => {
     setOpen(itemNumber);
   };
 
-  const [runningData, setRunningData] = useState([]);
-  const [squatsData, setsquatsData] = useState([]);
-  const [pushupsData, setpushupsData] = useState([]);
-  const [pullupsData, setpullupsData] = useState([]);
-  const [leghipData, setleghipData] = useState([]);
+  const [exerciseData, setExerciseData] = useState({});
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
+  // const [userId, setUserId] = useState(""); // Assuming you have userId state variable
 
   useEffect(() => {
     const fetchPatientInfo = async () => {
@@ -185,21 +184,18 @@ const Finalreport = () => {
         const data = await response.json();
 
         if (response.ok) {
-          setPatientInfo(data);
-          console.log(data)
-          // Extract only the "Running" data
-          const runningExerciseData = data?.Exercises?.running.values || [];
-          const squatsExerciseData = data?.Exercises?.squats.values || [];
-          const pushupsExerciseData = data?.Exercises?.pushups.values || [];
-          const pullupsExerciseData = data?.Exercises?.pullups.values || [];
-          const leghipExerciseData = data?.Exercises?.LegHipRotation.values || [];
-          setRunningData(runningExerciseData.map((value) => parseFloat(value)));
-          setsquatsData(squatsExerciseData.map((value) => parseFloat(value)));
-          setpushupsData(pushupsExerciseData.map((value) => parseFloat(value)));
-          setpullupsData(pullupsExerciseData.map((value) => parseFloat(value)));
-          setleghipData(leghipExerciseData.map((value) => parseFloat(value)));
+          console.log("Fetched patient information:", data.Exercises);
+
+          // Extract exercise names and values
+          const parsedExerciseData = data.Exercises.data.map((exercise) => ({
+            name: exercise.name,
+            values: exercise.values.map((value) => parseFloat(value)),
+          }));
+
+          console.log("Parsed exercise data:", parsedExerciseData);
+          setExerciseData(parsedExerciseData);
         } else {
-          setError(data.detail || "Failed to fetch patient information");
+          setError(data?.detail || "Failed to fetch patient information");
         }
       } catch (error) {
         setError("Error fetching patient information");
@@ -211,19 +207,30 @@ const Finalreport = () => {
     fetchPatientInfo();
   }, [userId]);
 
-  useEffect(() => {
-    console.log(patientInfo);
-  }, [patientInfo]);
+  // Generate formatted data with each index containing an object of exercise values
+  const formattedData = Object.values(exerciseData).flatMap((exercise) =>
+    exercise.values.map((value, index) => ({
+      index: index,
+      [exercise.name]: value,
+    }))
+  );
 
-  const combinedChartData = runningData.map((value, index) => ({
-    name: ` ${index + 1}`,
-    Running: value,
-    Squats: squatsData[index],
-    Pushups: pushupsData[index],
-    Pullups: pullupsData[index],
-    LegHipRotation: leghipData[index],
+  // Group the points by index
+  const groupedData = formattedData.reduce((grouped, item) => {
+    const { index, ...rest } = item;
+    if (!grouped[index]) {
+      grouped[index] = {};
+    }
+    Object.assign(grouped[index], rest);
+    return grouped;
+  }, {});
+
+  // Convert grouped data back to an array of objects
+  const finalData = Object.entries(groupedData).map(([index, values]) => ({
+    index: parseInt(index), // Convert index back to integer if needed
+    ...values,
   }));
-
+  console.log(finalData);
   return (
     <div
       className={`w-full flex flex-row ${
@@ -598,40 +605,28 @@ const Finalreport = () => {
                     <LineChart
                       width={500}
                       height={300}
-                      data={combinedChartData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
+                      data={finalData}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
+                      <XAxis dataKey="index" />
                       <YAxis />
                       <Tooltip />
                       <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="Running"
-                        stroke="#82ca9d"
-                      />
-                      <Line type="monotone" dataKey="Squats" stroke="#8884d8" />
-                      <Line
-                        type="monotone"
-                        dataKey="Pushups"
-                        stroke="#ff7300"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="Pullups"
-                        stroke="#0088aa"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="LegHipRotation"
-                        stroke="#FF0000"
-                      />
+                      {/* Conditional rendering of Line components */}
+                      {finalData.length > 0 &&
+                        Object.keys(finalData[0])
+                          .filter((key) => key !== "index") // Exclude the 'index' key
+                          .map((exerciseName, index) => (
+                            <Line
+                              key={index}
+                              type="monotone"
+                              dataKey={exerciseName}
+                              stroke={`#${Math.floor(
+                                Math.random() * 16777215
+                              ).toString(16)}`}
+                            />
+                          ))}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

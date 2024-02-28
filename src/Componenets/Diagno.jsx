@@ -270,33 +270,33 @@ const Diagno = () => {
   }, [metrics]);
 
   const chartRef = useRef(null);
-  const cardRef = useRef(null);
+  // const cardRef = useRef(null);
   const [imageSrc, setImageSrc] = useState(null);
-  const [CardImage, setCardImage] = useState(null);
+  // const [CardImage, setCardImage] = useState(null);
   const [ComponentImage, setComponentImage] = useState(null);
 
   const downloadAsPdf = async () => {
     try {
       const chartContainer = chartRef.current;
-      const cardContainer = cardRef.current;
+      // const cardContainer = cardRef.current;
       const componentContainer = componentRef.current;
 
       const canvas = await html2canvas(chartContainer, {
         scale: 2,
       });
 
-      const Cardcanvas = await html2canvas(cardContainer, {
-        scale: 2,
-      });
+      // const Cardcanvas = await html2canvas(cardContainer, {
+      //   scale: 2,
+      // });
 
       const componentcanvas = await html2canvas(componentContainer, {
         scale: 2,
       });
       const imgData = canvas.toDataURL("image/jpeg");
-      const imgCard = Cardcanvas.toDataURL("image/jpeg");
+      // const imgCard = Cardcanvas.toDataURL("image/jpeg");
       const imgComponent = componentcanvas.toDataURL("image/jpeg");
       setImageSrc(imgData);
-      setCardImage(imgCard);
+      // setCardImage(imgCard);
       setComponentImage(imgComponent);
       // const pdf = new jsPDF();
       // const imgProps = pdf.getImageProperties(imgData);
@@ -308,13 +308,6 @@ const Diagno = () => {
       // console.error("Error generating PDF:", error);
     }
   };
-
-  useEffect(() => {
-    // Trigger PDF generation when imageSrc is updated
-    if (imageSrc !== null) {
-      handleDownload();
-    }
-  }, [imageSrc]);
 
   // new pdf generation
   const [showNames, setShowNames] = useState(false);
@@ -363,6 +356,13 @@ const Diagno = () => {
 
   const componentRef = useRef();
 
+  useEffect(() => {
+    // Trigger PDF generation when imageSrc is updated
+    if (imageSrc !== null) {
+      handleDownload();
+    }
+  }, [imageSrc]);
+
   const handleDownload = () => {
     try {
       setShowRedLine(false);
@@ -376,6 +376,15 @@ const Diagno = () => {
         <p>Login ID: ${details.loginId}</p>
         <p>Sensor ID: ${details.sensorId}</p>
       `;
+      const totalGraphdetails = `
+        <h1>OverAll Details</h1>
+        <p>Maximum Angle: ${maxAngles}°</p>
+        <p>Minimum Angle: ${minAngles}°</p>
+        <p>Flexion Cycle: ${flexionCycles}</p>
+        <p>Extension Cycle: ${extensionCycles}</p>
+        <p>Velocity: ${(maxAngles + minAngles) / 2}</p>
+        <p>ROM: ${maxAngles - minAngles}</p>
+      `;
       const doctorAssistantDetails = `
         <p>Doctor Name: ${details.doctorName}</p>
         <p>Assistant Name: ${details.assistantName}</p>
@@ -387,7 +396,7 @@ const Diagno = () => {
           ${isActive ? doctorAssistantDetails : ""}
           <br></br>
           <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
-          <img src="${CardImage}" alt="Card Image" style="width: 600px; height: 400px;" />
+          ${totalGraphdetails}
         </div>
       `;
       const content = componentRef.current;
@@ -587,7 +596,7 @@ const Diagno = () => {
     setElapsedTime(-1);
     updateChart();
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`ws://127.0.0.1:8000/ws/${userId}`);
+    const newSocket = new WebSocket(`wss://api-backup-vap2.onrender.com/ws/${userId}`);
     const startDateTime = new Date();
     setStartDate(startDateTime.toLocaleDateString()); // Update startDate
     setStartTime(formatTime(startDateTime)); // Update startTime
@@ -605,7 +614,7 @@ const Diagno = () => {
         const slice = seriesCount.slice(i, i + seriesCount.length);
         setmetricArrayLength(slice);
         stackedMetricsArray.push(...slice);
-        // console.log(stackedMetricsArray, "STACKED");
+        console.log(stackedMetricsArray, "STACKED");
         const mappedSlice = slice.map((val, index) => ({
           index: i + index,
           val: parseFloat(val),
@@ -1121,6 +1130,7 @@ const Diagno = () => {
 
       prevSignChange = change;
     }
+    highlightArray.push([{index: 0, val:0}])
     sethighlightArray(highlightArray);
     // console.log(highlightArray,"highlight")
     // console.log("ObjectElements",ObjectElements)
@@ -1413,9 +1423,9 @@ const Diagno = () => {
 
   const generateCards = () => {
     const cards = [];
-    const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
-    // console.log(highlightArray)
-    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
+    const endIndex = Math.min(startIndex + cardsPerPage, totalCards);   
+    console.log(highlightArray)
+    for (let i = startIndex; i < endIndex -1  && i < totalCards -1  ; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -1566,79 +1576,74 @@ const Diagno = () => {
     );
   };
 
-  const [runningArray, setrunningArray] = useState([]);
-  const [squatsArray, setsquatsArray] = useState([]);
-  const [pushupsArray, setpushupsArray] = useState([]);
-  const [pullupsArray, setpullupsArray] = useState([]);
-  const [leghipArray, setleghipArray] = useState([]);
+  const [diagnoArray, setdiagnoArray] = useState([]);
+  const [tempDiagnoarray, settempDiagnoarray] = useState([]);
 
   const [useExercise, setuseExercise] = useState("");
-
-  useEffect(() => {
-    setrunningArray(runningArray);
-    setsquatsArray(squatsArray);
-    setpushupsArray(pushupsArray);
-    setpullupsArray(pullupsArray);
-    setleghipArray(leghipArray);
-    // console.log(runningArray,"runningArray")
-    // console.log(squatsArray,"squatsArray")
-    // console.log(pushupsArray,"pushupsArray")
-    // console.log(pullupsArray,"pullupsArray")
-    // console.log(leghipArray,"leghipArray")
-  }, [runningArray, squatsArray, pushupsArray, pullupsArray, leghipArray]);
-
+  
+  
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
     setuseExercise(chosenExercise);
     console.log(simple, "simple");
     console.log(highlightArray);
-    // Update the respective state array based on the chosen exercise
-    switch (chosenExercise) {
-      case "Running":
-        setrunningArray(simple);
-        break;
-      case "Squats":
-        setsquatsArray(simple);
-        break;
-      case "PushUps":
-        setpushupsArray(simple);
-        break;
-      case "PullUps":
-        setpullupsArray(simple);
-        break;
-      case "Leg Hip Rotation":
-        setleghipArray(simple);
-        break;
-      default:
-        // Handle other exercises if needed
-        break;
+  
+    if (simple && simple.length > 0) {
+      const exerciseObject = {
+        name: chosenExercise,
+        values: simple
+      };
+  
+      // Remove duplicates from tempDiagnoarray
+      const updatedDiagnoArray = diagnoArray.filter(exercise => exercise.name !== chosenExercise);
+      const updatedTempDiagnoarray = tempDiagnoarray.filter(exercise => exercise.name !== chosenExercise);
+      
+      // Add the new exercise to tempDiagnoarray
+      settempDiagnoarray([...updatedTempDiagnoarray, exerciseObject]);
+      
+      // Update diagnoArray with the updated array
+      setdiagnoArray(updatedDiagnoArray);
     }
   }
+  const [combinedArray, setCombinedArray] = useState([]);
 
-  const isExerciseDataValid =
-    runningArray?.length > 0 &&
-    squatsArray?.length > 0 &&
-    pushupsArray?.length > 0 &&
-    pullupsArray?.length > 0 &&
-    leghipArray?.length > 0;
 
-  const [showFlashscreen, setShowFlashscreen] = useState(false);
+  useEffect(() => {
+    setCombinedArray(combinedArray)
+  }, [combinedArray]);
 
   const handleCompleteSubmit = () => {
-    // Call the function to update exercise data only if data is valid
-    if (isExerciseDataValid) {
-      updateExerciseData();
-      // Add any other logic for the button click event as needed
-    }
+    // Combine the contents of diagnoArray and tempDiagnoarray
+    const combinedArray = [...diagnoArray, ...tempDiagnoarray];
+  
+    // Update diagnoArray with combinedArray
+    setdiagnoArray(combinedArray);
+  
+    // Reset tempDiagnoarray
+    settempDiagnoarray([]);
+  
+    
+    // Store combinedArray in state
+    setCombinedArray(combinedArray);
+    // console.log("diagnarray after submit", combinedArray);
+    updateExerciseData(combinedArray)
   };
-
-  const updateExerciseData = async () => {
+  
+  const [showFlashscreen, setShowFlashscreen] = useState(false);
+  
+  const updateExerciseData = async (combinedArray) => {
+    // console.log("diagnarray after submit",combinedArray)
+    const updatedExercises = combinedArray.map(exercise => ({
+      name: exercise.name,
+      values: exercise.values,
+      pain: [], // Omit pain array as per the existing structure
+      rom: 10 // Omit rom value as per the existing structure
+    }));
+    console.log("updatedExercises",updatedExercises)
+    // Create the exerciseData object with the updated exercises
     const exerciseData = {
-      running: { values: runningArray, pain: [], rom: 90 },
-      pushups: { values: pushupsArray, pain: [], rom: 0 },
-      squats: { values: squatsArray, pain: [], rom: 0 },
-      pullups: { values: pullupsArray, pain: [], rom: 0 },
-      LegHipRotation: { values: leghipArray, pain: [], rom: 0 },
+      data:updatedExercises
+        
     };
     const new_flag = -1;
     try {
@@ -1687,7 +1692,7 @@ const Diagno = () => {
             <button
               className="ml-4 mt-4 bg-gray-500 text-white px-4 py-2 rounded-md mr-[20rem]"
               onClick={handleCompleteSubmit}
-              disabled={!isExerciseDataValid}
+              // disabled={!isExerciseDataValid}
             >
               Submit
             </button>
@@ -2178,7 +2183,7 @@ const Diagno = () => {
             }
           >
             <div className="">
-              <div ref={cardRef}>
+              <div>
                 {(screenWidth >= 1242 ? isrenderscreen : !isrenderscreen) && (
                   <Card
                     color="gray"

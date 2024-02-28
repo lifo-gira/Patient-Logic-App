@@ -66,6 +66,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import AWS from "./awsConfig";
 import { useNavigate } from "react-router-dom";
 import { MathUtils } from "three";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { ClockIcon } from "@mui/x-date-pickers";
 import ModelRender from "./ModelRender";
 
@@ -1789,13 +1790,19 @@ const Exercise = ({ onBack }) => {
     console.log(s3, "Model");
     const params = {
       Bucket: "blenderbuck",
-      Key: exe+".glb", // Replace with your actual model file name
+      Key: exe + ".glb", // Replace with your actual model file name
     };
 
     try {
       console.log("Inside fetch");
       const data = await s3.getObject(params).promise();
       const loader = new GLTFLoader();
+      const dLoader = new DRACOLoader();
+      dLoader.setDecoderPath(
+        "https://www.gstatic.com/draco/versioned/decoders/1.5.7/"
+      );
+      dLoader.setDecoderConfig({ type: "js" });
+      loader.setDRACOLoader(dLoader);
       const glbData = await loader.loadAsync(
         URL.createObjectURL(new Blob([data.Body]))
       );
@@ -2078,7 +2085,7 @@ const Exercise = ({ onBack }) => {
                   </div>
                   <div className={`w-full h-5/6`}>
                     <div className="w-full h-full">
-                      <Canvas
+                      {/* <Canvas
                         camera={{
                           position: [-45, 0, -5],
                           fov: 2,
@@ -2091,7 +2098,7 @@ const Exercise = ({ onBack }) => {
                             <ModelRender
                               rotat={rotationX}
                               model={glbData}
-                              position={[2, 0, 0]}
+                              position={[0  , 0, 0]}
                               scale={1}
                               rotation={[0, -0.2, 0]}
                             />
@@ -2101,6 +2108,32 @@ const Exercise = ({ onBack }) => {
                             intensity={10}
                           />
                           <OrbitControls />
+                        </Suspense>
+                      </Canvas> */}
+                      <Canvas
+                        camera={{
+                          position: [-45, 0, -5], // Adjusted camera position
+                          fov: 2,
+                          near: 0.1,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <>
+                              <ModelRender
+                                rotat={rotationX}
+                                model={glbData}
+                                scale={1}
+                                rotation={[0, -0.2, 0]}
+                              />
+                              <OrbitControls />
+                            </>
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
                         </Suspense>
                       </Canvas>
                     </div>
@@ -2116,123 +2149,130 @@ const Exercise = ({ onBack }) => {
           screenWidth < 900 ? "h-full flex flex-col" : "h-2/5 flex flex-row"
         }`}
       >
-        <div className={`  rounded-2xl ${
-            screenWidth < 900 ? "w-full h-60" : "w-1/6 pl-8 h-full"
-          }`}>
         <div
-          className={`w-full h-full`}
-          style={{
-            backgroundColor: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(20px)",
-            borderRadius: "1rem",
-            border: "1px solid rgba(255, 255, 255, 0.18)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-          }}
+          className={`  rounded-2xl ${
+            screenWidth < 900 ? "w-full h-60" : "w-1/6 pl-8 h-full"
+          }`}
         >
-          <div className="w-full h-full flex flex-col justify-center items-start">
-            <div className="w-full h-1/3 flex justify-center flex-row gap-6">
-              <button
-                className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
-                onClick={handlePlayPauseClick}
-              >
-                {isPlaying ? (
-                  <PauseIcon className="h-[4rem] w-[4rem]" />
-                ) : (
-                  <PlayIcon className="h-[4rem] w-[4rem]" />
-                )}
-              </button>
-              <div className="flex justify-center items-center">
-                {!isPlaying && (
-                  <div className="w-full flex justify-center items-center gap-1">
-                    <div className="flex flex-col items-center">
-                      <input
-                        type="number"
-                        value={selectedMinute}
-                        onChange={handleMinuteChange}
-                        className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
-                        placeholder="00"
-                      />
-                      <span className="w-full text-center text-black font-bold text-[10px]">
-                        minutes
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <input
-                        type="number"
-                        value={selectedSecond}
-                        onChange={handleSecondChange}
-                        className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
-                        placeholder="00"
-                      />
-                      <span className="w-full text-center text-black font-bold text-[10px]">
-                        seconds
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {isPlaying && (
-                  <CountdownCircleTimer
-                    key={key}
-                    isPlaying={isPlaying}
-                    duration={selectedMinute * 60 + selectedSecond} // 2 minutes
-                    colors={[["#ffffff"]]}
-                    size={100}
-                    strokeWidth={8}
-                    onComplete={() => {
-                      setIsPlaying(false);
-                      handleTimerStop();
-                      return [false, 0]; // Stop the timer and reset to 0
-                    }}
-                  >
-                    {({ remainingTime }) => (
-                      <div className="font-semibold text-lg">
-                        {`${Math.floor(remainingTime / 60)
-                          .toString()
-                          .padStart(2, "0")}:${(remainingTime % 60)
-                          .toString()
-                          .padStart(2, "0")}`}
+          <div
+            className={`w-full h-full`}
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(20px)",
+              borderRadius: "1rem",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+            }}
+          >
+            <div className="w-full h-full flex flex-col justify-center items-start">
+              <div className="w-full h-1/3 flex justify-center flex-row gap-6">
+                <button
+                  className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
+                  onClick={handlePlayPauseClick}
+                >
+                  {isPlaying ? (
+                    <PauseIcon className="h-[4rem] w-[4rem]" />
+                  ) : (
+                    <PlayIcon className="h-[4rem] w-[4rem]" />
+                  )}
+                </button>
+                <div className="flex justify-center items-center">
+                  {!isPlaying && (
+                    <div className="w-full flex justify-center items-center gap-1">
+                      <div className="flex flex-col items-center">
+                        <input
+                          type="number"
+                          value={selectedMinute}
+                          onChange={handleMinuteChange}
+                          className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
+                          placeholder="00"
+                        />
+                        <span className="w-full text-center text-black font-bold text-[10px]">
+                          minutes
+                        </span>
                       </div>
-                    )}
-                  </CountdownCircleTimer>
-                )}
-              </div>
-            </div>
+                      <div className="flex flex-col items-center">
+                        <input
+                          type="number"
+                          value={selectedSecond}
+                          onChange={handleSecondChange}
+                          className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
+                          placeholder="00"
+                        />
+                        <span className="w-full text-center text-black font-bold text-[10px]">
+                          seconds
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
-            <div className="w-full h-1/3 flex-col flex justify-center items-center">
-              <div className="flex justify-center items-center">
-                <div className="w-full flex justify-end gap-12">
-                  <button
-                    className=" text-black font-bold  rounded-full"
-                    onClick={() => {
-                      // Add logic for reset action here
-                      setData([]);
-                      setShowRedLine(false);
-                      // generateCards();
-                      setSelectedMinute("");
-                      setSelectedSecond("");
-                      setKey((prevKey) => prevKey + 1);
-                      setRotationX(0);
-                    }}
-                  >
-                    <ArrowPathIcon className="h-12 w-12  inline" />
-                  </button>
-
-                  <button
-                    className=" text-black font-bold  rounded-full"
-                    onClick={handleDownload}
-                    disabled={isPlaying}
-                  >
-                    <ArrowDownTrayIcon className="h-12 w-12  inline" />
-                  </button>
+                  {isPlaying && (
+                    <CountdownCircleTimer
+                      key={key}
+                      isPlaying={isPlaying}
+                      duration={selectedMinute * 60 + selectedSecond} // 2 minutes
+                      colors={[["#ffffff"]]}
+                      size={100}
+                      strokeWidth={8}
+                      onComplete={() => {
+                        setIsPlaying(false);
+                        handleTimerStop();
+                        return [false, 0]; // Stop the timer and reset to 0
+                      }}
+                    >
+                      {({ remainingTime }) => (
+                        <div className="font-semibold text-lg">
+                          {`${Math.floor(remainingTime / 60)
+                            .toString()
+                            .padStart(2, "0")}:${(remainingTime % 60)
+                            .toString()
+                            .padStart(2, "0")}`}
+                        </div>
+                      )}
+                    </CountdownCircleTimer>
+                  )}
                 </div>
               </div>
-            </div>
-            <div className="w-full h-1/3 flex flex-col items-center justify-center">
-              <button className="text-2xl font-semibold flex flex-row gap-8" onClick={updateExerciseData}>Submit <PaperAirplaneIcon className="w-8 h-8"/></button>
+
+              <div className="w-full h-1/3 flex-col flex justify-center items-center">
+                <div className="flex justify-center items-center">
+                  <div className="w-full flex justify-end gap-12">
+                    <button
+                      className=" text-black font-bold  rounded-full"
+                      onClick={() => {
+                        // Add logic for reset action here
+                        setData([]);
+                        setShowRedLine(false);
+                        // generateCards();
+                        setSelectedMinute("");
+                        setSelectedSecond("");
+                        setKey((prevKey) => prevKey + 1);
+                        setRotationX(0);
+                      }}
+                    >
+                      <ArrowPathIcon className="h-12 w-12  inline" />
+                    </button>
+
+                    <button
+                      className=" text-black font-bold  rounded-full"
+                      onClick={handleDownload}
+                      disabled={isPlaying}
+                    >
+                      <ArrowDownTrayIcon className="h-12 w-12  inline" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full h-1/3 flex flex-col items-center justify-center">
+                <button
+                  className="text-2xl font-semibold flex flex-row gap-8"
+                  onClick={updateExerciseData}
+                >
+                  Submit <PaperAirplaneIcon className="w-8 h-8" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
         </div>
         <div
           className={`  ${screenWidth < 900 ? "w-full h-60" : "w-4/6 h-full"}`}
@@ -2335,37 +2375,41 @@ const Exercise = ({ onBack }) => {
             </div>
           </div>
         </div>
-        <div className={` ${screenWidth < 900 ? "w-full  h-60" : "w-2/6 pr-8  h-full"}`}>
         <div
-          className={`w-full h-full`}
-          style={{
-            backgroundColor: "rgba(255, 255, 255, 0.15)",
-            backdropFilter: "blur(20px)",
-            borderRadius: "1rem",
-            border: "1px solid rgba(255, 255, 255, 0.18)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-          }}
+          className={` ${
+            screenWidth < 900 ? "w-full  h-60" : "w-2/6 pr-8  h-full"
+          }`}
         >
-          <Card color="transparent" className="w-full h-full px-10">
-            <CardHeader
-              floated={false}
-              shadow={false}
-              color="transparent"
-              className=" mb-4 rounded-none border-b border-white/10 mt-0 text-center"
-            >
-              <Typography
-                variant="h1"
-                color="white"
-                className="mt-6 flex justify-center gap-1 text-7xl font-normal"
+          <div
+            className={`w-full h-full`}
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(20px)",
+              borderRadius: "1rem",
+              border: "1px solid rgba(255, 255, 255, 0.18)",
+              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+            }}
+          >
+            <Card color="transparent" className="w-full h-full px-10">
+              <CardHeader
+                floated={false}
+                shadow={false}
+                color="transparent"
+                className=" mb-4 rounded-none border-b border-white/10 mt-0 text-center"
               >
-                <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5" />
-                {elapsedTime}
-                <p className="text-lg flex items-end">sec</p>
-              </Typography>
-            </CardHeader>
-            <CardBody className="p-0 text-bg-light" color="transparent">
-              <ul className="flex flex-col gap-3.5">
-                {/* <li className="flex justify-center items-center gap-4">
+                <Typography
+                  variant="h1"
+                  color="white"
+                  className="mt-6 flex justify-center gap-1 text-7xl font-normal"
+                >
+                  <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5" />
+                  {elapsedTime}
+                  <p className="text-lg flex items-end">sec</p>
+                </Typography>
+              </CardHeader>
+              <CardBody className="p-0 text-bg-light" color="transparent">
+                <ul className="flex flex-col gap-3.5">
+                  {/* <li className="flex justify-center items-center gap-4">
                   <Typography className="font-normal text-2xl">
                     {isActive ? "Active" : "Passive"}
                   </Typography>
@@ -2374,64 +2418,64 @@ const Exercise = ({ onBack }) => {
                     {!isLegChecked ? "Left Leg" : "Right Leg"}
                   </Typography>
                 </li> */}
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    Maximum Angle
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {maxAngles}°
-                  </Typography>
-                </li>
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    Minimum Angle
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {minAngles}°
-                  </Typography>
-                </li>
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    Flexion Cycle
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {flexionCycles}
-                  </Typography>
-                </li>
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    Extension Cycle
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {extensionCycles}
-                  </Typography>
-                </li>
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    Velocity
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {(maxAngles + minAngles) / 2}
-                  </Typography>
-                </li>
-                <li className="flex items-center gap-4 justify-between">
-                  <Typography className="font-normal" color="white">
-                    ROM
-                  </Typography>
-                  <Typography className="font-normal" color="white">
-                    {maxAngles - minAngles}
-                  </Typography>
-                </li>
-              </ul>
-            </CardBody>
-            {/* <CardFooter className="pt-1 w-full">
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      Maximum Angle
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {maxAngles}°
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      Minimum Angle
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {minAngles}°
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      Flexion Cycle
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {flexionCycles}
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      Extension Cycle
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {extensionCycles}
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      Velocity
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {(maxAngles + minAngles) / 2}
+                    </Typography>
+                  </li>
+                  <li className="flex items-center gap-4 justify-between">
+                    <Typography className="font-normal" color="white">
+                      ROM
+                    </Typography>
+                    <Typography className="font-normal" color="white">
+                      {maxAngles - minAngles}
+                    </Typography>
+                  </li>
+                </ul>
+              </CardBody>
+              {/* <CardFooter className="pt-1 w-full">
               <div className="w-full flex gap-3">
                 <Typography className="font-bold">Note:</Typography>
                 <Typography>Angles in degrees</Typography>
               </div>
             </CardFooter> */}
-          </Card>
-        </div>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
