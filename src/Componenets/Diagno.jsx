@@ -20,7 +20,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ToastContainer, toast } from "react-toastify";
 import html2canvas from "html2canvas";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import RecordRTC from "recordrtc";
@@ -33,22 +32,40 @@ import Profilebar from "./Profilebar";
 import Progresstimeline from "./Progresstimeline";
 import Maingraph from "./Maingraph";
 import Maingraphinfo from "./Maingraphinfo";
+
+import {
+  Drawer,
+  Button,
+  Typography,
+  IconButton,
+  List,
+  ListItem,
+  ListItemPrefix,
+  ListItemSuffix,
+  Chip,
+  Checkbox,
+} from "@material-tailwind/react";
+
 import {
   PlayIcon,
   PauseIcon,
   ArrowDownTrayIcon,
   ArrowPathIcon,
   ClockIcon,
+  ArrowRightStartOnRectangleIcon,
+  ArrowLongRightIcon,
+  ArrowLongLeftIcon,
 } from "@heroicons/react/24/solid";
 import {
   Card,
   CardBody,
   CardFooter,
   CardHeader,
-  Typography,
 } from "@material-tailwind/react";
 import CycleInfo from "./Cycleinfo";
 import Flashscreen from "../additionals/Flashscreen";
+
+import { ToastContainer, toast } from "react-toastify";
 
 // import Profilebar from
 
@@ -107,10 +124,12 @@ const Diagno = () => {
   const [staticFragment, setstaticFragment] = useState([]);
   const [stackedIndex, setstackedIndex] = useState([]);
   const [isStopButtonClicked, setIsStopButtonClicked] = useState(false);
+
   const handleFromDateTimeChange = (date, time) => {
     setFromDate(date);
     setFromTime(time);
   };
+
   let RunTimer = 0;
   const [highlightCount, sethighlightCount] = useState(0);
   let highlightcounter = 0;
@@ -120,6 +139,7 @@ const Diagno = () => {
     setToDate(date);
     setToTime(time);
   };
+
   const handleTimeChange = (event) => {
     setSelectedTime(event.target.value);
   };
@@ -146,7 +166,9 @@ const Diagno = () => {
 
     // Call the second function
   }
+
   const [legValue, setlegValue] = useState([]);
+
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
 
@@ -579,98 +601,113 @@ const Diagno = () => {
   };
 
   const startTimer = () => {
-    pain.length = 0;
-    setStackedMetricsArray([]);
-    sethighlightCount([]);
-    cycleCount = 1;
-    resetCards();
-    tempRow.length = 0;
-    sethighlightArray([]);
-    setRedLineGraphData([]);
-    // startRecording();
-    setIsStopButtonClicked(false);
-    setIsPlaying(true);
-    setKey((prevKey) => prevKey + 1);
-    setCounter(-1);
-    elapsedTime = -1;
-    setElapsedTime(-1);
-    updateChart();
-    // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`wss://api-backup-vap2.onrender.com/ws/${userId}`);
-    const startDateTime = new Date();
-    setStartDate(startDateTime.toLocaleDateString()); // Update startDate
-    setStartTime(formatTime(startDateTime)); // Update startTime
+    if (selectedItems != "") {
+      setisDisabled(true);
+      pain.length = 0;
+      setStackedMetricsArray([]);
+      sethighlightCount([]);
+      cycleCount = 1;
+      resetCards();
+      tempRow.length = 0;
+      sethighlightArray([]);
+      setRedLineGraphData([]);
+      // startRecording();
+      setIsStopButtonClicked(false);
+      setIsPlaying(true);
+      setKey((prevKey) => prevKey + 1);
+      setCounter(-1);
+      elapsedTime = -1;
+      setElapsedTime(-1);
+      updateChart();
+      // Create a new WebSocket connection when starting the chart
+      const newSocket = new WebSocket(
+        `wss://api-backup-vap2.onrender.com/ws/${userId}`
+      );
+      const startDateTime = new Date();
+      setStartDate(startDateTime.toLocaleDateString()); // Update startDate
+      setStartTime(formatTime(startDateTime)); // Update startTime
 
-    console.log("WebSocket started at:", startDateTime);
-    console.log("Start Date:", startDateTime.toLocaleDateString());
-    console.log("Start Time:", formatTime(startDateTime));
-    newSocket.onmessage = (event) => {
-      // console.log(event, "event");
-      const newData = JSON.parse(event.data);
-      const seriesCount = newData.series;
-      // console.log(seriesCount, "seriesCount");
-      // seriesCount = Updated_data.length
-      for (let i = 0; i < seriesCount.length; i += 20) {
-        const slice = seriesCount.slice(i, i + seriesCount.length);
-        setmetricArrayLength(slice);
-        stackedMetricsArray.push(...slice);
-        console.log(stackedMetricsArray, "STACKED");
-        const mappedSlice = slice.map((val, index) => ({
-          index: i + index,
-          val: parseFloat(val),
-        }));
+      console.log("WebSocket started at:", startDateTime);
+      console.log("Start Date:", startDateTime.toLocaleDateString());
+      console.log("Start Time:", formatTime(startDateTime));
+      newSocket.onmessage = (event) => {
+        // console.log(event, "event");
+        const newData = JSON.parse(event.data);
+        const seriesCount = newData.series;
+        // console.log(seriesCount, "seriesCount");
+        // seriesCount = Updated_data.length
+        for (let i = 0; i < seriesCount.length; i += 20) {
+          const slice = seriesCount.slice(i, i + seriesCount.length);
+          setmetricArrayLength(slice);
+          stackedMetricsArray.push(...slice);
+          console.log(stackedMetricsArray, "STACKED");
+          const mappedSlice = slice.map((val, index) => ({
+            index: i + index,
+            val: parseFloat(val),
+          }));
 
-        // console.log(mappedSlice)
-        metricArray.push(...mappedSlice);
-        // console.log(metricArrayLength, "metrics");
-        // setmetricArray(mappedSlice)
+          // console.log(mappedSlice)
+          metricArray.push(...mappedSlice);
+          // console.log(metricArrayLength, "metrics");
+          // setmetricArray(mappedSlice)
+        }
+
+        // console.log(metricArray);
+        return metricArray;
+      };
+      newSocket.onopen = () => {
+        console.log("Socket open");
+      };
+      newSocket.onclose = (event) => {
+        if (event.wasClean) {
+          setTargetRotation([0, 0, 0]);
+          const newData = stackedMetricsArray[stackedMetricsArray.length - 1];
+          setStackedMetricsArray([...stackedMetricsArray, newData]);
+          staticvalue.push(...stackedMetricsArray);
+          // console.log(staticvalue, "VALUE");
+          console.log(
+            `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
+          );
+          const endDate = new Date();
+          console.log("WebSocket closed at:", endDate);
+        } else {
+          console.error("WebSocket connection abruptly closed");
+        }
+      };
+
+      setSocket(newSocket); // Set the socket state to the new WebSocket instance
+
+      if (!timerRef.current) {
+        timerRef.current = setInterval(updateChart, 1000);
       }
 
-      // console.log(metricArray);
-      return metricArray;
-    };
-    newSocket.onopen = () => {
-      console.log("Socket open");
-    };
-    newSocket.onclose = (event) => {
-      if (event.wasClean) {
-        setTargetRotation([0, 0, 0]);
-        const newData = stackedMetricsArray[stackedMetricsArray.length - 1];
-        setStackedMetricsArray([...stackedMetricsArray, newData]);
-        staticvalue.push(...stackedMetricsArray);
-        // console.log(staticvalue, "VALUE");
-        console.log(
-          `WebSocket connection closed cleanly, code=${event.code}, reason=${event.reason}`
-        );
-        const endDate = new Date();
-        console.log("WebSocket closed at:", endDate);
-      } else {
-        console.error("WebSocket connection abruptly closed");
-      }
-    };
-
-    setSocket(newSocket); // Set the socket state to the new WebSocket instance
-
-    if (!timerRef.current) {
-      timerRef.current = setInterval(updateChart, 1000);
+      // setTimeout(() => {
+      //   setIsPlaying(false)
+      //   setIsTimerRunning(false);
+      //   clearInterval(timerRef.current);
+      //   timerRef.current = undefined;
+      //   setProgress(0);
+      //   if (newSocket) {
+      //     newSocket.close(1000, "Goodbye, WebSocket!");
+      //     setSocket(null);
+      //     setCounter(-1);
+      //     setmetricArray([]);
+      //   }
+      //   setIsStartButtonDisabled(false);
+      // }, 120000); // 120000 milliseconds = 2 minutes
+      flag = 0;
+      setData([]);
+    } else {
+      toast.warning("Select atleast one exercise to proceed", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
-
-    // setTimeout(() => {
-    //   setIsPlaying(false)
-    //   setIsTimerRunning(false);
-    //   clearInterval(timerRef.current);
-    //   timerRef.current = undefined;
-    //   setProgress(0);
-    //   if (newSocket) {
-    //     newSocket.close(1000, "Goodbye, WebSocket!");
-    //     setSocket(null);
-    //     setCounter(-1);
-    //     setmetricArray([]);
-    //   }
-    //   setIsStartButtonDisabled(false);
-    // }, 120000); // 120000 milliseconds = 2 minutes
-    flag = 0;
-    setData([]);
   };
 
   const [jointExtensionVelocity, setjointExtensionVelocity] = useState([]);
@@ -1130,7 +1167,7 @@ const Diagno = () => {
 
       prevSignChange = change;
     }
-    highlightArray.push([{index: 0, val:0}])
+    highlightArray.push([{ index: 0, val: 0 }]);
     sethighlightArray(highlightArray);
     // console.log(highlightArray,"highlight")
     // console.log("ObjectElements",ObjectElements)
@@ -1259,6 +1296,7 @@ const Diagno = () => {
   };
 
   let PlotArray = [];
+
   function GraphPlot(specificArray, size) {
     // console.log("specificArray", specificArray);
     // console.log("size", size);
@@ -1423,9 +1461,9 @@ const Diagno = () => {
 
   const generateCards = () => {
     const cards = [];
-    const endIndex = Math.min(startIndex + cardsPerPage, totalCards);   
-    console.log(highlightArray)
-    for (let i = startIndex; i < endIndex -1  && i < totalCards -1  ; i++) {
+    const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
+    console.log(highlightArray);
+    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -1542,22 +1580,44 @@ const Diagno = () => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
+
   const handleLegCheckboxChange = () => {
     setIsLegChecked(!isLegChecked);
   };
+
   const handleDeviceStatus = () => {
     setIsConnected(!isConnected);
   };
+
   const handlePlayPauseClick = () => {
-    if (selectedMinute * 60 + selectedSecond) {
-      // Toggle the isPlaying state
-      setIsPlaying(!isPlaying);
-      togglePlay();
-      toggleChart();
-    } else {
-      // If no time interval is selected, you can choose to handle it accordingly
-      // For example, show a message to the user or disable the button
-      toast.error("Please select a time interval!");
+    if (selectedItems != "") {
+      if (selectedMinute * 60 + selectedSecond) {
+        // Toggle the isPlaying state
+        setIsPlaying(!isPlaying);
+        togglePlay();
+        toggleChart();
+      } else {
+
+        toast.warning("Please select a time interval!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    }else{
+      toast.warning("Select atleast one exercise to proceed", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
   // const handleTimerStop = () => {
@@ -1570,6 +1630,7 @@ const Diagno = () => {
       parseInt(event.target.value) > 0 ? parseInt(event.target.value) || 0 : ""
     );
   };
+
   const handleSecondChange = (event) => {
     setSelectedSecond(
       parseInt(event.target.value) > 0 ? parseInt(event.target.value) || 0 : ""
@@ -1580,70 +1641,71 @@ const Diagno = () => {
   const [tempDiagnoarray, settempDiagnoarray] = useState([]);
 
   const [useExercise, setuseExercise] = useState("");
-  
-  
+
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
     setuseExercise(chosenExercise);
     console.log(simple, "simple");
     console.log(highlightArray);
-  
+
     if (simple && simple.length > 0) {
       const exerciseObject = {
         name: chosenExercise,
-        values: simple
+        values: simple,
       };
-  
+
       // Remove duplicates from tempDiagnoarray
-      const updatedDiagnoArray = diagnoArray.filter(exercise => exercise.name !== chosenExercise);
-      const updatedTempDiagnoarray = tempDiagnoarray.filter(exercise => exercise.name !== chosenExercise);
-      
+      const updatedDiagnoArray = diagnoArray.filter(
+        (exercise) => exercise.name !== chosenExercise
+      );
+      const updatedTempDiagnoarray = tempDiagnoarray.filter(
+        (exercise) => exercise.name !== chosenExercise
+      );
+
       // Add the new exercise to tempDiagnoarray
       settempDiagnoarray([...updatedTempDiagnoarray, exerciseObject]);
-      
+
       // Update diagnoArray with the updated array
       setdiagnoArray(updatedDiagnoArray);
     }
   }
+
   const [combinedArray, setCombinedArray] = useState([]);
 
-
   useEffect(() => {
-    setCombinedArray(combinedArray)
+    setCombinedArray(combinedArray);
   }, [combinedArray]);
 
   const handleCompleteSubmit = () => {
     // Combine the contents of diagnoArray and tempDiagnoarray
     const combinedArray = [...diagnoArray, ...tempDiagnoarray];
-  
+
     // Update diagnoArray with combinedArray
     setdiagnoArray(combinedArray);
-  
+
     // Reset tempDiagnoarray
     settempDiagnoarray([]);
-  
-    
+
     // Store combinedArray in state
     setCombinedArray(combinedArray);
     // console.log("diagnarray after submit", combinedArray);
-    updateExerciseData(combinedArray)
+    updateExerciseData(combinedArray);
   };
-  
+
   const [showFlashscreen, setShowFlashscreen] = useState(false);
-  
+
   const updateExerciseData = async (combinedArray) => {
     // console.log("diagnarray after submit",combinedArray)
-    const updatedExercises = combinedArray.map(exercise => ({
+    const updatedExercises = combinedArray.map((exercise) => ({
       name: exercise.name,
       values: exercise.values,
       pain: [], // Omit pain array as per the existing structure
-      rom: 10 // Omit rom value as per the existing structure
+      rom: 10, // Omit rom value as per the existing structure
     }));
-    console.log("updatedExercises",updatedExercises)
+    console.log("updatedExercises", updatedExercises);
     // Create the exerciseData object with the updated exercises
     const exerciseData = {
-      data:updatedExercises
-        
+      data: updatedExercises,
     };
     const new_flag = -1;
     try {
@@ -1679,25 +1741,195 @@ const Diagno = () => {
     }
   };
 
+  const [open, setOpen] = React.useState(false);
+  const openDrawer = () => setOpen(true);
+  const closeDrawer = () => setOpen(false);
+  const [isDisabled, setisDisabled] = useState(false);
+
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [errorflag, seterrorflag] = useState(false);
+  const handleItemSelect = (itemName) => {
+    setSelectedItems((prevSelectedItems) => {
+      if (prevSelectedItems.includes(itemName)) {
+        return prevSelectedItems.filter((item) => item !== itemName); // If item is already selected, remove it
+      } else {
+        return [...prevSelectedItems, itemName]; // If item is not selected, add it
+      }
+    });
+  };
+
+  const displayexercise = () => {
+    if (selectedItems != "") {
+      closeDrawer();
+      seterrorflag(false);
+    } else {
+      seterrorflag(true);
+    }
+    console.log("Exercise", selectedItems);
+  };
+
   return (
     <>
+      <Drawer open={open} onClose={closeDrawer} className={`mt-20 rounded-r-lg`}>
+        <div className="mb-2 flex items-center justify-between p-4">
+          <Typography variant="h5" color="blue-gray" className={`font-poppins`}>
+            Exercise Categories
+          </Typography>
+          <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="h-5 w-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </IconButton>
+        </div>
+        <List>
+          <ListItem>
+            <ListItemPrefix className="mr-3">
+              <Checkbox
+                id="Endurance"
+                ripple={false}
+                className="hover:before:opacity-0"
+                containerProps={{
+                  className: "p-0 my-auto",
+                }}
+                color="teal"
+                checked={selectedItems.includes("Endurance")}
+                onChange={() => handleItemSelect("Endurance")}
+              />
+            </ListItemPrefix>
+            <Typography
+              color="blue-gray"
+              className={`font-poppins font-medium`}
+            >
+              Endurance
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <ListItemPrefix className="mr-3">
+              <Checkbox
+                id="Endurance"
+                ripple={false}
+                className="hover:before:opacity-0"
+                containerProps={{
+                  className: "p-0 my-auto",
+                }}
+                color="teal"
+                checked={selectedItems.includes("Strength")}
+                onChange={() => handleItemSelect("Strength")}
+              />
+            </ListItemPrefix>
+            <Typography
+              color="blue-gray"
+              className={`font-poppins font-medium`}
+            >
+              Strength
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <ListItemPrefix className="mr-3">
+              <Checkbox
+                id="Endurance"
+                ripple={false}
+                className="hover:before:opacity-0"
+                containerProps={{
+                  className: "p-0 my-auto",
+                }}
+                color="teal"
+                checked={selectedItems.includes("Flexibility")}
+                onChange={() => handleItemSelect("Flexibility")}
+              />
+            </ListItemPrefix>
+            <Typography
+              color="blue-gray"
+              className={`font-poppins font-medium`}
+            >
+              Flexibility
+            </Typography>
+          </ListItem>
+          <ListItem>
+            <ListItemPrefix className="mr-3">
+              <Checkbox
+                id="Endurance"
+                ripple={false}
+                className="hover:before:opacity-0"
+                containerProps={{
+                  className: "p-0 my-auto",
+                }}
+                color="teal"
+                checked={selectedItems.includes("Balance")}
+                onChange={() => handleItemSelect("Balance")}
+              />
+            </ListItemPrefix>
+            <Typography
+              color="blue-gray"
+              className={`font-poppins font-medium`}
+            >
+              Balance
+            </Typography>
+          </ListItem>
+          {errorflag && (
+            <ListItem className={`p-0`}>
+              <Typography
+                color="blue-gray"
+                className={`font-poppins font-medium text-sm text-red-400`}
+              >
+                *Select atleast one category to proceed
+              </Typography>
+            </ListItem>
+          )}
+        </List>
+        <div className={`w-full flex justify-center items-center`}>
+          <Button
+            className="my-1 font-poppins"
+            size="sm"
+            onClick={displayexercise}
+          >
+            Proceed
+          </Button>
+        </div>
+      </Drawer>
       <div>
         <Profilebar />
-        <div className="flex items-center">
+        <div className="flex flex-row items-center justify-center">
           {!showFlashscreen && (
-            <Progresstimeline onStepClick={handleExerciseSelection} />
+            <div
+              className={`w-1/6 font-poppins text-lg font-semibold text-center items-end flex flex-row justify-center gap-2 cursor-pointer ${
+                isDisabled ? "opacity-50 pointer-events-none" : ""
+              }`}
+              onClick={isDisabled ? null : openDrawer}
+            >
+              <ArrowLongLeftIcon className="w-7 h-7" /> Select Categories
+            </div>
+          )}
+          {!showFlashscreen && (
+            <div className={`w-4/6`}>
+              <Progresstimeline onStepClick={handleExerciseSelection} onExercise={selectedItems}/>
+            </div>
           )}
           {showFlashscreen && <Flashscreen />}
           {!showFlashscreen && (
-            <button
-              className="ml-4 mt-4 bg-gray-500 text-white px-4 py-2 rounded-md mr-[20rem]"
-              onClick={handleCompleteSubmit}
-              // disabled={!isExerciseDataValid}
-            >
-              Submit
-            </button>
+            <div className={`w-1/6 flex justify-center items-center`}>
+              <button
+                className="my-2 bg-gray-500 text-white px-4 py-2 rounded-md"
+                onClick={handleCompleteSubmit}
+                // disabled={!isExerciseDataValid}
+              >
+                Submit
+              </button>
+            </div>
           )}
         </div>
+        <ToastContainer />
 
         <div
           className={

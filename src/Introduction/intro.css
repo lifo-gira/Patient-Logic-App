@@ -1,0 +1,140 @@
+.dropi {
+    position: absolute;
+    height: 100px; /* Updated height */
+    width: 100px; /* Updated width */
+    border-radius: 62% 44% 56% 38%;
+    opacity: 0.8;
+    animation: bounce 2s infinite alternate;
+}
+
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-20px); /* Adjust as needed */
+    }
+}
+
+.dropi::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #2ecc71; /* Medical green */
+    border-radius:  62% 44% 56% 38%;
+    box-shadow: inset -3px 3px 5px #27ae60, inset 1px 3px 5px #27ae60, inset 10px -10px 11px white, inset 20px -20px 22px #27ae60; /* Adjusted shadow values */
+}
+
+.dropi::after {
+    content: "";
+    position: absolute;
+    height: 20px; /* Updated height */
+    width: 20px; /* Updated width */
+    background: #2ecc71; /* Medical green */
+    border-radius:  36% 50% 50% 64%;
+    left: 60%; /* Updated position */
+    top: 50%; /* Updated position */
+    transform: translate(-50%, -50%); /* Centering the pseudo-element */
+    box-shadow: 8px 20px 0 -5px white; /* Adjusted shadow values */
+    opacity: 0.8;
+}
+
+.dropi1 {
+    position: absolute;
+    height: 50px; /* Updated height */
+    width: 50px; /* Updated width */
+    border-radius: 50%; /* Circular shape */
+    opacity: 0.8;
+    animation: bounce1 2s infinite alternate;
+}
+
+.dropi1::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #2ecc71; /* Medical green */
+    border-radius: 50%; /* Circular shape */
+    box-shadow: inset -2px 2px 3px #27ae60, inset 1px 1px 3px #27ae60, inset 5px -5px 5px white, inset 10px -10px 11px #27ae60; /* Adjusted shadow values */
+}
+
+.dropi1::after {
+    content: "";
+    position: absolute;
+    height: 10px; /* Updated height */
+    width: 10px; /* Updated width */
+    background: #2ecc71; /* Medical green */
+    border-radius: 50%; /* Circular shape */
+    left: 50%; /* Updated position */
+    top: 50%; /* Updated position */
+    transform: translate(-50%, -50%); /* Centering the pseudo-element */
+    box-shadow: 4px 10px 0 -2px white; /* Adjusted shadow values */
+    opacity: 0.8;
+}
+
+@keyframes bounce1 {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-10px); /* Adjust as needed */
+    }
+}
+
+.dropi2 {
+    position: absolute;
+    height: 25px; /* Updated height */
+    width: 25px; /* Updated width */
+    border-radius: 50%; /* Circular shape */
+    opacity: 0.8;
+    animation: bounce2 2s infinite alternate;
+}
+
+.dropi2::before {
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #2ecc71; /* Medical green */
+    border-radius: 50%; /* Circular shape */
+    box-shadow: inset -1px 1px 2px #27ae60, inset 0.5px 0.5px 2px #27ae60, inset 2.5px -2.5px 2.5px white, inset 5px -5px 5px #27ae60; /* Adjusted shadow values */
+}
+
+.dropi2::after {
+    content: "";
+    position: absolute;
+    height: 5px; /* Updated height */
+    width: 5px; /* Updated width */
+    background: #2ecc71; /* Medical green */
+    border-radius: 50%; /* Circular shape */
+    left: 50%; /* Updated position */
+    top: 50%; /* Updated position */
+    transform: translate(-50%, -50%); /* Centering the pseudo-element */
+    box-shadow: 2px 5px 0 -1px white; /* Adjusted shadow values */
+    opacity: 0.8;
+}
+
+@keyframes bounce2 {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-5px); /* Adjust as needed */
+    }
+}
+
+.imganim{
+    animation: bounce3 2s infinite alternate;
+}
+
+@keyframes bounce3 {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-5px); /* Adjust as needed */
+    }
+}
+
+

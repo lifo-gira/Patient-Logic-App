@@ -16,8 +16,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 
-const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
-  const [isView,setIsview]=useState(false);
+import { motion } from "framer-motion";
+
+const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit }) => {
+  const [isView, setIsview] = useState(false);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -27,9 +29,9 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
     return date.format("DD/MM/YYYY");
   };
 
-  const handleViewCalenda=()=>{
+  const handleViewCalenda = () => {
     setIsview(!isView);
-  }
+  };
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
 
@@ -60,23 +62,24 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
     const newHeight = e.target.value;
     setheight(newHeight);
     calculateBMI(newHeight, weight);
-    console.log('Height:', newHeight);
+    console.log("Height:", newHeight);
   };
 
   const handleWeightChange = (e) => {
     const newWeight = e.target.value;
     setweight(newWeight);
     calculateBMI(height, newWeight);
-    console.log('Weight:', newWeight);
+    console.log("Weight:", newWeight);
   };
 
   const calculateBMI = (height, weight) => {
-    // Convert height to meters
     const heightInMeters = height / 100;
-    // Calculate BMI
-    const newBMI = (weight / (heightInMeters * heightInMeters)).toFixed(2);
-    setbmi(newBMI);
-    console.log('BMI:', newBMI);
+    const bmiValue = weight / (heightInMeters * heightInMeters);
+    if (height === 0 || height === "" || weight === "0" || weight === "") {
+      setbmi("NA");
+    } else {
+      setbmi(bmiValue.toFixed(2));
+    }
   };
 
   const onNextClickHandler = () => {
@@ -89,83 +92,163 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
       selectedDate: selectedDate.format("DD/MM/YYYY"),
       height: height,
       weight: weight,
-      bmi: bmi
+      bmi: bmi,
     });
 
     onNextClick();
   };
 
+  const textVariants = {
+    hidden: { x: "10%" }, // Initial position off-screen
+    visible: { x: 0, transition: { type: "tween", duration: 0.3 } }, // Sliding animation to the center
+  };
+
+  const botvariant = {
+    hidden: { x: "120%" }, // Initial position off-screen
+    visible: {
+      x: 0,
+      transition: { type: "spring", duration: 1, delay: 0.7, bounce: 0.4 },
+    }, // Sliding animation to the center
+  };
+
+  const botcontentvariant = {
+    hidden: { opacity: 0 }, // Initial opacity set to 0
+    visible: { opacity: 1, transition: { delay: 1.2, duration: 1 } }, // Opacity transition from 0 to 1 with delay
+  };
   return (
-    <Card className={`w-full  flex-col ${screenWidth<835?"h-full pb-4 mb-8":"h-[32rem] p-0"}`}>
-      <Typography variant="h4" color="blue-gray" className={`py-2 ${screenWidth < 970 ? "w-full" : "mr-auto pl-12"}`}>
+    <Card
+      className={`w-full  flex-col ${
+        screenWidth < 835 ? "h-full pb-4 mb-8" : "p-0 pb-4 h-[31.5rem]"
+      } `}
+    >
+      <Typography
+        variant="h4"
+        color="blue-gray"
+        className={` py-2 font-poppins ${
+          screenWidth < 970 ? "w-full " : "mr-auto pl-12 pt-4"
+        }`}
+      >
         Update your height and weight from your recent report
       </Typography>
-      <CardBody className={`flex flex-row px-5 pt-2 pb-0 ${screenWidth < 835 ? "flex-col w-full h-full justify-center" : ""}`}>
+      <CardBody
+        className={`flex flex-row px-5 ${
+          screenWidth < 835 ? "flex-col w-full h-full justify-center" : "h-[30rem] pb-4"
+        }`}
+      >
         <div className={`${screenWidth < 835 ? "w-full" : "w-1/2"}`}>
           <Typography
             color="blue-gray"
-            className={`text-start text-lg font-medium mb-6 px-8 ${screenWidth < 350 ? "w-full text-center" : ""}`}
+            className={`text-start text-lg font-medium font-poppins mb-6 px-8 ${
+              screenWidth < 350 ? "w-full text-center" : "text-center"
+            }`}
           >
             Choose your height and weight
           </Typography>
-          <div className={`flex flex-col w-full gap-6 ${screenWidth < 350 ? "px-2" : "px-8"}`}>
-            <input
-              type="number"
-              placeholder="height in cm"
-              className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold"
-              value={height}
-              onChange={handleHeightChange}
-            />
+          <div
+            className={`flex flex-col w-full gap-6 ${
+              screenWidth < 350 ? "px-2" : "px-8"
+            }`}
+          >
+           <div className={`w-full flex flex-row gap-4`}>
+              <div className={`w-full`}>
+                <input
+                  type="number"
+                  placeholder="00"
+                  className={`w-1/2 h-16 py-2 px-5 rounded-md border-2 border-black  text-start text-lg text-black font-semibold font-poppins`}
+                  value={height}
+                  onChange={handleHeightChange}
+                />
+                <Typography color="blue-gray" className={`font-poppins`}>
+                  Height in cm
+                </Typography>
+              </div>
 
-            <input
-              type="number"
-              placeholder="weight in Kg"
-              className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold"
-              value={weight}
-              onChange={handleWeightChange}
-            />
-
-            <div className="w-full py-2 px-5 rounded-md border border-black text-start text-lg text-black font-semibold">
-              Your BMI : {bmi}
+              <div className={`w-full`}>
+                <input
+                  type="number"
+                  placeholder="00"
+                  className={`w-1/2 h-16 py-2 px-5 rounded-md border-2 border-black  text-start text-lg text-black font-semibold font-poppins`}
+                  value={weight}
+                  onChange={handleWeightChange}
+                />
+                <Typography color="blue-gray" className={`font-poppins`}>
+                  Weight in Kg
+                </Typography>
+              </div>
             </div>
+            
+              <div
+                className={`w-full px-5 rounded-md  text-center text-lg text-black font-semibold font-poppins `}
+              >
+                {bmi != "NA" && bmi != null && (
+                <div className="w-full h-full">
+                Your BMI : {bmi}
+                </div>
+                )}
+              </div>
           </div>
-          <div className={`flex flex-col w-full  gap-4 ${screenWidth<350?"px-2":"px-8"}`}>
+          <div
+            className={`flex flex-col w-full  gap-4 ${
+              screenWidth < 350 ? "px-2" : "px-8"
+            }`}
+          >
             <Typography
               color="blue-gray"
-              className={`text-start  mt-6 ${screenWidth<455?"font-medium text-base":"text-lg font-medium"}`}
+              className={`text-start  mt-6 font-poppins ${
+                screenWidth < 455
+                  ? "font-medium text-base"
+                  : "text-lg font-medium"
+              }`}
             >
               Date of Report (select your report date)
             </Typography>
-            <button
-              className={`w-1/2 py-2 px-5 rounded-md border border-black text-start text-lg flex items-center justify-between ${screenWidth>=880?"w-3/4":screenWidth<880 && screenWidth>=835?"w-3/4":"w-full"}
-            `}
-              aria-placeholder="dd/mm/yyyy"
-              onClick={handleViewCalenda}
+            <motion.div
+              initial="hidden" // Initial animation state
+              animate="visible" // Animation to the center
+              variants={textVariants} // Animation variants
             >
-              {formatDate(selectedDate)}
-              <CalendarDaysIcon className="w-7 h-7" />
-            </button>
+              <button
+                className={`w-1/2 py-2 px-5 rounded-md border border-black text-start text-lg flex items-center justify-between font-poppins ${
+                  screenWidth >= 880
+                    ? "w-3/4"
+                    : screenWidth < 880 && screenWidth >= 835
+                    ? "w-3/4"
+                    : "w-full"
+                }
+            `}
+                aria-placeholder="dd/mm/yyyy"
+                onClick={handleViewCalenda}
+              >
+                {formatDate(selectedDate)}
+                <CalendarDaysIcon className="w-7 h-7" />
+              </button>
+            </motion.div>
           </div>
         </div>
-        <div className={`${screenWidth<835?"w-full mt-8":"w-1/2"}`}>
-          {isView&&
-          <div className="flex justify-center">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DateCalendar", "DateCalendar"]}>
-                <DemoItem>
-                  <DateCalendar
-                    value={selectedDate}
-                    onChange={handleDateChange}
-                  />
-                </DemoItem>
-              </DemoContainer>
-            </LocalizationProvider>
-          </div>}
+        <div className={`${screenWidth < 835 ? "w-full mt-8" : "w-1/2"}`}>
+          {isView && (
+            <div className="flex justify-center">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoContainer components={["DateCalendar", "DateCalendar"]}>
+                  <DemoItem>
+                    <DateCalendar
+                      value={selectedDate}
+                      onChange={handleDateChange}
+                    />
+                  </DemoItem>
+                </DemoContainer>
+              </LocalizationProvider>
+            </div>
+          )}
         </div>
       </CardBody>
-      <div className="flex flex-row h-full w-full">
+      <div className={`flex flex-row w-full justify-center items-center ${screenWidth<835?"h-full":"h-12"}`}>
         <a className="mx-auto my-2">
-          <Button variant="text" className="flex items-center gap-2" onClick={onPrevClick}>
+          <Button
+            variant="text"
+            className="flex items-center gap-2"
+            onClick={onPrevClick}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -184,7 +267,11 @@ const Healthcheckup = ({ onNextClick, onPrevClick, onDataSubmit  }) => {
           </Button>
         </a>
         <a className="mx-auto my-2">
-          <Button variant="text" className="flex items-center gap-2" onClick={onNextClickHandler}>
+          <Button
+            variant="text"
+            className="flex items-center gap-2"
+            onClick={onNextClickHandler}
+          >
             Next
             <svg
               xmlns="http://www.w3.org/2000/svg"

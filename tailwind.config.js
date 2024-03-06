@@ -5,7 +5,11 @@ export default withMT({
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {colors:{
+    extend: {
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+      },
+      colors:{
       pixelf:'#7f35f8',
       pixele:'#ff0cf5',
       darkblue:'#4D75C9',

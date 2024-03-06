@@ -28,7 +28,7 @@ import Categories from "./Categories";
 import { useNavigate } from "react-router-dom";
 import ChatbotComponent from "./ChatbotComponent";
 
-const Profilebar = () => {
+const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
   var storedData = localStorage.getItem("user");
 
   // Parse the stored data from JSON
@@ -121,6 +121,16 @@ const Profilebar = () => {
 
   const handleMenuItemClick = (menuItem) => {
     setActiveMenuItem(menuItem);
+    if(menuItem === 'Health Checkup'){
+      chatbot();
+      chatcont1();
+    }
+    else if(menuItem === 'Reports'){
+      chatbot();
+      chatcont2();
+    }else{
+      dischat();
+    }
   };
   // You can perform additional actions if needed
 
@@ -197,7 +207,7 @@ const Profilebar = () => {
   }, [profileData, navigate]);
 
   const sendDataToFastAPI = async () => {
-    console.log(profileData.healthCheckup.bmi,"height")
+    console.log(profileData.healthCheckup.bmi, "height");
     try {
       const response = await fetch("http://127.0.0.1:8000/patient-info/", {
         method: "POST",
@@ -304,7 +314,7 @@ const Profilebar = () => {
   // };
 
   return (
-    <div>
+    <div className="">
       <Navbar
         variant="gradient"
         color="blue-gray"
@@ -314,33 +324,35 @@ const Profilebar = () => {
           <div className="flex  items-center justify-between  text-white">
             <div className="relative flex w-full md:w-max items-center">
               <button class="relative group rounded-full">
-                <div
-                  className={`relative flex items-center justify-center rounded-full w-[50px] h-[50px] transform transition-all bg-slate-700 ring-0 ring-gray-300 hover:ring-8 focus:ring-4 ring-opacity-30 duration-200 shadow-md ${
-                    isClicked ? "rotate-[45deg]" : ""
-                  }`}
-                  onClick={() => {
-                    handleClick();
-                    openDrawer();
-                  }}
-                >
-                  <div class="flex flex-col justify-between w-[20px] h-[20px] transform transition-all duration-300 ">
-                    <div
-                      className={`bg-white h-[2px] w-1/2 rounded ${
-                        isClicked
-                          ? "rotate-90 h-[1px] origin-right delay-75 translate-y-[1px]"
-                          : ""
-                      }`}
-                    ></div>
-                    <div class="bg-white h-[1px] rounded"></div>
-                    <div
-                      className={`bg-white h-[2px] w-1/2 rounded self-end ${
-                        isClicked
-                          ? "rotate-90 h-[1px] origin-left delay-75 translate-y-[1px]"
-                          : ""
-                      }`}
-                    ></div>
+                {screenWidth < 1350 && (
+                  <div
+                    className={`relative flex items-center justify-center rounded-full w-[50px] h-[50px] transform transition-all bg-slate-700 ring-0 ring-gray-300 hover:ring-8 focus:ring-4 ring-opacity-30 duration-200 shadow-md ${
+                      isClicked ? "rotate-[45deg]" : ""
+                    }`}
+                    onClick={() => {
+                      handleClick();
+                      openDrawer();
+                    }}
+                  >
+                    <div class="flex flex-col justify-between w-[20px] h-[20px] transform transition-all duration-300 ">
+                      <div
+                        className={`bg-white h-[2px] w-1/2 rounded ${
+                          isClicked
+                            ? "rotate-90 h-[1px] origin-right delay-75 translate-y-[1px]"
+                            : ""
+                        }`}
+                      ></div>
+                      <div class="bg-white h-[1px] rounded"></div>
+                      <div
+                        className={`bg-white h-[2px] w-1/2 rounded self-end ${
+                          isClicked
+                            ? "rotate-90 h-[1px] origin-left delay-75 translate-y-[1px]"
+                            : ""
+                        }`}
+                      ></div>
+                    </div>
                   </div>
-                </div>
+                )}
               </button>
               <Typography
                 as="a"
@@ -458,7 +470,7 @@ const Profilebar = () => {
               <div className="ml-auto">
                 <div className="relative flex w-full gap-4 md:w-max">
                   <div>
-                    {!isProfileClickable && <p>Raj Ronald Shaw</p>}
+                    {!isProfileClickable && <p>{userId}</p>}
                     <Menu
                       open={isMenuOpen}
                       handler={setIsMenuOpen}
@@ -525,72 +537,84 @@ const Profilebar = () => {
         )}
 
         <Drawer
-          open={isDrawerOpen}
+          open={screenWidth >= 1350 ? "true" : isDrawerOpen}
           overlay={false}
           className={`
-            ${screenheight > 670 ? "mt-28" : "mt-20"}`}
+            ${screenheight > 670 ? "mt-24" : "mt-20"}`}
         >
           <Card
             color="transparent"
             shadow={false}
-            className={`h-[calc(100vh-2rem)] w-full md:w-1/2 lg:w-1/3 xl:w-1/4  ${
-              screenheight < 670 ? "h-[30rem] pl-8 pr-8" : "py-8 pl-8 pr-8"
+            className={`h-[calc(100vh-2rem)] w-full   ${
+              screenheight < 670 ? "h-[30rem] pl-8 pr-8" : "py-8 ml-auto"
             }`}
           >
-            <List>
+            <List className={`pl-16 rounded-none pr-0`}>
               <ListItem
-                className={`font-base text-xl ${
-                  activeMenuItem === "Introduction" ? "bg-cyan-200" : ""
+                className={`font-base text-xl rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  activeMenuItem === "Introduction"
+                    ? "bg-gradient-to-r from-white to-cyan-200"
+                    : ""
                 }`}
                 onClick={() => handleflag("Introduction")}
               >
                 Introduction
               </ListItem>
               <ListItem
-                className={`font-base text-xl ${
-                  activeMenuItem === "Patient Details" ? "bg-cyan-200" : ""
+                className={`font-base text-xl rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  activeMenuItem === "Patient Details"
+                    ? "bg-gradient-to-r from-white to-cyan-200"
+                    : ""
                 }`}
                 onClick={() => handleflag("Patient Details")}
               >
                 Patient Details
               </ListItem>
               <ListItem
-                className={`font-base text-xl ${
-                  activeMenuItem === "Health Checkup" ? "bg-cyan-200" : ""
+                className={`font-base text-xl rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  activeMenuItem === "Health Checkup"
+                    ? "bg-gradient-to-r from-white to-cyan-200"
+                    : ""
                 }`}
                 onClick={() => handleflag("Health Checkup")}
               >
                 Health Checkup
               </ListItem>
               <ListItem
-                className={`font-base text-xl ${
-                  activeMenuItem === "Reports" ? "bg-cyan-200" : ""
+                className={`font-base text-xl rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  activeMenuItem === "Reports"
+                    ? "bg-gradient-to-r from-white to-cyan-200"
+                    : ""
                 }`}
                 onClick={() => handleflag("Reports")}
               >
                 Reports
               </ListItem>
               <ListItem
-                className={`font-base text-xl ${
-                  activeMenuItem === "Categories" ? "bg-cyan-200" : ""
+                className={`font-base text-xl rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  activeMenuItem === "Categories"
+                    ? "bg-gradient-to-r from-white to-cyan-200"
+                    : ""
                 }`}
                 onClick={() => handleflag("Categories")}
               >
                 Categories
               </ListItem>
-              <ListItem className="font-base text-xl">Output</ListItem>
+              <ListItem className="font-base text-xl rounded-none ">
+                Output
+              </ListItem>
               <hr
                 className={` border-blue-gray-50 ${
                   screenheight < 670 ? "my-2" : "my-14"
                 }`}
               />
-              <ListItem className="font-base text-xl">
+              <ListItem className="font-base text-xl rounded-none ">
                 <ListItemPrefix>
                   <Cog6ToothIcon className="h-5 w-5" />
                 </ListItemPrefix>
                 Setting
               </ListItem>
-              <ListItem className="font-base text-xl">
+              <ListItem className="font-base text-xl rounded-none ">
                 <ListItemPrefix>
                   <PowerIcon className="h-5 w-5" />
                 </ListItemPrefix>
@@ -601,17 +625,18 @@ const Profilebar = () => {
         </Drawer>
       </Navbar>
       <div
-        className={` ml-auto  ${
-          screenWidth >= 1660
-            ? "pr-28 w-3/4 h-full mt-12"
-            : screenWidth < 1349 && activeMenuItem === "Health Checkup"
-            ? "px-4 w-full h-full mt-8"
-            : screenWidth > 1139 && screenWidth < 1660
-            ? "pr-10 w-2/3 h-full mt-12"
-            : screenWidth < 430
-            ? "px-4 w-full h-full mt-8"
-            : "px-8 w-full h-full mt-8"
-        }`}
+        className={`  ${
+          (screenWidth === 1024 && screenheight === 600 && (activeMenuItem === "Health Checkup" || activeMenuItem === "Reports"))?"mx-auto px-4 w-5/6 h-full mt-8 flex justify-center": 
+       screenWidth >= 1350
+         ? "ml-auto  pr-28 w-3/4 h-full mt-10"
+         : screenWidth < 1350 && activeMenuItem
+         ? "mx-auto px-4 w-5/6 h-full mt-8 flex justify-center"
+         : screenWidth > 1139 && screenWidth < 1660
+         ? "pr-10 w-2/3 h-full mt-12"
+         : screenWidth < 430
+         ? "px-4 w-full h-full mt-8"
+         : "px-8 w-full h-full mt-8 ml-auto"
+     }`}
       >
         {activeMenuItem === "Introduction" && (
           <Intro onNextClick={!isClicked ? handleNextClick : null} />
@@ -645,7 +670,7 @@ const Profilebar = () => {
           />
         )}
       </div>
-      <ChatbotComponent />
+      {/* <ChatbotComponent /> */}
     </div>
   );
 };
