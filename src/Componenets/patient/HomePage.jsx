@@ -25,6 +25,7 @@ import {
   AdjustmentsHorizontalIcon,
   DocumentIcon,
   ChatBubbleLeftRightIcon,
+  StopCircleIcon,
 } from "@heroicons/react/24/solid";
 import {
   BarChart,
@@ -43,14 +44,15 @@ import {
   Line,
 } from "recharts";
 
-const RoundedBar = (props) => {
-  const { fill, x, y, width, height } = props;
+const CustomBar = (props) => {
+  const { x, y, width, height, fill } = props;
+  const radius = 5; // Set the radius for the rounded corner
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} fill={fill} rx={14} />
+      <path d={`M${x},${y} L${x + width - radius},${y} Q${x + width},${y} ${x + width},${y + radius} L${x + width},${y + height - radius} Q${x + width},${y + height} ${x + width - radius},${y + height} L${x},${y + height} L${x},${y}`} fill={fill} />
     </g>
   );
-};
+}
 
 const HomePage = () => {
   var storedData = localStorage.getItem("user");
@@ -85,43 +87,43 @@ const HomePage = () => {
 
   const data2 = [
     {
-      name: "Page A",
+      name: "JAN",
       uv: 4000,
       pv: 2400,
       amt: 2400,
     },
     {
-      name: "Page B",
+      name: "FEB",
       uv: 3000,
       pv: 1398,
       amt: 2210,
     },
     {
-      name: "Page C",
+      name: "MAR",
       uv: 2000,
       pv: 9800,
       amt: 2290,
     },
     {
-      name: "Page D",
+      name: "APR",
       uv: 2780,
       pv: 3908,
       amt: 2000,
     },
     {
-      name: "Page E",
+      name: "MAY",
       uv: 1890,
       pv: 4800,
       amt: 2181,
     },
     {
-      name: "Page F",
+      name: "JUN",
       uv: 2390,
       pv: 3800,
       amt: 2500,
     },
     {
-      name: "Page G",
+      name: "JUL",
       uv: 3490,
       pv: 4300,
       amt: 2100,
@@ -243,6 +245,56 @@ const HomePage = () => {
   }));
   console.log(finalData);
 
+  const gradientOffset = () => {
+    const dataMax = Math.max(...data.map((i) => i.uv));
+    const dataMin = Math.min(...data.map((i) => i.uv));
+
+    if (dataMax <= 0) {
+      return 0;
+    }
+    if (dataMin >= 0) {
+      return 1;
+    }
+
+    return dataMax / (dataMax - dataMin);
+  };
+
+  const off = gradientOffset();
+
+  const bardata = [
+    {
+      name: "18-24",
+      uv: 4000,
+      pv: 2400,
+      amt: 2400,
+    },
+    {
+      name: "25-34",
+      uv: 3000,
+      pv: 1398,
+      amt: 2210,
+    },
+    {
+      name: "35-44",
+      uv: 2000,
+      pv: 9800,
+      amt: 2290,
+    },
+    {
+      name: "45-64",
+      uv: 2780,
+      pv: 3908,
+      amt: 2000,
+    },
+  ];
+
+  const [selected, setSelected] = useState(null);
+
+  const handleClick = (index) => {
+    setSelected(index);
+  };
+
+
   return (
     <div
       className={`w-full h-full bg-gray-200 ${
@@ -253,7 +305,7 @@ const HomePage = () => {
         className={`w-full ${
           screenWidth < 1000
             ? "flex flex-col h-full gap-4"
-            : "flex flex-row h-1/2"
+            : "flex flex-row h-2/5"
         }`}
       >
         <div
@@ -264,21 +316,39 @@ const HomePage = () => {
             shadow={true}
             className="w-full h-full bg-white flex flex-col gap-2 pt-2"
           >
-            <div className="w-full flex flex-col">
-              <Typography
-                variant="h6"
-                color="black"
-                className="flex text-start px-5"
-              >
-                Sugar Level
-              </Typography>
-              <Typography
-                variant="h7"
-                color="black"
-                className="flex text-start px-5"
-              >
-                220 mg/dl
-              </Typography>
+            <div className={`w-full flex flex-row`}>
+              <div className="w-1/2 flex flex-col">
+                <Typography
+                  variant="h7"
+                  color="gray"
+                  className="flex text-start px-5 font-normal font-poppins"
+                >
+                  Sugar Level
+                </Typography>
+                <Typography
+                  variant="h5"
+                  color="black"
+                  className="flex text-start px-5 font-poppins"
+                >
+                  220 mg/dl
+                </Typography>
+              </div>
+              <div className="w-1/2 flex flex-col items-end">
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex text-start px-5 font-semibold font-poppins"
+                >
+                  25%
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="gray"
+                  className="flex text-start px-5 font-poppins"
+                >
+                  VS LAST MONTH
+                </Typography>
+              </div>
             </div>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -293,15 +363,25 @@ const HomePage = () => {
                     bottom: 0,
                   }}
                 >
-                  <CartesianGrid />
+                  <defs>
+                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="red" stopOpacity={0.5} />
+                      <stop
+                        offset="95%"
+                        stopColor="transparent"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Area
-                    type="monotone"
                     dataKey="uv"
-                    stroke="#8884d8"
-                    fill="#8884d8"
+                    stroke="red"
+                    strokeWidth={2}
+                    fill="url(#colorUv)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -316,24 +396,53 @@ const HomePage = () => {
             shadow={true}
             className="w-full h-full bg-white flex flex-col pt-2"
           >
-            <Typography
-              variant="h6"
-              color="black"
-              className="flex text-start px-5"
-            >
-              Patient Analytics
-            </Typography>
+            <div className={`w-full h-12 flex flex-row`}>
+              <div className={`w-1/2 h-12`}>
+                <Typography
+                  variant="h6"
+                  color="gray"
+                  className="flex text-start px-5 font-poppins"
+                >
+                  Sugar Level
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex text-start px-5 font-poppins font-semibold"
+                >
+                  Age and Gender
+                </Typography>
+              </div>
+              <div className={`w-1/2 h-12 flex flex-row items-center`}>
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex flex-row justify-center items-center text-start px-5 font-poppins gap-2"
+                >
+                  <div className={`w-3 h-3 bg-cyan-700 rounded-full`}></div>Male
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex flex-row justify-center items-center text-start px-5 font-poppins font-semibold gap-2"
+                >
+                  <div className={`w-3 h-3 bg-cyan-200 rounded-full`}></div> Female
+                </Typography>
+              </div>
+            </div>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={data}
+                  data={bardata}
                   layout="vertical"
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                
                 >
-                  <XAxis type="number" />
+                 <XAxis type="number"/>
                   <YAxis dataKey="name" type="category" />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#4F46E5" shape={<RoundedBar />} />
+                  <Bar dataKey="uv" stackId="a" fill="#00ced1" />
+                  <Bar dataKey="pv" stackId="a" fill="#00ffff" shape={<CustomBar />}/>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -341,8 +450,8 @@ const HomePage = () => {
         </div>
       </div>
       <div
-        className={`w-full  px-4 pb-2 ${
-          screenWidth < 1000 ? "h-72" : "h-1/2 h-"
+        className={`w-full  px-4 pb-4 ${
+          screenWidth < 1000 ? "h-72" : "h-3/5"
         }`}
       >
         <Card
@@ -350,13 +459,58 @@ const HomePage = () => {
           shadow={true}
           className="w-full h-full bg-white flex flex-col pt-2"
         >
-          <Typography
-            variant="h6"
+          <div className={`w-full flex flex-row`}>
+            <div className={`w-1/5`}>
+              <Typography
+            variant="h5"
             color="black"
-            className="flex text-start px-5"
+            className="flex text-start px-5 font-poppins"
           >
-            Patient Analytics
+            Levels Report
           </Typography>
+          </div>
+            <div className={`w-2/5 flex flex-row justify-center`}>
+            <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex flex-row justify-center items-center text-start px-5 font-poppins gap-2 text-sm"
+                >
+                  <div className={`w-2 h-2 bg-cyan-400 rounded-full`}></div>BP Levels
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex flex-row justify-center items-center text-start px-5 font-poppins gap-2 text-sm"
+                >
+                  <div className={`w-2 h-2 bg-blue-700 rounded-full`}></div>Sugar Levels
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="black"
+                  className="flex flex-row justify-center items-center text-start px-5 font-poppins gap-2 text-sm"
+                >
+                  <div className={`w-2 h-2 bg-purple-700 rounded-full`}></div>Others
+                </Typography>
+            </div>
+            <div className={`w-2/5 flex justify-center`}>
+              <div className={`w-3/5 h-full flex flex-row bg-gray-300 rounded-lg p-1`}>
+                <div 
+                className={`w-1/3 font-poppins text-gray-400 text-center text-sm flex items-center justify-center cursor-pointer ${selected === 0 ? 'bg-black text-white rounded-lg p-1' : ''}`}
+                onClick={() => handleClick(0)}>
+                  7 Days
+                </div>
+                <div className={`w-1/3 font-poppins text-gray-400 text-center text-sm flex items-center justify-center cursor-pointer ${selected === 1 ? 'bg-black text-white rounded-lg p-1' : ''}`}
+                onClick={() => handleClick(1)}>
+                  30 Days
+                </div>
+                <div className={`w-1/3 font-poppins text-gray-400 text-center text-sm flex items-center justify-center cursor-pointer ${selected === 2 ? 'bg-black text-white rounded-lg p-1' : ''}`}
+                onClick={() => handleClick(2)}>
+                  12 months
+                </div>
+              </div>
+            </div>
+          
+          </div>
           <div className="w-full h-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart

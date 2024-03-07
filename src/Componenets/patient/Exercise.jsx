@@ -69,6 +69,12 @@ import { MathUtils } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { ClockIcon } from "@mui/x-date-pickers";
 import ModelRender from "./ModelRender";
+import {
+  CircularProgressbar,
+  buildStyles,
+  CircularProgressbarWithChildren,
+} from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
 const Exercise = ({ onBack }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
@@ -116,9 +122,9 @@ const Exercise = ({ onBack }) => {
         } else {
           const datas = await response.json();
           // Extracting exercise names from the given data
-          const exercises = datas.exercises_given
-          const updatedExer = exercises.data
-          console.log(updatedExer)
+          const exercises = datas.exercises_given;
+          const updatedExer = exercises.data;
+          console.log(updatedExer);
           setExer(updatedExer);
         }
         setLoading(false);
@@ -1882,9 +1888,70 @@ const Exercise = ({ onBack }) => {
   //   loadModel();
   // }, []);
 
+  const gradientOffset = () => {
+    const dataMax = Math.max(...data.map((i) => i.uv));
+    const dataMin = Math.min(...data.map((i) => i.uv));
+
+    if (dataMax <= 0) {
+      return 0;
+    }
+    if (dataMin >= 0) {
+      return 1;
+    }
+
+    return dataMax / (dataMax - dataMin);
+  };
+
+  const off = gradientOffset();
+
+  const sadata = [
+    {
+      name: "Page A",
+      uv: 4000,
+      pv: 2400,
+      amt: 2400,
+    },
+    {
+      name: "Page B",
+      uv: 3000,
+      pv: 1398,
+      amt: 2210,
+    },
+    {
+      name: "Page C",
+      uv: 2000,
+      pv: 9800,
+      amt: 2290,
+    },
+    {
+      name: "Page D",
+      uv: 2780,
+      pv: 3908,
+      amt: 2000,
+    },
+    {
+      name: "Page E",
+      uv: 1890,
+      pv: 4800,
+      amt: 2181,
+    },
+    {
+      name: "Page F",
+      uv: 2390,
+      pv: 3800,
+      amt: 2500,
+    },
+    {
+      name: "Page G",
+      uv: 3490,
+      pv: 4300,
+      amt: 2100,
+    },
+  ];
+
   return (
     <div
-      className={`w-full h-full bg-gradient-to-r from-darkblue to-navyblue ${
+      className={`w-full h-full bg-gradient-to-br from-blue1 via-blue2 to-blue1 ${
         screenWidth < 1105 ? "flex flex-col gap-4 pt-4" : "flex flex-col gap-4"
       }`}
     >
@@ -1892,7 +1959,7 @@ const Exercise = ({ onBack }) => {
         className={` w-full   ${
           screenWidth < 1105
             ? "flex flex-col h-full gap-4"
-            : "flex flex-row h-3/5 gap-4 px-2"
+            : "flex flex-row h-1/2 gap-4 px-2"
         }`}
       >
         <div
@@ -1954,7 +2021,7 @@ const Exercise = ({ onBack }) => {
           </div>
           <div className="w-full h-5/6 rounded-3xl pl-6">
             <div
-              className={`w-full h-full py-4 overflow-y-scroll scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
+              className={`w-full h-full py-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
               style={{
                 backgroundColor: "rgba(255, 255, 255, 0.15)",
                 backdropFilter: "blur(20px)",
@@ -1971,7 +2038,7 @@ const Exercise = ({ onBack }) => {
                     <Typography
                       variant="h4"
                       color="white"
-                      className="flex text-start px-5"
+                      className="flex text-start px-5 font-poppins"
                     >
                       {index + 1}
                     </Typography>
@@ -1984,14 +2051,14 @@ const Exercise = ({ onBack }) => {
                       <Typography
                         variant="h6"
                         color="white"
-                        className="flex text-start w-full h-1/2 items-center"
+                        className="flex text-start w-full h-1/2 items-center font-poppins"
                       >
                         {item.name}
                       </Typography>
                       <Typography
                         variant="h6"
                         color="white"
-                        className="flex text-start w-full h-1/2 items-center"
+                        className="flex text-start w-full h-1/2 items-center font-poppins"
                       >
                         Set - {item.rep}
                       </Typography>
@@ -2011,7 +2078,7 @@ const Exercise = ({ onBack }) => {
             </div>
           </div>
         </div>
-        {isdisplay && (
+        {true && (
           <div
             className={`h-full  flex flex-col px-2 ${
               screenWidth < 1105 ? "w-full" : "w-3/5"
@@ -2029,56 +2096,72 @@ const Exercise = ({ onBack }) => {
             <div className="w-full h-5/6 pr-6">
               <div
                 className={`w-full h-full `}
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
-                  backdropFilter: "blur(20px)",
-                  borderRadius: "1rem",
-                  border: "1px solid rgba(255, 255, 255, 0.18)",
-                  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-                }}
+                // style={{
+                //   backgroundColor: "rgba(255, 255, 255, 0.15)",
+                //   backdropFilter: "blur(20px)",
+                //   borderRadius: "1rem",
+                //   border: "1px solid rgba(255, 255, 255, 0.18)",
+                //   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                // }}
               >
-                <div className={`w-full h-full rounded-3x felx flex-col`}>
-                  <div className={`w-full h-1/6 `}>
-                    {/* <div className="flex items-center flex-wrap w-full h-full px-4">
-                      {exercise.map((milestone, step) => (
-                        <React.Fragment key={step}>
-                          {step > 0 && (
-                            <div className="flex-1 h-[3.5px] bg-gray-300">
-                              <div
-                                className={`h-full bg-black transition-all rounded-full ${
-                                  activeStep > step
-                                    ? "bg-green-500"
-                                    : "bg-red-300"
-                                }`}
-                                style={{
-                                  width: "100%",
-                                  transitionDuration: "0.3s",
-                                }}
-                              />
-                            </div>
+                <div className={`w-full h-full rounded-3x flex flex-row`}>
+                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
+                    <div className="w-full h-full">
+                      {/* <Canvas
+                        camera={{
+                          position: [-45, 0, -5],
+                          fov: 2,
+                          near: 10,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <ModelRender
+                              rotat={rotationX}
+                              model={glbData}
+                              position={[0  , 0, 0]}
+                              scale={1}
+                              rotation={[0, -0.2, 0]}
+                            />
                           )}
-                          <div key={step} className="relative group">
-                            <div
-                              className={`h-6 w-10 flex items-center justify-center rounded-full border-2 cursor-pointer transform transition-all bg-black ring-0 ring-gray-600 hover:ring-[6px] group-focus:ring-4 ring-opacity-20 duration-200 shadow-md ${
-                                activeStep > step
-                                  ? "border-green-500 bg-green-500 text-black font-bold"
-                                  : "border-red-500 bg-red-500"
-                              }`}
-                              style={{
-                                fontSize: "10px",
-                                margin: "0px",
-                                clipPath:
-                                  "polygon(50% 0%, 80% 50%, 50% 100%, 20% 50%)",
-                              }}
-                            >
-                              {step}
-                            </div>
-                          </div>
-                        </React.Fragment>
-                      ))}
-                    </div> */}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                          <OrbitControls />
+                        </Suspense>
+                      </Canvas> */}
+                      <Canvas
+                        camera={{
+                          position: [-45, 0, -5], // Adjusted camera position
+                          fov: 2,
+                          near: 0.1,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <>
+                              <ModelRender
+                                rotat={rotationX}
+                                model={glbData}
+                                scale={1}
+                                rotation={[0, -0.2, 0]}
+                              />
+                              <OrbitControls />
+                            </>
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                        </Suspense>
+                      </Canvas>
+                    </div>
                   </div>
-                  <div className={`w-full h-5/6`}>
+                  <div className={`w-1/5`}></div>
+                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
                     <div className="w-full h-full">
                       {/* <Canvas
                         camera={{
@@ -2141,12 +2224,12 @@ const Exercise = ({ onBack }) => {
       </div>
       <div
         className={` w-full gap-6 pt-2 pb-4 px-2 ${
-          screenWidth < 900 ? "h-full flex flex-col" : "h-2/5 flex flex-row"
+          screenWidth < 900 ? "h-full flex flex-col" : "h-1/2 flex flex-row"
         }`}
       >
         <div
           className={`  rounded-2xl ${
-            screenWidth < 900 ? "w-full h-60" : "w-1/6 pl-8 h-full"
+            screenWidth < 900 ? "w-full h-60" : "w-2/6 pl-8 h-full"
           }`}
         >
           <div
@@ -2160,105 +2243,38 @@ const Exercise = ({ onBack }) => {
             }}
           >
             <div className="w-full h-full flex flex-col justify-center items-start">
-              <div className="w-full h-1/3 flex justify-center flex-row gap-6">
-                <button
-                  className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
-                  onClick={handlePlayPauseClick}
+              <div className="w-full h-1/6 flex justify-start flex-col gap-1 pl-4 pt-2">
+                <Typography
+                  variant="h5"
+                  color="white"
+                  className=" flex  gap-1 text-base font-semibold font-poppins items-center justify-start"
                 >
-                  {isPlaying ? (
-                    <PauseIcon className="h-[4rem] w-[4rem]" />
-                  ) : (
-                    <PlayIcon className="h-[4rem] w-[4rem]" />
-                  )}
-                </button>
-                <div className="flex justify-center items-center">
-                  {!isPlaying && (
-                    <div className="w-full flex justify-center items-center gap-1">
-                      <div className="flex flex-col items-center">
-                        <input
-                          type="number"
-                          value={selectedMinute}
-                          onChange={handleMinuteChange}
-                          className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
-                          placeholder="00"
-                        />
-                        <span className="w-full text-center text-black font-bold text-[10px]">
-                          minutes
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <input
-                          type="number"
-                          value={selectedSecond}
-                          onChange={handleSecondChange}
-                          className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
-                          placeholder="00"
-                        />
-                        <span className="w-full text-center text-black font-bold text-[10px]">
-                          seconds
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {isPlaying && (
-                    <CountdownCircleTimer
-                      key={key}
-                      isPlaying={isPlaying}
-                      duration={selectedMinute * 60 + selectedSecond} // 2 minutes
-                      colors={[["#ffffff"]]}
-                      size={100}
-                      strokeWidth={8}
-                      onComplete={() => {
-                        setIsPlaying(false);
-                        handleTimerStop();
-                        return [false, 0]; // Stop the timer and reset to 0
-                      }}
-                    >
-                      {({ remainingTime }) => (
-                        <div className="font-semibold text-lg">
-                          {`${Math.floor(remainingTime / 60)
-                            .toString()
-                            .padStart(2, "0")}:${(remainingTime % 60)
-                            .toString()
-                            .padStart(2, "0")}`}
-                        </div>
-                      )}
-                    </CountdownCircleTimer>
-                  )}
-                </div>
+                  Flexibility
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="white"
+                  className=" flex gap-1 text-sm font-mediumb text-gray-300 font-poppins items-center justify-start"
+                >
+                  48% More than last month
+                </Typography>
               </div>
 
-              <div className="w-full h-1/3 flex-col flex justify-center items-center">
-                <div className="flex justify-center items-center">
-                  <div className="w-full flex justify-end gap-12">
-                    <button
-                      className=" text-black font-bold  rounded-full"
-                      onClick={() => {
-                        // Add logic for reset action here
-                        setData([]);
-                        setShowRedLine(false);
-                        // generateCards();
-                        setSelectedMinute("");
-                        setSelectedSecond("");
-                        setKey((prevKey) => prevKey + 1);
-                        setRotationX(0);
-                      }}
-                    >
-                      <ArrowPathIcon className="h-12 w-12  inline" />
-                    </button>
-
-                    <button
-                      className=" text-black font-bold  rounded-full"
-                      onClick={handleDownload}
-                      disabled={isPlaying}
-                    >
-                      <ArrowDownTrayIcon className="h-12 w-12  inline" />
-                    </button>
-                  </div>
-                </div>
+              <div className="w-full h-4/6 pt-4 flex-col flex justify-center items-center">
+              <CircularProgressbar
+                        value={84}
+                        text={84}
+                        circleRatio={0.75}
+                        styles={buildStyles({
+                          rotation: 1 / 2 + 1 / 8,
+                          trailColor: "#eee",
+                          pathColor: "cyan",
+                          textColor: "black",
+                          textSize: "22px",
+                        })}
+                      />
               </div>
-              <div className="w-full h-1/3 flex flex-col items-center justify-center">
+              <div className="w-full h-1/6 flex flex-col items-center justify-center">
                 <button
                   className="text-2xl font-semibold flex flex-row gap-8"
                   onClick={updateExerciseData}
@@ -2270,7 +2286,7 @@ const Exercise = ({ onBack }) => {
           </div>
         </div>
         <div
-          className={`  ${screenWidth < 900 ? "w-full h-60" : "w-4/6 h-full"}`}
+          className={`  ${screenWidth < 900 ? "w-full h-60" : "w-3/6 h-full"}`}
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.15)",
             backdropFilter: "blur(20px)",
@@ -2279,15 +2295,45 @@ const Exercise = ({ onBack }) => {
             boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
           }}
         >
-          <div className={`w-full h-1/6 px-2`}>
+          <div className={`w-full h-1/6 px-2 flex items-center`}>
             <Typography variant="h5" color="white" className="flex text-start">
               Performance
             </Typography>
           </div>
-          <div className={`w-full h-5/6`}>
+          <div className={`w-full h-4/6`}>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart>
+                <AreaChart
+                  width={500}
+                  height={400}
+                  data={data}
+                  margin={{
+                    top: 10,
+                    right: 30,
+                    left: 0,
+                    bottom: 0,
+                  }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="colorSandalYellow"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#FFE194" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#FFE194" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+
+                  <Area
+                    dataKey="uv"
+                    stroke="#FF9900"
+                    strokeWidth={2}
+                    fill="url(#colorSandalYellow)"
+                  />
+
                   <Tooltip
                     cursor={false}
                     wrapperStyle={{
@@ -2301,18 +2347,9 @@ const Exercise = ({ onBack }) => {
                     LabelStyle={{ color: "black" }}
                     itemStyle={{ color: "black" }}
                   />
-                  <Legend
-                    wrapperStyle={{
-                      top: -30,
-                      left: 20,
-                      position: "absolute",
-                    }}
-                    iconType="circle"
-                    iconSize={6}
-                  />
-                  <Line
+
+                  {/* <Line
                     data={data}
-                    type="monotone"
                     dataKey="val"
                     dot={{ fill: "black", r: 5 }}
                     strokeDasharray="25 10"
@@ -2320,8 +2357,8 @@ const Exercise = ({ onBack }) => {
                     strokeWidth={2.5}
                     stackId="2"
                     isAnimationActive={false}
-                  />
-                  {showRedLine && (
+                  /> */}
+                  {/* {showRedLine && (
                     <Line
                       data={RedLineGraphData}
                       type="monotone"
@@ -2333,7 +2370,7 @@ const Exercise = ({ onBack }) => {
                       strokeWidth={2.5}
                       isAnimationActive={false}
                     />
-                  )}
+                  )} */}
                   <XAxis
                     dataKey="index"
                     type="category"
@@ -2341,7 +2378,7 @@ const Exercise = ({ onBack }) => {
                     axisLine={false}
                     tick={{ fill: "white" }}
                   >
-                    <Label
+                    {/* <Label
                       dy={10}
                       value="Time"
                       domain={[1, elapsedTime + 20]}
@@ -2349,30 +2386,125 @@ const Exercise = ({ onBack }) => {
                       style={{ textAnchor: "middle", fill: "white" }} // Change fill to white
                       tick={{ fill: "white" }} // Change fill to white
                       ticks={[1, 20, 40, 60, 80, 100, 120]}
-                    />
+                    /> */}
                   </XAxis>
                   <YAxis axisLine={false} tick={{ fill: "white" }}>
-                    <Label
+                    {/* <Label
                       angle={-90}
                       value="Angle"
                       position="insideLeft"
                       style={{ textAnchor: "middle" }}
                       tick={{ fill: "black" }}
-                    />
+                    /> */}
                   </YAxis>
-                  <CartesianGrid
+                  {/* <CartesianGrid
                     strokearray="1"
                     horizontal="true"
                     vertical=""
-                  />
-                </LineChart>
+                  /> */}
+                </AreaChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+          <div className={`w-full h-1/6 px-2 flex flex-row items-center`}>
+            <div className={`w-1/2 flex flex-row gap-4`}>
+              <button
+                className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
+                onClick={handlePlayPauseClick}
+              >
+                {isPlaying ? (
+                  <PauseIcon className="w-8 h-8" />
+                ) : (
+                  <PlayIcon className="w-8 h-8" />
+                )}
+              </button>
+              {!isPlaying && (
+                <div className="w-full flex justify-center items-center gap-4">
+                  <div className="flex flex-row items-end gap-1 font-poppins">
+                    <input
+                      type="number"
+                      value={selectedMinute}
+                      onChange={handleMinuteChange}
+                      className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
+                      placeholder="00"
+                    />
+                    <span className="w-full h-full text-center text-black font-bold text-[10px] flex justify-end items-end font-poppins">
+                      min
+                    </span>
+                  </div>
+                  <div className="flex flex-row items-end gap-1 font-poppins">
+                    <input
+                      type="number"
+                      value={selectedSecond}
+                      onChange={handleSecondChange}
+                      className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center font-poppins"
+                      placeholder="00"
+                    />
+                    <span className="w-full text-center text-black font-bold text-[10px]">
+                      sec
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {isPlaying && (
+                <div className="w-full flex justify-center items-center">
+                  <CountdownCircleTimer
+                    key={key}
+                    isPlaying={isPlaying}
+                    duration={selectedMinute * 60 + selectedSecond} // 2 minutes
+                    colors={[["#ffffff"]]}
+                    size={10}
+                    strokeWidth={0}
+                    onComplete={() => {
+                      setIsPlaying(false);
+                      handleTimerStop();
+                      return [false, 0]; // Stop the timer and reset to 0
+                    }}
+                  >
+                    {({ remainingTime }) => (
+                      <div className="font-semibold text-lg font-poppins">
+                        {`${Math.floor(remainingTime / 60)
+                          .toString()
+                          .padStart(2, "0")}:${(remainingTime % 60)
+                          .toString()
+                          .padStart(2, "0")}`}
+                      </div>
+                    )}
+                  </CountdownCircleTimer>
+                </div>
+              )}
+            </div>
+            <div className={`w-1/2 flex flex-row gap-4 justify-end pr-8`}>
+              <button
+                className=" text-black font-bold  rounded-full"
+                onClick={() => {
+                  // Add logic for reset action here
+                  setData([]);
+                  setShowRedLine(false);
+                  // generateCards();
+                  setSelectedMinute("");
+                  setSelectedSecond("");
+                  setKey((prevKey) => prevKey + 1);
+                  setRotationX(0);
+                }}
+              >
+                <ArrowPathIcon className="h-8 w-8  inline" />
+              </button>
+
+              <button
+                className=" text-black font-bold  rounded-full"
+                onClick={handleDownload}
+                disabled={isPlaying}
+              >
+                <ArrowDownTrayIcon className="h-8 w-8  inline" />
+              </button>
             </div>
           </div>
         </div>
         <div
           className={` ${
-            screenWidth < 900 ? "w-full  h-60" : "w-2/6 pr-8  h-full"
+            screenWidth < 900 ? "w-full  h-60" : "w-3/6 pr-8  h-full"
           }`}
         >
           <div
@@ -2385,90 +2517,122 @@ const Exercise = ({ onBack }) => {
               boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
             }}
           >
-            <Card color="transparent" className="w-full h-full px-10">
-              <CardHeader
-                floated={false}
-                shadow={false}
-                color="transparent"
-                className=" mb-4 rounded-none border-b border-white/10 mt-0 text-center"
-              >
+            <Card color="transparent" className="w-full h-full px-5 pt-4">
+              <div className={`w-full h-12 flex justify-start`}>
                 <Typography
-                  variant="h1"
+                  variant="h5"
                   color="white"
-                  className="mt-6 flex justify-center gap-1 text-7xl font-normal"
+                  className=" flex justify-start gap-1 font-semibold font-poppins"
                 >
-                  <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5" />
-                  {elapsedTime}
-                  <p className="text-lg flex items-end">sec</p>
+                  Comparison Scores
                 </Typography>
-              </CardHeader>
-              <CardBody className="p-0 text-bg-light" color="transparent">
-                <ul className="flex flex-col gap-3.5">
-                  {/* <li className="flex justify-center items-center gap-4">
-                  <Typography className="font-normal text-2xl">
-                    {isActive ? "Active" : "Passive"}
-                  </Typography>
-                  <Typography className="font-normal text-2xl">/</Typography>
-                  <Typography className="font-normal text-2xl">
-                    {!isLegChecked ? "Left Leg" : "Right Leg"}
-                  </Typography>
-                </li> */}
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      Maximum Angle
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {maxAngles}°
-                    </Typography>
-                  </li>
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      Minimum Angle
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {minAngles}°
-                    </Typography>
-                  </li>
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      Flexion Cycle
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {flexionCycles}
-                    </Typography>
-                  </li>
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      Extension Cycle
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {extensionCycles}
-                    </Typography>
-                  </li>
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      Velocity
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {(maxAngles + minAngles) / 2}
-                    </Typography>
-                  </li>
-                  <li className="flex items-center gap-4 justify-between">
-                    <Typography className="font-normal" color="white">
-                      ROM
-                    </Typography>
-                    <Typography className="font-normal" color="white">
-                      {maxAngles - minAngles}
-                    </Typography>
-                  </li>
-                </ul>
-              </CardBody>
-              {/* <CardFooter className="pt-1 w-full">
-              <div className="w-full flex gap-3">
-                <Typography className="font-bold">Note:</Typography>
-                <Typography>Angles in degrees</Typography>
               </div>
-            </CardFooter> */}
+              <div className={`w-full h-5/6`}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    width={500}
+                    height={400}
+                    data={sadata}
+                    margin={{
+                      top: 10,
+                      right: 0,
+                      left: 0,
+                      bottom: 0,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="colorGreen"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#58AB63"
+                          stopOpacity={0.9}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#58AB63"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="colorMilkPink"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#F3B1BB"
+                          stopOpacity={0.9}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#F3B1BB"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    {/* <XAxis dataKey="name" />
+                    <YAxis mirror={true}/> */}
+                    <Tooltip />
+                    <Area
+                      dataKey="uv"
+                      stackId="1"
+                      stroke="#FF00FF"
+                      fill="url(#colorMilkPink)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="pv"
+                      stackId="1"
+                      stroke="#00FF00"
+                      fill="url(#colorGreen)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className={`w-full h-1/6 flex flex-row`}>
+                <div className={`w-1/2 h-full flex flex-col`}>
+                  <Typography
+                    variant="h5"
+                    color="white"
+                    className=" flex flex-row gap-1 text-sm font-semibold font-poppins items-center justify-center"
+                  >
+                    <div className={`w-2 h-2 bg-green-500 rounded-full`} /> Last
+                    Month
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    color="white"
+                    className=" flex justify-center gap-1 font-semibold font-poppins"
+                  >
+                    247
+                  </Typography>
+                </div>
+                <div className={`w-1/2 h-full flex flex-col`}>
+                  <Typography
+                    variant="h5"
+                    color="white"
+                    className=" flex flex-row  gap-1 text-sm font-semibold font-poppins items-center justify-center"
+                  >
+                    <div className={`w-2 h-2 bg-pink-200 rounded-full`} /> This
+                    Month
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    color="white"
+                    className=" flex justify-center gap-1 font-semibold font-poppins"
+                  >
+                    147
+                  </Typography>
+                </div>
+              </div>
             </Card>
           </div>
         </div>

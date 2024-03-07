@@ -14,7 +14,9 @@ export default withMT({
       pixele:'#ff0cf5',
       darkblue:'#4D75C9',
       navyblue:'#292F3C',
-      blackblue:'#22262F'
+      blackblue:'#22262F',
+      blue1: "#0b263d",
+      blue2: "#113d61"
   },
   keyframes: {
     blink: {

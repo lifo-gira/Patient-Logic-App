@@ -244,7 +244,7 @@ const Profile = () => {
     >
       {!isside && activeMenuItem != "Exercise" && (
         <div
-          className={`w-full md:w-1/6 lg:w-1/5 xl:w-1/6 bg-black h-screen overflow-y-auto `}
+          className={`w-full md:w-1/6 lg:w-1/5 xl:w-1/6 bg-black h-screen overflow-y-auto font-poppins`}
         >
           <Card className="h-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 rounded-none">
             <div className="mb-2 flex flex-col items-center gap-4 p-4">
@@ -258,31 +258,25 @@ const Profile = () => {
                 />
               </div>
               <div>
-                <Typography variant="h5" color="blue-gray">
+                <Typography variant="h5" color="blue-gray" className="font-poppins ">
                   {userId}
                 </Typography>
-                <Typography variant="h7" color="blue-gray">
+                <Typography variant="h7" color="blue-gray" className="font-poppins ">
                   Patient ID: 123456
                 </Typography>
               </div>
             </div>
             <List
-              className={` bg-white ${
-                screenWidth < 1535 ? "" : " w-full pl-8 pr-4"
+              className={` bg-white font-poppins ${
+                screenWidth < 1535 ? "" : " w-full pl-8 pr-0"
               }`}
             >
               <ListItem
-                className={`${
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
                   screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
-                }`}
+                } ${open ===1 && activeMenuItem != "Report"?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
                 selected={open === 1}
                 onClick={() => handleItemClick(1)}
-                style={{
-                  backgroundColor:
-                    open === 1 && activeMenuItem != "Report"
-                      ? "cyan"
-                      : "transparent",
-                }}
               >
                 <ListItemPrefix>
                   <Squares2X2Icon className="h-5 w-5" />
@@ -293,12 +287,11 @@ const Profile = () => {
               </ListItem>
 
               <ListItem
-                className={`${
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
                   screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
-                }`}
+                } ${open ===2?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
                 selected={open === 2}
                 onClick={() => handleItemClick(2)}
-                style={{ backgroundColor: open === 2 ? "cyan" : "transparent" }}
               >
                 <ListItemPrefix>
                   <AdjustmentsHorizontalIcon className="h-5 w-5" />
@@ -309,12 +302,11 @@ const Profile = () => {
               </ListItem>
 
               <ListItem
-                className={`${
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
                   screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
-                }`}
+                } ${open ===3?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
                 selected={open === 3}
                 onClick={() => handleItemClick(3)}
-                style={{ backgroundColor: open === 3 ? "cyan" : "transparent" }}
               >
                 <ListItemPrefix>
                   <ChartBarIcon className="h-5 w-5" />
@@ -322,12 +314,11 @@ const Profile = () => {
                 Analysis
               </ListItem>
               <ListItem
-                className={`${
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
                   screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
-                }`}
+                } ${open ===4?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}` }
                 selected={open === 4}
                 onClick={() => handleItemClick(4)}
-                style={{ backgroundColor: open === 4 ? "cyan" : "transparent" }}
               >
                 <ListItemPrefix>
                   <ChatBubbleLeftRightIcon className="h-5 w-5" />
@@ -364,10 +355,10 @@ const Profile = () => {
           <Drawer
             open={isDrawerOpen}
             overlay={false}
-            className={` 
+            className={`
             ${screenheight > 670 ? "mt-20" : "mt-20"}`}
           >
-            <Card className="h-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 rounded-none">
+            <Card className="h-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5 rounded-none font-poppins">
               <div className="mb-2 flex flex-col items-center gap-2 p-0">
                 <div className="flex items-center gap-1 rounded-full">
                   <Avatar
@@ -378,7 +369,7 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <Typography variant="h5" color="blue-gray">
+                  <Typography variant="h5" color="blue-gray"className="font-poppins">
                     Anirudh P Menon
                   </Typography>
                   <Typography variant="h7" color="blue-gray">
@@ -387,115 +378,86 @@ const Profile = () => {
                 </div>
               </div>
               <List
-                className={` bg-white ${
-                  screenWidth < 1535 ? "p-0 pl-2" : " w-full pl-8 pr-4"
+              className={` bg-white ${
+                screenWidth < 1535 ? "" : " w-full pl-8 pr-0"
+              }`}
+            >
+              <ListItem
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
+                } ${open ===1 && activeMenuItem != "Report"?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
+                selected={open === 1}
+                onClick={() => handleItemClick(1)}
+              >
+                <ListItemPrefix>
+                  <Squares2X2Icon className="h-5 w-5" />
+                </ListItemPrefix>
+                <Typography color="blue-gray" className="mr-auto font-normal">
+                  Dashboard
+                </Typography>
+              </ListItem>
+
+              <ListItem
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
+                } ${open ===2?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
+                selected={open === 2}
+                onClick={() => handleItemClick(2)}
+              >
+                <ListItemPrefix>
+                  <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                <Typography color="blue-gray" className="mr-auto font-normal">
+                  Exercise
+                </Typography>
+              </ListItem>
+
+              <ListItem
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
+                } ${open ===3?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}`}
+                selected={open === 3}
+                onClick={() => handleItemClick(3)}
+              >
+                <ListItemPrefix>
+                  <ChartBarIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                Analysis
+              </ListItem>
+              <ListItem
+                className={`rounded-none focus:bg-gradient-to-r from-white to-cyan-200 ${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
+                } ${open ===4?"bg-gradient-to-r from-white to-cyan-200":"bg-transparent"}` }
+                selected={open === 4}
+                onClick={() => handleItemClick(4)}
+              >
+                <ListItemPrefix>
+                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                Suggestion
+              </ListItem>
+              <hr className="my-5 border-blue-gray-50 w-full" />
+              <ListItem
+                className={`${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
                 }`}
               >
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                  selected={open === 1}
-                  onClick={() => handleItemClick(1)}
-                  style={{
-                    backgroundColor:
-                      open === 1 || activeMenuItem === "Dashboard"
-                        ? "cyan"
-                        : "transparent",
-                  }}
-                >
-                  <ListItemPrefix>
-                    <Squares2X2Icon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    Dashboard
-                  </Typography>
-                </ListItem>
-
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                  selected={open === 2}
-                  onClick={() => handleItemClick(2)}
-                  style={{
-                    backgroundColor:
-                      open === 2 || activeMenuItem === "Exercise"
-                        ? "cyan"
-                        : "transparent",
-                  }}
-                >
-                  <ListItemPrefix>
-                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    Exercise
-                  </Typography>
-                </ListItem>
-
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                  selected={open === 3}
-                  onClick={() => handleItemClick(3)}
-                  style={{
-                    backgroundColor:
-                      open === 3 || activeMenuItem === "Analysis"
-                        ? "cyan"
-                        : "transparent",
-                  }}
-                >
-                  <ListItemPrefix>
-                    <ChartBarIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  Analysis
-                </ListItem>
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                  selected={open === 4}
-                  onClick={() => handleItemClick(4)}
-                  style={{
-                    backgroundColor:
-                      open === 4 || activeMenuItem === "Suggestion"
-                        ? "cyan"
-                        : "transparent",
-                  }}
-                >
-                  <ListItemPrefix>
-                    <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  Suggestion
-                </ListItem>
-
-                <hr
-                  className={` border-blue-gray-50 w-full ${
-                    screenWidth < 1535 ? "my-2" : " my-5"
-                  }`}
-                />
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                >
-                  <ListItemPrefix>
-                    <Cog6ToothIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  Settings
-                </ListItem>
-                <ListItem
-                  className={`${
-                    screenWidth < 1535 ? "w-5/6 px-4" : " w-full p-3"
-                  }`}
-                >
-                  <ListItemPrefix>
-                    <PowerIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  Log Out
-                </ListItem>
-              </List>
+                <ListItemPrefix>
+                  <Cog6ToothIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                Settings
+              </ListItem>
+              <ListItem
+                className={`${
+                  screenWidth < 1535 ? "w-2/3 px-4" : " w-full p-3"
+                }`}
+              >
+                <ListItemPrefix>
+                  <PowerIcon className="h-5 w-5" />
+                </ListItemPrefix>
+                Log Out
+              </ListItem>
+            </List>
             </Card>
           </Drawer>
         </div>
