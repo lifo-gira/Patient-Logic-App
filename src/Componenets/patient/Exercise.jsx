@@ -55,6 +55,7 @@ import {
   Scatter,
   Label,
 } from "recharts";
+import exerbg from "../../assets/exerbg.svg"
 import { toast } from "react-toastify";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import html2canvas from "html2canvas";
@@ -1948,9 +1949,10 @@ const Exercise = ({ onBack }) => {
 
   return (
     <div
-      className={`w-full h-full bg-gradient-to-br from-blue1 via-blue2 to-blue1 ${
+      className={`w-full h-full bg-cover bg-center ${
         screenWidth < 1105 ? "flex flex-col gap-4 pt-4" : "flex flex-col gap-4"
       }`}
+      style={{backgroundImage: `url(${exerbg})`}}
     >
       <div
         className={` w-full   ${
@@ -1987,7 +1989,7 @@ const Exercise = ({ onBack }) => {
                 <Typography
                   variant="h4"
                   color="white"
-                  className="flex text-start"
+                  className="flex text-start font-poppins"
                 >
                   Endurance
                 </Typography>
@@ -2020,8 +2022,8 @@ const Exercise = ({ onBack }) => {
             <div
               className={`w-full h-full py-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(20px)",
+                backgroundColor: "transparent",
+                backdropFilter: "blur(10px)",
                 borderRadius: "1rem",
                 border: "1px solid rgba(255, 255, 255, 0.18)",
                 boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
@@ -2232,7 +2234,7 @@ const Exercise = ({ onBack }) => {
           <div
             className={`w-full h-full`}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              backgroundColor: "transparent",
               backdropFilter: "blur(20px)",
               borderRadius: "1rem",
               border: "1px solid rgba(255, 255, 255, 0.18)",
@@ -2273,10 +2275,10 @@ const Exercise = ({ onBack }) => {
               </div>
               <div className="w-full h-1/6 flex flex-col items-center justify-center">
                 <button
-                  className="text-2xl font-semibold flex flex-row gap-8"
+                  className="text-2xl font-semibold flex flex-row gap-8 text-white"
                   onClick={handleCompleteSubmit}
                 >
-                  Submit <PaperAirplaneIcon className="w-8 h-8" />
+                  Submit <PaperAirplaneIcon className="w-8 h-8" color="white" />
                 </button>
               </div>
             </div>
@@ -2285,7 +2287,7 @@ const Exercise = ({ onBack }) => {
         <div
           className={`  ${screenWidth < 900 ? "w-full h-60" : "w-3/6 h-full"}`}
           style={{
-            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            backgroundColor: "transparent",
             backdropFilter: "blur(20px)",
             borderRadius: "1rem",
             border: "1px solid rgba(255, 255, 255, 0.18)",
@@ -2328,7 +2330,7 @@ const Exercise = ({ onBack }) => {
                     data={data}
                     dataKey="val"
                     stroke="#FF9900"
-                    strokeWidth={2}
+                    strokeWidth={4}
                     fill="url(#colorSandalYellow)"
                     // isAnimationActive={false}
                   />
@@ -2412,9 +2414,9 @@ const Exercise = ({ onBack }) => {
                 onClick={handlePlayPauseClick}
               >
                 {isPlaying ? (
-                  <PauseIcon className="w-8 h-8" />
+                  <PauseIcon className="w-8 h-8" color="white"/>
                 ) : (
-                  <PlayIcon className="w-8 h-8" />
+                  <PlayIcon className="w-8 h-8" color="white"/>
                 )}
               </button>
               {!isPlaying && (
@@ -2427,7 +2429,7 @@ const Exercise = ({ onBack }) => {
                       className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
                       placeholder="00"
                     />
-                    <span className="w-full h-full text-center text-black font-bold text-[10px] flex justify-end items-end font-poppins">
+                    <span className="w-full h-full text-center text-black font-bold text-[10px] flex justify-end items-end font-poppins text-white">
                       min
                     </span>
                   </div>
@@ -2439,7 +2441,7 @@ const Exercise = ({ onBack }) => {
                       className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center font-poppins"
                       placeholder="00"
                     />
-                    <span className="w-full text-center text-black font-bold text-[10px]">
+                    <span className="w-full text-center text-black font-bold text-[10px] text-white">
                       sec
                     </span>
                   </div>
@@ -2489,7 +2491,7 @@ const Exercise = ({ onBack }) => {
                   setRotationX(0);
                 }}
               >
-                <ArrowPathIcon className="h-8 w-8  inline" />
+                <ArrowPathIcon className="h-8 w-8  inline" color="white"/>
               </button>
 
               <button
@@ -2497,7 +2499,7 @@ const Exercise = ({ onBack }) => {
                 onClick={handleDownload}
                 disabled={isPlaying}
               >
-                <ArrowDownTrayIcon className="h-8 w-8  inline" />
+                <ArrowDownTrayIcon className="h-8 w-8  inline" color="white"/>
               </button>
             </div>
           </div>
@@ -2510,7 +2512,7 @@ const Exercise = ({ onBack }) => {
           <div
             className={`w-full h-full`}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.15)",
+              backgroundColor: "transparent",
               backdropFilter: "blur(20px)",
               borderRadius: "1rem",
               border: "1px solid rgba(255, 255, 255, 0.18)",
