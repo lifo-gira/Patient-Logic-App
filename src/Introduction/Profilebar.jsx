@@ -181,7 +181,7 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
       },
     }));
   };
-  console.log(healthCheckupData);
+  console.log(profileData);
   // Callback function to update reports in the profileData state
   const handleReports = (data) => {
     setProfileData((prevData) => ({ ...prevData, reports: data }));
@@ -199,6 +199,7 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
     const isDataReady = Object.values(profileData).every(
       (data) => data !== null
     );
+    console.log(isDataReady)
     if (isDataReady) {
       sendDataToFastAPI();
       // Navigate to "/diagnostics" when all data is ready
@@ -221,7 +222,7 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
           profession: "",
           PersonalDetails: {
             categories: profileData.categories,
-            healthcheckup: profileData.healthCheckup,
+            healthcheckup:{ selectedDate: profileData.healthCheckup.selectedDate},
             PatientDetails: profileData.patientDetails,
             Reports: profileData.reports,
             Height: profileData.healthCheckup.height, // Assuming height is stored in healthCheckup
@@ -230,21 +231,10 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
             Age: 22,
           },
           Exercises: {
-            running: {
-              values: [5.0, 6.0, 7.0],
-              pain: ["None", "Minimal", "Moderate"],
-              rom: 90,
-            },
-            pushups: { values: [], pain: [], rom: 0 },
-            squats: { values: [], pain: [], rom: 0 },
-            pullups: { values: [], pain: [], rom: 0 },
-            LegHipRotation: { values: [], pain: [], rom: 0 },
+            data : []
           },
           exercises_given: {
-            running: { rep: 10, set: 3 },
-            pushups: { rep: 12, set: 3 },
-            squats: { rep: 15, set: 3 },
-            pullups: { rep: 8, set: 3 },
+            data: []
           },
           health_tracker: {
             exercise_tracker: true,

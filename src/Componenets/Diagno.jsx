@@ -1463,7 +1463,7 @@ const Diagno = () => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
     console.log(highlightArray);
-    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
+    for (let i = startIndex; i < endIndex  && i < totalCards ; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -1695,7 +1695,7 @@ const Diagno = () => {
   const [showFlashscreen, setShowFlashscreen] = useState(false);
 
   const updateExerciseData = async (combinedArray) => {
-    // console.log("diagnarray after submit",combinedArray)
+    console.log("diagnarray after submit",combinedArray)
     const updatedExercises = combinedArray.map((exercise) => ({
       name: exercise.name,
       values: exercise.values,

@@ -94,7 +94,7 @@ const Finalreport = () => {
 
   // Access the user_id property
   var userId = parsedData._id;
-  console.log(userId);
+  // console.log(userId);
   const data = [
     {
       name: "18-24",
@@ -280,7 +280,7 @@ const Finalreport = () => {
     index: parseInt(index), // Convert index back to integer if needed
     ...values,
   }));
-  console.log(finalData);
+  // console.log(finalData);
 
   const topbar = {
     hidden: { y: "-200%", opacity: 0 }, // Initial position off-screen
@@ -384,11 +384,18 @@ const Finalreport = () => {
   const [arrowdown1, setarrowdown1] = useState(false);
   const [drop1, setdrop1] = useState(false);
 
-const showDropdownOptions = () => {
-        setarrowdown1(!arrowdown1);
-        setarrowup1(!arrowup1);
-        setdrop1(!drop1);
-    }
+  const showDropdownOptions = () => {
+    setarrowdown1(!arrowdown1);
+    setarrowup1(!arrowup1);
+    setdrop1(!drop1);
+  };
+
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
+  const handleExerciseSelect = (exercise) => {
+    setSelectedExercise(exercise);
+  };
+
   return (
     <div
       className={`w-full flex flex-row ${
@@ -810,47 +817,38 @@ const showDropdownOptions = () => {
                 >
                   <div className="h-14 flex flex-row justify-between gap-2">
                     <div className={`w-1/3`}>
-                      <div class="flex flex-row justify-center " onClick={showDropdownOptions}>
-                        <div class="flex flex-col">
-                          <button
-                            
-                            className="flex flex-row justify-between w-48 px-2 py-2 text-gray-700 bg-white font-poppins"
-                          >
-                            <span className="select-none">Select an Exercise</span>
-                            {!arrowdown1&&(
-                            <ChevronDownIcon className="w-5 h-5"/>
+                      <div
+                        className="flex flex-row justify-center "
+                        onClick={showDropdownOptions}
+                      >
+                        <div className="flex flex-col">
+                          <button className="flex flex-row justify-between w-48 px-2 py-2 text-gray-700 bg-white font-poppins">
+                            <span className="select-none">
+                              Select an Exercise
+                            </span>
+                            {!arrowdown1 && (
+                              <ChevronDownIcon className="w-5 h-5" />
                             )}
-                            {!arrowup1&&(
-                            <ChevronUpIcon className="w-5 h-5"/>
-                            )}
+                            {!arrowup1 && <ChevronUpIcon className="w-5 h-5" />}
                           </button>
-                          {drop1&&(
-                          <div                  
-                            className=" w-48  bg-white rounded-lg shadow-xl z-50"
-                          >
-                            <List className={`p-0`}>
-                              <ListItem className={`px-4 py-0 `}>
-                                <Typography className="text-center">
-                                  Exercise 1
-                                </Typography>
-                              </ListItem>
-                              <ListItem className={`px-4 py-0 `}>
-                                <Typography className="text-center">
-                                  Exercise 2
-                                </Typography>
-                              </ListItem>
-                              <ListItem className={`px-4 py-0 `}>
-                                <Typography className="text-center">
-                                  Exercise 3
-                                </Typography>
-                              </ListItem>
-                              <ListItem className={`px-4 py-0 `}>
-                                <Typography className="text-center">
-                                  Exercise 4
-                                </Typography>
-                              </ListItem>
-                            </List>
-                          </div>
+                          {drop1 && (
+                            <div className=" w-48  bg-white rounded-lg shadow-xl z-50">
+                              <List className={`p-0`}>
+                                {exerciseData.map((exercise, index) => (
+                                  <ListItem
+                                    className={`px-4 py-0`}
+                                    key={index}
+                                    onClick={() =>
+                                      handleExerciseSelect(exercise)
+                                    }
+                                  >
+                                    <Typography className="text-center">
+                                      {exercise.name}
+                                    </Typography>
+                                  </ListItem>
+                                ))}
+                              </List>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -859,15 +857,15 @@ const showDropdownOptions = () => {
                       className={`w-1/3 flex flex-row justify-end items-center gap-5 pr-8`}
                     >
                       <motion.div
-                        initial="hidden" // Initial animation state
-                        animate="visible" // Animation to the center
+                        initial="hidden"
+                        animate="visible"
                         variants={iconanime}
                       >
                         <ShareIcon className={`w-6 h-6`} />
                       </motion.div>
                       <motion.div
-                        initial="hidden" // Initial animation state
-                        animate="visible" // Animation to the center
+                        initial="hidden"
+                        animate="visible"
                         variants={iconanime1}
                       >
                         <ArrowDownTrayIcon className={`w-6 h-6`} />
@@ -875,51 +873,55 @@ const showDropdownOptions = () => {
                     </div>
                   </div>
                   <div className="flex flex-row h-[22rem]">
-                    <ResponsiveContainer width="100%" height={250}>
-                      <AreaChart
-                        width={500}
-                        height={300}
-                        data={data1}
-                        margin={{
-                          top: 10,
-                          right: 30,
-                          left: 0,
-                          bottom: 0,
-                        }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id="colorUv"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="5%"
-                              stopColor="red"
-                              stopOpacity={0.5}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor="transparent"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
+                    {selectedExercise && (
+                      <ResponsiveContainer width="100%" height={250}>
+                        <AreaChart
+                          width={500}
+                          height={300}
+                          data={selectedExercise.values
+                            .map((value, index) => ({ name: index, uv: value }))
+                            .slice(0, sliderValue + 1)}
+                          margin={{
+                            top: 10,
+                            right: 30,
+                            left: 0,
+                            bottom: 0,
+                          }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="colorUv"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor="red"
+                                stopOpacity={0.5}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="transparent"
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
 
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Area
-                          type="monotone"
-                          dataKey="uv"
-                          stroke="red"
-                          strokeWidth={2}
-                          fill="url(#colorUv)"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Area
+                            type="monotone"
+                            dataKey="uv"
+                            stroke="red"
+                            strokeWidth={2}
+                            fill="url(#colorUv)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
 
                   <div
@@ -936,15 +938,17 @@ const showDropdownOptions = () => {
                       <hr className="w-0.5 h-5 bg-gray-400 round" />
                     </div>
                     <div className={`w-5/6 justify-center flex`}>
-                      <input
-                        value={sliderValue}
-                        onChange={handleSliderChange}
-                        aria-labelledby="continuous-slider"
-                        max={areadata.length - 1}
-                        className="w-5/6 h-2 appearance-none bg-gray-400 rounded-full outline-none cursor-pointer"
-                        style={{ marginTop: "10px" }}
-                        type="range"
-                      />
+                      {selectedExercise && (
+                        <input
+                          value={sliderValue}
+                          onChange={handleSliderChange}
+                          aria-labelledby="continuous-slider"
+                          max={selectedExercise.values.length - 1}
+                          className="w-5/6 h-2 appearance-none bg-gray-400 rounded-full outline-none cursor-pointer"
+                          style={{ marginTop: "10px" }}
+                          type="range"
+                        />
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -978,7 +982,7 @@ const showDropdownOptions = () => {
                         Left Leg
                       </Typography>
                     </div>
-                    <hr className="w-full h-0.5 bg-gray-100"/>
+                    <hr className="w-full h-0.5 bg-gray-100" />
                     <div className="flex flex-col justify-end items-end h-3/4 pt-2">
                       <CircularProgressbar
                         value={75}
@@ -1017,7 +1021,7 @@ const showDropdownOptions = () => {
                         Right Leg
                       </Typography>
                     </div>
-                    <hr className="w-full h-0.5 bg-gray-100"/>
+                    <hr className="w-full h-0.5 bg-gray-100" />
                     <div className="flex flex-col justify-center items-center h-3/4 pt-2">
                       <CircularProgressbar
                         value={64}

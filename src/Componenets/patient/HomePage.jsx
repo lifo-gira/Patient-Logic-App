@@ -523,7 +523,6 @@ const HomePage = () => {
                 <XAxis dataKey="index" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
                 {/* Conditional rendering of Line components */}
                 {finalData.length > 0 &&
                   Object.keys(finalData[0])

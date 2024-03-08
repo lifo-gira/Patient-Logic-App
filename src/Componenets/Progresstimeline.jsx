@@ -101,14 +101,30 @@ const Progresstimeline = ({ onStepClick, onExercise }) => {
     } else {
       setExpandedStep(step);
     }
-
+  
     setActiveStep(step);
-
-    // Call the callback function with the chosen exercise
+  
+    // Find exercises for the selected categories
+    const selectedExercises = [];
+    onExercise.forEach(selectedCategory => {
+      const category = categories.find(category => category.name === selectedCategory);
+      if (category) {
+        category.exercises.forEach(exercise => {
+          selectedExercises.push(exercise.name);
+        });
+      }
+    });
+  
+    // Call the callback function with the selected exercise
     if (onStepClick) {
-      onStepClick(exercise[step]);
+      const selectedExercise = selectedExercises[step]; // Select the exercise at the clicked step
+      if (selectedExercise) {
+        onStepClick(selectedExercise);
+      }
     }
   };
+  
+
 
   const calculateLinePercentage = (step) => {
     return (step / (exercise.length - 1)) * 100;

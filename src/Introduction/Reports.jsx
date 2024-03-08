@@ -183,7 +183,7 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
             <Button
               variant="text"
               className="flex items-center gap-2 bg-cyan-100"
-              onClick={onNextClick}
+              onClick={onNextClickHandler }
             >
               Next
               <svg

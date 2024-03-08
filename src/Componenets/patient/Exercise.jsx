@@ -718,7 +718,7 @@ const Exercise = ({ onBack }) => {
     setElapsedTime(-1);
     updateChart();
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`ws://127.0.0.1:8000/ws/${userId}`);
+    const newSocket = new WebSocket(`wss://api-backup-vap2.onrender.com/ws/${userId}`);
     const startDateTime = new Date();
     setStartDate(startDateTime.toLocaleDateString()); // Update startDate
     setStartTime(formatTime(startDateTime)); // Update startTime
@@ -744,7 +744,7 @@ const Exercise = ({ onBack }) => {
 
         // console.log(mappedSlice)
         metricArray.push(...mappedSlice);
-        // console.log(metricArrayLength, "metrics");
+        console.log(metricArrayLength, "metrics");
         // setmetricArray(mappedSlice)
       }
 
@@ -1791,7 +1791,7 @@ const Exercise = ({ onBack }) => {
     console.log(s3, "Model");
     const params = {
       Bucket: "blenderbuck",
-      Key: exe + ".glb", // Replace with your actual model file name
+      Key: "ProneRightLegBending.glb", // Replace with your actual model file name
     };
 
     try {
@@ -1959,7 +1959,7 @@ const Exercise = ({ onBack }) => {
         className={` w-full   ${
           screenWidth < 1105
             ? "flex flex-col h-full gap-4"
-            : "flex flex-row h-1/2 gap-4 px-2"
+            : "flex flex-row h-2/3 gap-4 px-2"
         }`}
       >
         <div
@@ -1992,7 +1992,7 @@ const Exercise = ({ onBack }) => {
                   color="white"
                   className="flex text-start"
                 >
-                  List of Exercise
+                  Endurance
                 </Typography>
               </div>
             </div>
@@ -2106,7 +2106,7 @@ const Exercise = ({ onBack }) => {
               >
                 <div className={`w-full h-full rounded-3x flex flex-row`}>
                   <div className={`w-2/5 h-full bg-white rounded-xl`}>
-                    <div className="w-full h-full">
+                    <div className="w-full h-full item-center">
                       {/* <Canvas
                         camera={{
                           position: [-45, 0, -5],
@@ -2135,7 +2135,7 @@ const Exercise = ({ onBack }) => {
                       <Canvas
                         camera={{
                           position: [-45, 0, -5], // Adjusted camera position
-                          fov: 2,
+                          fov: 4,
                           near: 0.1,
                           far: 1000,
                         }}
@@ -2149,7 +2149,7 @@ const Exercise = ({ onBack }) => {
                                 scale={1}
                                 rotation={[0, -0.2, 0]}
                               />
-                              <OrbitControls />
+                              {/* <OrbitControls /> */}
                             </>
                           )}
                           <directionalLight
@@ -2205,7 +2205,7 @@ const Exercise = ({ onBack }) => {
                                 scale={1}
                                 rotation={[0, -0.2, 0]}
                               />
-                              <OrbitControls />
+                              {/* <OrbitControls /> */}
                             </>
                           )}
                           <directionalLight
@@ -2224,7 +2224,7 @@ const Exercise = ({ onBack }) => {
       </div>
       <div
         className={` w-full gap-6 pt-2 pb-4 px-2 ${
-          screenWidth < 900 ? "h-full flex flex-col" : "h-1/2 flex flex-row"
+          screenWidth < 900 ? "h-full flex flex-col" : "h-1/3 flex flex-row"
         }`}
       >
         <div
