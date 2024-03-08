@@ -56,6 +56,7 @@ import {
   Label,
 } from "recharts";
 import exerbg from "../../assets/exerbg.svg"
+import glass from "../../assets/glass.svg"
 import { toast } from "react-toastify";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import html2canvas from "html2canvas";
@@ -2020,7 +2021,7 @@ const Exercise = ({ onBack }) => {
           </div>
           <div className="w-full h-5/6 rounded-3xl pl-6">
             <div
-              className={`w-full h-full py-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf`}
+              className={`w-full h-full py-4 `}
               style={{
                 backgroundColor: "transparent",
                 backdropFilter: "blur(10px)",
@@ -2029,6 +2030,7 @@ const Exercise = ({ onBack }) => {
                 boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
               }}
             >
+              <div className="w-full h-full py-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf bg-cover">
               {exer.map((item, index) => (
                 <div className={`w-full h-20 flex flex-row py-2`} key={index}>
                   <div
@@ -2074,6 +2076,7 @@ const Exercise = ({ onBack }) => {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </div>
