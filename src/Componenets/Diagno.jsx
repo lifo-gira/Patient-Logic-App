@@ -1464,7 +1464,7 @@ const Diagno = () => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
     console.log(highlightArray);
-    for (let i = startIndex; i < endIndex  && i < totalCards ; i++) {
+    for (let i = startIndex; i < endIndex-1  && i < totalCards-1 ; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -2092,6 +2092,7 @@ const Diagno = () => {
                               onComplete={() => {
                                 setIsPlaying(false);
                                 handleTimerStop();
+                                stopTimer()
                                 return [false, 0]; // Stop the timer and reset to 0
                               }}
                             >

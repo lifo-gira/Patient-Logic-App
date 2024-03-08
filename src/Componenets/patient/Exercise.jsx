@@ -1716,91 +1716,56 @@ const Exercise = ({ onBack }) => {
     );
   };
 
-  const [runningArray, setrunningArray] = useState([]);
-  const [squatsArray, setsquatsArray] = useState([]);
-  const [pushupsArray, setpushupsArray] = useState([]);
-  const [pullupsArray, setpullupsArray] = useState([]);
-  const [leghipArray, setleghipArray] = useState([]);
-
   const [useExercise, setuseExercise] = useState("");
 
-  useEffect(() => {
-    setrunningArray(runningArray);
-    setsquatsArray(squatsArray);
-    setpushupsArray(pushupsArray);
-    setpullupsArray(pullupsArray);
-    setleghipArray(leghipArray);
-    console.log(runningArray, "runningArray");
-    console.log(squatsArray, "squatsArray");
-    console.log(pushupsArray, "pushupsArray");
-    console.log(pullupsArray, "pullupsArray");
-    console.log(leghipArray, "leghipArray");
-  }, [runningArray, squatsArray, pushupsArray, pullupsArray, leghipArray]);
-
-  const [grapharray, setgrapharray] = useState([]);
-
+  const [diagnoArray, setdiagnoArray] = useState([]);
+  const [tempDiagnoarray, settempDiagnoarray] = useState([]);
+  
+  
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
-    // setuseExercise(chosenExercise);
+    setuseExercise(chosenExercise);
     console.log(simple, "simple");
     console.log(highlightArray);
-    // Update the respective state array based on the chosen exercise
-    setgrapharray(simple);
-    switch (chosenExercise) {
-      case "running":
-        setrunningArray(simple);
-        break;
-      case "squats":
-        setsquatsArray(simple);
-        break;
-      case "pushups":
-        setpushupsArray(simple);
-        break;
-      case "pullups":
-        setpullupsArray(simple);
-        break;
-      case "leghip":
-        setleghipArray(simple);
-        break;
-      default:
-        // Handle other exercises if needed
-        break;
+  
+    if (simple && simple.length > 0) {
+      const exerciseObject = {
+        name: chosenExercise,
+        values: simple
+      };
+  
+      // Remove duplicates from tempDiagnoarray
+      const updatedDiagnoArray = diagnoArray.filter(exercise => exercise.name !== chosenExercise);
+      const updatedTempDiagnoarray = tempDiagnoarray.filter(exercise => exercise.name !== chosenExercise);
+      
+      // Add the new exercise to tempDiagnoarray
+      settempDiagnoarray([...updatedTempDiagnoarray, exerciseObject]);
+      
+      // Update diagnoArray with the updated array
+      setdiagnoArray(updatedDiagnoArray);
     }
   }
+  const [combinedArray, setCombinedArray] = useState([]);
 
-  const isExerciseDataValid =
-    runningArray?.length > 0 &&
-    squatsArray?.length > 0 &&
-    pushupsArray?.length > 0 &&
-    pullupsArray?.length > 0 &&
-    leghipArray?.length > 0;
+
+  useEffect(() => {
+    setCombinedArray(combinedArray)
+  }, [combinedArray]);
+
+  // const isExerciseDataValid =
+  //   runningArray?.length > 0 &&
+  //   squatsArray?.length > 0 &&
+  //   pushupsArray?.length > 0 &&
+  //   pullupsArray?.length > 0 &&
+  //   leghipArray?.length > 0;
 
   const handledisplay = (count, exe, flag) => {
     loadModel(exe);
     setrep(count);
     setexerc(exe);
     setisdisplay(flag);
+    loadModel(exe)
     console.log(exe, "exerc");
-    console.log(grapharray);
-    switch (exe) {
-      case "running":
-        setrunningArray(runningArray);
-        break;
-      case "squats":
-        setsquatsArray(squatsArray);
-        break;
-      case "pushups":
-        setpushupsArray(pushupsArray);
-        break;
-      case "pullups":
-        setpullupsArray(pullupsArray);
-        break;
-      case "leghip":
-        setleghipArray(leghipArray);
-        break;
-      default:
-        break;
-    }
     setuseExercise(exe);
   };
 
@@ -1834,20 +1799,34 @@ const Exercise = ({ onBack }) => {
   };
 
   const handleCompleteSubmit = () => {
-    // Call the function to update exercise data only if data is valid
-    if (isExerciseDataValid) {
-      updateExerciseData();
-      // Add any other logic for the button click event as needed
-    }
+    // Combine the contents of diagnoArray and tempDiagnoarray
+    const combinedArray = [...diagnoArray, ...tempDiagnoarray];
+  
+    // Update diagnoArray with combinedArray
+    setdiagnoArray(combinedArray);
+  
+    // Reset tempDiagnoarray
+    settempDiagnoarray([]);
+  
+    
+    // Store combinedArray in state
+    setCombinedArray(combinedArray);
+    // console.log("diagnarray after submit", combinedArray);
+    updateExerciseData(combinedArray)
   };
 
-  const updateExerciseData = async () => {
+  const updateExerciseData = async (combinedArray) => {
+    const updatedExercises = combinedArray.map(exercise => ({
+      name: exercise.name,
+      values: exercise.values,
+      pain: [], // Omit pain array as per the existing structure
+      rom: 10 // Omit rom value as per the existing structure
+    }));
+    console.log("updatedExercises",updatedExercises)
+    // Create the exerciseData object with the updated exercises
     const exerciseData = {
-      running: { values: runningArray, pain: [], rom: 90 },
-      pushups: { values: pushupsArray, pain: [], rom: 0 },
-      squats: { values: squatsArray, pain: [], rom: 0 },
-      pullups: { values: pullupsArray, pain: [], rom: 0 },
-      LegHipRotation: { values: leghipArray, pain: [], rom: 0 },
+      data:updatedExercises
+        
     };
     const new_flag = 5;
     try {
@@ -2295,7 +2274,7 @@ const Exercise = ({ onBack }) => {
               <div className="w-full h-1/6 flex flex-col items-center justify-center">
                 <button
                   className="text-2xl font-semibold flex flex-row gap-8"
-                  onClick={updateExerciseData}
+                  onClick={handleCompleteSubmit}
                 >
                   Submit <PaperAirplaneIcon className="w-8 h-8" />
                 </button>
@@ -2351,7 +2330,7 @@ const Exercise = ({ onBack }) => {
                     stroke="#FF9900"
                     strokeWidth={2}
                     fill="url(#colorSandalYellow)"
-                    isAnimationActive={false}
+                    // isAnimationActive={false}
                   />
 
                   <Tooltip
@@ -2479,6 +2458,7 @@ const Exercise = ({ onBack }) => {
                     onComplete={() => {
                       setIsPlaying(false);
                       handleTimerStop();
+                      stopTimer()
                       return [false, 0]; // Stop the timer and reset to 0
                     }}
                   >

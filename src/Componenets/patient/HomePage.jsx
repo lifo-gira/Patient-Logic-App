@@ -519,7 +519,7 @@ const HomePage = () => {
                 data={finalData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                {/* <CartesianGrid strokeDasharray="3 3" /> */}
                 <XAxis dataKey="index" />
                 <YAxis />
                 <Tooltip />
@@ -535,6 +535,8 @@ const HomePage = () => {
                         stroke={`#${Math.floor(
                           Math.random() * 16777215
                         ).toString(16)}`}
+                        strokeWidth={4}
+                        strokeDasharray={'45 10'}
                       />
                     ))}
               </LineChart>
