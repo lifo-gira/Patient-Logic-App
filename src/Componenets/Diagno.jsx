@@ -377,18 +377,24 @@ const Diagno = () => {
   });
 
   const componentRef = useRef();
-
-  useEffect(() => {
-    // Trigger PDF generation when imageSrc is updated
-    if (imageSrc !== null) {
-      handleDownload();
-    }
-  }, [imageSrc]);
-
-  const handleDownload = () => {
+  
+  const handleDownload = async () => {
     try {
-      setShowRedLine(false);
-      downloadAsPdf();
+      const chartContainer = chartRef.current;
+      const componentContainer = componentRef.current;
+  
+      console.log(chartContainer)
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+      });
+      const componentcanvas = await html2canvas(componentContainer, {
+        scale: 2,
+      });
+      const imgData = canvas.toDataURL("image/jpeg");
+      const imgComponent = componentcanvas.toDataURL("image/jpeg");
+      setImageSrc(imgData);
+      setComponentImage(imgComponent);
+  
       const commonDetails = `
         <h1>${details.companyTitle}</h1>
         <p>Patient Name: ${details.patientName}</p>
@@ -411,35 +417,30 @@ const Diagno = () => {
         <p>Doctor Name: ${details.doctorName}</p>
         <p>Assistant Name: ${details.assistantName}</p>
       `;
-
+  
       const template = `
         <div>
           ${commonDetails}
           ${isActive ? doctorAssistantDetails : ""}
           <br></br>
-          <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
+          <img src="${imgData}" alt="Graph Image" style="width: 600px; height: 400px;" />
           ${totalGraphdetails}
         </div>
       `;
       const content = componentRef.current;
-
+  
       if (!content) {
         console.error("Content not found for PDF generation");
         return;
       }
-
+  
       const combinedContent = document.createElement("div");
-
+  
       const offDetails = document.createElement("div");
       offDetails.innerHTML = template;
       combinedContent.appendChild(offDetails.cloneNode(true));
-
-      // Assuming content is a DOM element
       combinedContent.appendChild(content.cloneNode(true));
-
-      // Log combined content for debugging
-      // console.log("Combined Content:", combinedContent.innerHTML);
-
+  
       html2pdf(combinedContent, {
         margin: 10,
         filename: "combined.pdf",
@@ -2616,7 +2617,7 @@ const Diagno = () => {
         <Page size="A4" style={styles.page} ref={componentRef}>
           {highlightArray.map(
             (data, index) =>
-              index >= 1 && (
+            index >= 0 && index<highlightArray.length-1 && (
                 <View key={index} style={styles.graphContainer}>
                   <Text style={styles.graphTitle}>Graph ${index}</Text>
                   <View style={styles.graphView}>

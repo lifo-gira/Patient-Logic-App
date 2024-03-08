@@ -58,7 +58,7 @@ import {
 import { toast } from "react-toastify";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import html2canvas from "html2canvas";
-import { html2pdf } from "html2pdf.js";
+import html2pdf from "html2pdf.js";
 import RecordRTC from "recordrtc";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -69,6 +69,7 @@ import { MathUtils } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { ClockIcon } from "@mui/x-date-pickers";
 import ModelRender from "./ModelRender";
+import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import {
   CircularProgressbar,
   buildStyles,
@@ -440,12 +441,12 @@ const Exercise = ({ onBack }) => {
     }
   };
 
-  useEffect(() => {
-    // Trigger PDF generation when imageSrc is updated
-    if (imageSrc !== null) {
-      handleDownload();
-    }
-  }, [imageSrc]);
+  // useEffect(() => {
+  //   // Trigger PDF generation when imageSrc is updated
+  //   if (imageSrc !== null) {
+  //     handleDownload();
+  //   }
+  // }, [imageSrc]);
 
   // new pdf generation
   const [showNames, setShowNames] = useState(false);
@@ -474,30 +475,43 @@ const Exercise = ({ onBack }) => {
     setIsActive(!isActive);
   };
 
-  // const styles = StyleSheet.create({
-  //   page: { flexDirection: "row", padding: 20 },
-  //   graphContainer: {
-  //     flex: 1,
-  //     marginBottom: 15,
-  //     display: "flex",
-  //     flexDirection: "column",
-  //     alignItems: "center",
-  //   },
-  //   graphView: { border: "1px dashed #000", padding: 15 },
-  //   graphTitle: {
-  //     fontSize: 16,
-  //     marginBottom: 5,
-  //     textAlign: "center",
-  //     marginTop: 5,
-  //   },
-  // });
+  const styles = StyleSheet.create({
+    page: { flexDirection: "row", padding: 20 },
+    graphContainer: {
+      flex: 1,
+      marginBottom: 15,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    },
+    graphView: { border: "1px dashed #000", padding: 15 },
+    graphTitle: {
+      fontSize: 16,
+      marginBottom: 5,
+      textAlign: "center",
+      marginTop: 5,
+    },
+  });
 
   const componentRef = useRef();
-
-  const handleDownload = () => {
+  
+  const handleDownload = async () => {
     try {
-      setShowRedLine(false);
-      downloadAsPdf();
+      const chartContainer = chartRef.current;
+      const componentContainer = componentRef.current;
+  
+      console.log(chartContainer)
+      const canvas = await html2canvas(chartContainer, {
+        scale: 2,
+      });
+      const componentcanvas = await html2canvas(componentContainer, {
+        scale: 2,
+      });
+      const imgData = canvas.toDataURL("image/jpeg");
+      const imgComponent = componentcanvas.toDataURL("image/jpeg");
+      setImageSrc(imgData);
+      setComponentImage(imgComponent);
+  
       const commonDetails = `
         <h1>${details.companyTitle}</h1>
         <p>Patient Name: ${details.patientName}</p>
@@ -507,39 +521,43 @@ const Exercise = ({ onBack }) => {
         <p>Login ID: ${details.loginId}</p>
         <p>Sensor ID: ${details.sensorId}</p>
       `;
+      const totalGraphdetails = `
+        <h1>OverAll Details</h1>
+        <p>Maximum Angle: ${maxAngles}°</p>
+        <p>Minimum Angle: ${minAngles}°</p>
+        <p>Flexion Cycle: ${flexionCycles}</p>
+        <p>Extension Cycle: ${extensionCycles}</p>
+        <p>Velocity: ${(maxAngles + minAngles) / 2}</p>
+        <p>ROM: ${maxAngles - minAngles}</p>
+      `;
       const doctorAssistantDetails = `
         <p>Doctor Name: ${details.doctorName}</p>
         <p>Assistant Name: ${details.assistantName}</p>
       `;
-
+  
       const template = `
         <div>
           ${commonDetails}
           ${isActive ? doctorAssistantDetails : ""}
           <br></br>
-          <img src="${imageSrc}" alt="Graph Image" style="width: 600px; height: 400px;" />
-          <img src="${CardImage}" alt="Card Image" style="width: 600px; height: 400px;" />
+          <img src="${imgData}" alt="Graph Image" style="width: 600px; height: 400px;" />
+          ${totalGraphdetails}
         </div>
       `;
       const content = componentRef.current;
-
+  
       if (!content) {
         console.error("Content not found for PDF generation");
         return;
       }
-
+  
       const combinedContent = document.createElement("div");
-
+  
       const offDetails = document.createElement("div");
       offDetails.innerHTML = template;
       combinedContent.appendChild(offDetails.cloneNode(true));
-
-      // Assuming content is a DOM element
       combinedContent.appendChild(content.cloneNode(true));
-
-      // Log combined content for debugging
-      // console.log("Combined Content:", combinedContent.innerHTML);
-
+  
       html2pdf(combinedContent, {
         margin: 10,
         filename: "combined.pdf",
@@ -552,7 +570,6 @@ const Exercise = ({ onBack }) => {
       // You might want to notify the user about the error
     }
   };
-
   // const generatePdf = () => {
   //   const offScreenDiv = document.createElement("div");
   //   setShowRedLine(false);
@@ -1253,6 +1270,7 @@ const Exercise = ({ onBack }) => {
 
       prevSignChange = change;
     }
+    highlightArray.push([{index: 0, val:0}])
     sethighlightArray(highlightArray);
     // console.log(highlightArray,"highlight")
     // console.log("ObjectElements",ObjectElements)
@@ -1547,7 +1565,7 @@ const Exercise = ({ onBack }) => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
     // console.log(highlightArray)
-    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
+    for (let i = startIndex; i < endIndex && i < totalCards ; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -2300,7 +2318,7 @@ const Exercise = ({ onBack }) => {
               Performance
             </Typography>
           </div>
-          <div className={`w-full h-4/6`}>
+          <div className={`w-full h-4/6`} ref={chartRef}>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
@@ -2328,10 +2346,12 @@ const Exercise = ({ onBack }) => {
                   </defs>
 
                   <Area
-                    dataKey="uv"
+                    data={data}
+                    dataKey="val"
                     stroke="#FF9900"
                     strokeWidth={2}
                     fill="url(#colorSandalYellow)"
+                    isAnimationActive={false}
                   />
 
                   <Tooltip
@@ -2637,6 +2657,52 @@ const Exercise = ({ onBack }) => {
           </div>
         </div>
       </div>
+      <div style={{ display: "none" }}>
+        <Page size="A4" style={styles.page} ref={componentRef}>
+          {highlightArray.map(
+            (data, index) =>
+              index >= 0 && index<highlightArray.length-1 && (
+                <View key={index} style={styles.graphContainer}>
+                  <Text style={styles.graphTitle}>Graph {index+1}</Text>
+                  <View style={styles.graphView}>
+                    <LineChart
+                      width={460}
+                      height={250}
+                      data={data}
+                      margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                    >
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="val" stroke="#8884d8" />
+                    </LineChart>
+                  </View>
+                  <br></br>
+                  <div className="border-black">
+                    {generateContentforPdf(index - 1)}
+                  </div>
+                </View>
+              )
+          )}
+        </Page>
+      </div>
+      {!isPlaying && (
+          <div className="w-full" style={{ display: "none" }}>
+            {highlightArray.length > 0 && (
+              <div
+                style={{
+                  overflowX: "auto",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                }}
+                className="py-2 gap-4 ml-4"
+              >
+                {generateCards()}
+              </div>
+            )}
+          </div>
+        )}
     </div>
   );
 };
