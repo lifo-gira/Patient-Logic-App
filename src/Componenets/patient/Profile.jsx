@@ -225,11 +225,11 @@ const Profile = () => {
         if (res.errorInvitees.length) {
           alert("The user does not exist or is offline.");
         }
-        return;
+        return null;
       })
       .catch((err) => {
         console.error(err);
-        return;
+        return null;
       });
   };
 
