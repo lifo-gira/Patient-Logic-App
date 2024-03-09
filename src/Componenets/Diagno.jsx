@@ -610,7 +610,7 @@ const Diagno = () => {
       cycleCount = 1;
       resetCards();
       tempRow.length = 0;
-      sethighlightArray([]);
+      // sethighlightArray([]);
       setRedLineGraphData([]);
       // startRecording();
       setIsStopButtonClicked(false);
@@ -1175,6 +1175,7 @@ const Diagno = () => {
     // console.log(flexionVelocities, "extensionVelocities");
     // console.log(extensionVelocities, "extensionVelocities");
     return {
+      highlightArray:highlightArray,
       flexionCycle: flexionCycle,
       extensionCycle: extensionCycle,
     };
@@ -1453,7 +1454,7 @@ const Diagno = () => {
   };
 
   const handleCardClick = (cardIndex) => {
-    console.log(highlightArray);
+    // console.log(highlightArray);
     GraphPlot(highlightArray[parseInt(cardIndex, 10)], elapsedTime + 1);
     handleHighlightedGraph();
     setShowRedLine(true);
@@ -1463,7 +1464,7 @@ const Diagno = () => {
   const generateCards = () => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
-    console.log(highlightArray);
+    // console.log(highlightArray);
     for (let i = startIndex; i < endIndex-1  && i < totalCards-1 ; i++) {
       const paragraph = generateParagraph(i);
 
@@ -1643,16 +1644,182 @@ const Diagno = () => {
 
   const [useExercise, setuseExercise] = useState("");
 
+  let tempedRow = [];
+  const [highlightedArray, sethighlightedArray] = useState([]);
+
+  function PainandRomArray(ObjectElements) {
+    let tempedRow = [];
+    let highlightedArray = [];
+    console.log("Inside Fucntion", ObjectElements);
+    for (let i = 0; i < ObjectElements.length - 1; i++) {
+      let change = ObjectElements[i].val - ObjectElements[i + 1].val;
+      tempedRow.push(ObjectElements[i]);
+      if (i + 1 === ObjectElements.length - 1) {
+        tempedRow.push(ObjectElements[i + 1]);
+        highlightedArray.push(tempedRow);
+        // console.log("final push highlightedArray",highlightedArray)
+      }
+
+      if (change === 0) {
+        continue;
+      }
+
+      if (
+        prevSignChange !== null &&
+        Math.sign(change) !== Math.sign(prevSignChange) &&
+        ObjectElements[i].val != null
+      ) {
+        cycleCount++;
+        // highlightedArray.push(tempedRow);
+        // console.log("highlightedArray",highlightedArray)
+        tempedRow = [ObjectElements[i]];
+        highlightedArray.push(tempedRow);
+        // console.log("tempedRow", tempedRow);
+
+        if (Math.sign(change) === -1) {
+          if (minFlexionAngle === null && ObjectElements[i].val != null) {
+            flexionCycle++;
+            minFlexionAngle = initialAngle;
+            let maxFlexionAngle = ObjectElements[i].val;
+            minExtensionAngle = ObjectElements[i + 1].val;
+            // Calculate flexion velocity
+            initialTime = ObjectElements[i + 1].index;
+          } else {
+            flexionCycle++;
+            let maxFlexionAngle = ObjectElements[i].val;
+            minExtensionAngle = ObjectElements[i + 1].val;
+            // Calculate flexion velocity
+            initialTime = ObjectElements[i + 1].index;
+          }
+        } else {
+          if (minExtensionAngle === null && ObjectElements[i].val != null) {
+            extensionCycle++;
+            minExtensionAngle = initialAngle;
+            let maxExtensionAngle = ObjectElements[i].val;
+            minFlexionAngle = ObjectElements[i + 1].val;
+            // Calculate extension velocity
+            initialTime = ObjectElements[i + 1].index;
+          } else if (ObjectElements[i].val) {
+            extensionCycle++;
+            let maxExtensionAngle = ObjectElements[i].val;
+            minFlexionAngle = ObjectElements[i + 1].val;
+            // Calculate extension velocity
+            initialTime = ObjectElements[i + 1].index;
+          }
+        }
+      }
+
+      prevSignChange = change;
+    }
+    highlightedArray.push([{ index: 0, val: 0 }]);
+    sethighlightedArray(highlightedArray);
+    // console.log(highlightedArray,"highlight")
+    // console.log("ObjectElements",ObjectElements)
+    // console.log(flexionVelocities, "extensionVelocities");
+    // console.log(extensionVelocities, "extensionVelocities");
+    return {
+      highlightedArray:highlightedArray,
+      // flexionCycle: flexionCycle,
+      // extensionCycle: extensionCycle,
+    };
+  }
+
+  function handleHighlightArray(highlightedArray) {
+    const pain = [];
+console.log(highlightedArray,"HI")
+    // Loop through each array in updatedHighlightArray
+    highlightedArray.forEach((innerArray) => {
+        const indices = [];
+        const values = [];
+
+        // Process each object in the inner array
+        innerArray.forEach((entry) => {
+            indices.push(entry.index);
+            values.push(entry.val);
+        });
+
+        // Calculate velocity and pain level for this inner array
+        const minandmaxangle = findMinMaxAngles(values);
+        const velocityforPain =
+            parseInt(
+                Math.abs(
+                    (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+                    indices[indices.length - 1] -
+                    indices[0]
+                ).toFixed(2)
+            ) +
+            parseInt(
+                Math.abs(
+                    (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+                    indices[indices.length - 1] -
+                    indices[0]
+                ).toFixed(2)
+            );
+
+        // Calculate pain level based on velocityforPain
+        if (velocityforPain < 10) {
+          pain.push(1);
+        } else if (velocityforPain > 10 && velocityforPain < 20) {
+          pain.push(2);
+        } else if (velocityforPain > 20 && velocityforPain < 30) {
+          pain.push(3);
+        } else if (velocityforPain > 30 && velocityforPain < 40) {
+          pain.push(4);
+        } else if (velocityforPain > 40 && velocityforPain < 50) {
+          pain.push(5);
+        } else if (velocityforPain > 50 && velocityforPain < 60) {
+          pain.push(6);
+        } else if (velocityforPain > 60 && velocityforPain < 70) {
+          pain.push(7);
+        } else if (velocityforPain > 70 && velocityforPain < 80) {
+          pain.push(8);
+        } else if (velocityforPain > 80 && velocityforPain < 90) {
+          pain.push(9);
+        } else if (velocityforPain > 90 && velocityforPain < 100) {
+          pain.push(10);
+        } else if (velocityforPain > 100 && velocityforPain < 110) {
+          pain.push(11);
+        } else if (velocityforPain > 110 && velocityforPain < 120) {
+          pain.push(12);
+        } else if (velocityforPain > 120 && velocityforPain < 130) {
+          pain.push(13);
+        } else if (velocityforPain > 130 && velocityforPain < 140) {
+          pain.push(14);
+        } else if (velocityforPain > 140 && velocityforPain < 150) {
+          pain.push(15);
+        } else if (velocityforPain > 150 && velocityforPain < 160) {
+          pain.push(16);
+        } else if (velocityforPain > 160 && velocityforPain < 170) {
+          pain.push(17);
+        } else if (velocityforPain > 170 && velocityforPain < 180) {
+          pain.push(18);
+        } else {
+          pain.push(19);
+        }
+    });
+
+    return pain;
+}
+
+
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
     setuseExercise(chosenExercise);
     console.log(simple, "simple");
-    console.log(highlightArray);
-
+    
     if (simple && simple.length > 0) {
+      const simpleObjects = simple.map((value, index) => ChartObject(value, index));
+      // console.log(simpleObjects)
+      const updatedHighlightArray = PainandRomArray(simpleObjects);
+      sethighlightedArray(updatedHighlightArray);
+      console.log(updatedHighlightArray.highlightedArray);
+      const painLevels = handleHighlightArray(updatedHighlightArray.highlightedArray);
+      console.log(painLevels);
       const exerciseObject = {
         name: chosenExercise,
         values: simple,
+        pain: painLevels,
+        rom: maxAngles - minAngles,
       };
 
       // Remove duplicates from tempDiagnoarray
@@ -1700,8 +1867,8 @@ const Diagno = () => {
     const updatedExercises = combinedArray.map((exercise) => ({
       name: exercise.name,
       values: exercise.values,
-      pain: [], // Omit pain array as per the existing structure
-      rom: 10, // Omit rom value as per the existing structure
+      pain: exercise.pain, // Omit pain array as per the existing structure
+      rom: exercise.rom, // Omit rom value as per the existing structure
     }));
     console.log("updatedExercises", updatedExercises);
     // Create the exerciseData object with the updated exercises
