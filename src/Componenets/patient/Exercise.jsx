@@ -288,10 +288,11 @@ const Exercise = ({ onBack }) => {
     if (counter >= -1 && counter < metricArray.length) {
       // console.log(metricArray,"metric")
       const metricItem = metricArray[counter - 1];
-      const legvalue = parseFloat(metricItem.val);
-      // const rotation = legvalue;
-      setRotationX(legvalue);
+      // const legvalue = parseFloat(metricItem.val);
+      // // const rotation = legvalue;
+      // console.log("legvalue",legvalue)
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
+        setRotationX(metricItem.val);
         return {
           index: newIndex,
           val: metricItem.val,
@@ -306,6 +307,7 @@ const Exercise = ({ onBack }) => {
         typeof lastMetricItem === "object" &&
         "val" in lastMetricItem
       ) {
+        setRotationX(lastMetricItem.val);
         return {
           index: newIndex,
           val: lastMetricItem.val,
