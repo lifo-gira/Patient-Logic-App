@@ -35,6 +35,7 @@ import {
   ArrowPathIcon,
   ArrowDownTrayIcon,
   PaperAirplaneIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/solid";
 import {
   BarChart,
@@ -1962,6 +1963,149 @@ const Exercise = ({ onBack }) => {
             : "flex flex-row h-2/3 gap-4 px-2"
         }`}
       >
+        {true && (
+          <div
+            className={`h-full  flex flex-col px-2 ${
+              screenWidth < 1105 ? "w-full" : "w-3/5"
+            }`}
+          >
+            <div className={`w-full h-1/6`}>
+              <Typography
+                variant="h3"
+                color="white"
+                className="flex text-start items-center h-full justify-center font-poppins"
+              >
+                {exerc}
+              </Typography>
+            </div>
+            <div className="w-full h-5/6 pr-6">
+              <div
+                className={`w-full h-full `}
+                // style={{
+                //   backgroundColor: "rgba(255, 255, 255, 0.15)",
+                //   backdropFilter: "blur(20px)",
+                //   borderRadius: "1rem",
+                //   border: "1px solid rgba(255, 255, 255, 0.18)",
+                //   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                // }}
+              >
+                <div className={`w-full h-full rounded-3x flex flex-row gap-8`}>
+                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
+                    <div className="w-full h-full item-center">
+                      {/* <Canvas
+                        camera={{
+                          position: [-45, 0, -5],
+                          fov: 2,
+                          near: 10,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <ModelRender
+                              rotat={rotationX}
+                              model={glbData}
+                              position={[0  , 0, 0]}
+                              scale={1}
+                              rotation={[0, -0.2, 0]}
+                            />
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                          <OrbitControls />
+                        </Suspense>
+                      </Canvas> */}
+                      <Canvas
+                        camera={{
+                          position: [-45, 0, -5], // Adjusted camera position
+                          fov: 4,
+                          near: 0.1,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <>
+                              <ModelRender
+                                rotat={rotationX}
+                                model={glbData}
+                                scale={1}
+                                rotation={[0, -0.2, 0]}
+                              />
+                              {/* <OrbitControls /> */}
+                            </>
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                        </Suspense>
+                      </Canvas>
+                    </div>
+                  </div>
+                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
+                    <div className="w-full h-full">
+                      {/* <Canvas
+                        camera={{
+                          position: [-45, 0, -5],
+                          fov: 2,
+                          near: 10,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <ModelRender
+                              rotat={rotationX}
+                              model={glbData}
+                              position={[0  , 0, 0]}
+                              scale={1}
+                              rotation={[0, -0.2, 0]}
+                            />
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                          <OrbitControls />
+                        </Suspense>
+                      </Canvas> */}
+                      <Canvas
+                        camera={{
+                          position: [-45, 0, -5], // Adjusted camera position
+                          fov: 2,
+                          near: 0.1,
+                          far: 1000,
+                        }}
+                      >
+                        <Suspense fallback={null}>
+                          {glbData && (
+                            <>
+                              <ModelRender
+                                rotat={rotationX}
+                                model={glbData}
+                                scale={1}
+                                rotation={[0, -0.2, 0]}
+                              />
+                              {/* <OrbitControls /> */}
+                            </>
+                          )}
+                          <directionalLight
+                            position={[-60, 40, -30]}
+                            intensity={10}
+                          />
+                        </Suspense>
+                      </Canvas>
+                    </div>
+                  </div>
+                  <div className={`w-1/5`}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div
           className={` h-full  flex flex-col px-2 ${
             screenWidth < 1105 ? "w-full gap-2" : "w-2/5"
@@ -1983,7 +2127,7 @@ const Exercise = ({ onBack }) => {
             >
               <div className={`flex justify-center items-center`}>
                 <button class="relative group rounded-full">
-                  <ArrowLeftIcon className={`w-7 h-7`} onClick={onBack} />
+                  <ArrowLeftIcon className={`w-7 h-7`} onClick={onBack} color="white" />
                 </button>
               </div>
               <div className={`w-full h-full flex items-center`}>
@@ -1996,30 +2140,25 @@ const Exercise = ({ onBack }) => {
                 </Typography>
               </div>
             </div>
-            {/* <div
-              className={`h-full flex items-center ${
+            <div
+              className={`h-full flex items-center  justify-end pr-2 ${
                 screenWidth < 500 ? "w-full" : "w-1/2"
               }`}
+              
             >
-              <Select
-                size="md"
-                label="All Categories"
-                className="bg-white"
-                value={selectedOption || ""}
-                onChange={handleSelectChange}
-                onClick={() => {
-                  handledisplay(null, null, false);
-                }}
-              >
-                <Option value="Endurance">Endurance</Option>
-                <Option value="Strength">Strength</Option>
-                <Option value="Flexibility">Flexibility</Option>
-                <Option value="Balance">Balance</Option>
-                <Option value="Stretching">Stretching</Option>
-              </Select>
-            </div> */}
+              <Typography className="text-white font-poppins font-medium bg-red-200 px-2.5 py-1 rounded-2xl flex flex-row gap-2 items-center" style={{
+                backgroundColor: "transparent",
+                backdropFilter: "blur(10px)",
+                borderRadius: "1rem",
+                border: "1px solid rgba(255, 255, 255, 0.18)",
+                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+              }}>
+              Exercises <ChevronDownIcon className="w-4 h-4"/>
+              </Typography>
+              
+            </div>
           </div>
-          <div className="w-full h-5/6 rounded-3xl pl-6">
+          <div className="w-full h-5/6 rounded-3xl pl-3">
             <div
               className={`w-full h-full py-4 `}
               style={{
@@ -2080,149 +2219,6 @@ const Exercise = ({ onBack }) => {
             </div>
           </div>
         </div>
-        {true && (
-          <div
-            className={`h-full  flex flex-col px-2 ${
-              screenWidth < 1105 ? "w-full" : "w-3/5"
-            }`}
-          >
-            <div className={`w-full h-1/6`}>
-              <Typography
-                variant="h3"
-                color="white"
-                className="flex text-start items-center h-full justify-center"
-              >
-                {exerc}
-              </Typography>
-            </div>
-            <div className="w-full h-5/6 pr-6">
-              <div
-                className={`w-full h-full `}
-                // style={{
-                //   backgroundColor: "rgba(255, 255, 255, 0.15)",
-                //   backdropFilter: "blur(20px)",
-                //   borderRadius: "1rem",
-                //   border: "1px solid rgba(255, 255, 255, 0.18)",
-                //   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-                // }}
-              >
-                <div className={`w-full h-full rounded-3x flex flex-row`}>
-                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
-                    <div className="w-full h-full item-center">
-                      {/* <Canvas
-                        camera={{
-                          position: [-45, 0, -5],
-                          fov: 2,
-                          near: 10,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <ModelRender
-                              rotat={rotationX}
-                              model={glbData}
-                              position={[0  , 0, 0]}
-                              scale={1}
-                              rotation={[0, -0.2, 0]}
-                            />
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                          <OrbitControls />
-                        </Suspense>
-                      </Canvas> */}
-                      <Canvas
-                        camera={{
-                          position: [-45, 0, -5], // Adjusted camera position
-                          fov: 4,
-                          near: 0.1,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <>
-                              <ModelRender
-                                rotat={rotationX}
-                                model={glbData}
-                                scale={1}
-                                rotation={[0, -0.2, 0]}
-                              />
-                              {/* <OrbitControls /> */}
-                            </>
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                        </Suspense>
-                      </Canvas>
-                    </div>
-                  </div>
-                  <div className={`w-1/5`}></div>
-                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
-                    <div className="w-full h-full">
-                      {/* <Canvas
-                        camera={{
-                          position: [-45, 0, -5],
-                          fov: 2,
-                          near: 10,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <ModelRender
-                              rotat={rotationX}
-                              model={glbData}
-                              position={[0  , 0, 0]}
-                              scale={1}
-                              rotation={[0, -0.2, 0]}
-                            />
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                          <OrbitControls />
-                        </Suspense>
-                      </Canvas> */}
-                      <Canvas
-                        camera={{
-                          position: [-45, 0, -5], // Adjusted camera position
-                          fov: 2,
-                          near: 0.1,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <>
-                              <ModelRender
-                                rotat={rotationX}
-                                model={glbData}
-                                scale={1}
-                                rotation={[0, -0.2, 0]}
-                              />
-                              {/* <OrbitControls /> */}
-                            </>
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                        </Suspense>
-                      </Canvas>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       <div
         className={` w-full gap-6 pt-2 pb-4 px-2 ${
@@ -2231,7 +2227,7 @@ const Exercise = ({ onBack }) => {
       >
         <div
           className={`  rounded-2xl ${
-            screenWidth < 900 ? "w-full h-60" : "w-2/6 pl-8 h-full"
+            screenWidth < 900 ? "w-full h-60" : "w-2/6 pl-2 h-full"
           }`}
         >
           <div
@@ -2244,8 +2240,8 @@ const Exercise = ({ onBack }) => {
               boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
             }}
           >
-            <div className="w-full h-full flex flex-col justify-center items-start">
-              <div className="w-full h-1/6 flex justify-start flex-col gap-1 pl-4 pt-2">
+            <div className="w-full h-full flex flex-col justify-start items-start">
+              <div className="w-full h-1/6 flex justify-start flex-col pl-4 pt-2">
                 <Typography
                   variant="h5"
                   color="white"
@@ -2271,9 +2267,10 @@ const Exercise = ({ onBack }) => {
                           rotation: 1 / 2 + 1 / 8,
                           trailColor: "#eee",
                           pathColor: "cyan",
-                          textColor: "black",
+                          textColor: "white",
                           textSize: "22px",
                         })}
+                        className="font-poppins"
                       />
               </div>
               <div className="w-full h-1/6 flex flex-col items-center justify-center">
@@ -2315,6 +2312,7 @@ const Exercise = ({ onBack }) => {
                     left: 0,
                     bottom: 0,
                   }}
+                  className="font-poppins"
                 >
                   <defs>
                     <linearGradient
@@ -2509,7 +2507,7 @@ const Exercise = ({ onBack }) => {
         </div>
         <div
           className={` ${
-            screenWidth < 900 ? "w-full  h-60" : "w-3/6 pr-8  h-full"
+            screenWidth < 900 ? "w-full  h-60" : "w-3/6 pr-2  h-full"
           }`}
         >
           <div
@@ -2522,8 +2520,8 @@ const Exercise = ({ onBack }) => {
               boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
             }}
           >
-            <Card color="transparent" className="w-full h-full px-5 pt-4">
-              <div className={`w-full h-12 flex justify-start`}>
+            <Card color="transparent" className="w-full h-full px-5 pt-2 pb-4">
+              <div className={`w-full h-6 flex justify-start`}>
                 <Typography
                   variant="h5"
                   color="white"
@@ -2539,7 +2537,7 @@ const Exercise = ({ onBack }) => {
                     height={400}
                     data={sadata}
                     margin={{
-                      top: 10,
+                      top: 5,
                       right: 0,
                       left: 0,
                       bottom: 0,

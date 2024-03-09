@@ -1471,20 +1471,20 @@ const Diagno = () => {
         <div key={i} className="card" onClick={() => handleCardClick(i)}>
           <Card
             key={i}
-            color={pain[i] > 10 ? "red" : "green"}
+            
             variant="gradient"
             className="border-black w-full max-w-[15rem] p-2 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300"
           >
             <CardHeader
               floated={false}
               shadow={false}
-              color="transparent"
+              color={pain[i] > 10 ? "red" : "green"}
               className="m-0 mb-1 rounded-none border-b border-white/10 pb-2 text-center "
             >
               <Typography
                 variant="small"
                 color="black"
-                className="font-bold uppercase"
+                className="font-bold uppercase font-poppins"
               >
                 CYCLE {i + 1}
               </Typography>
@@ -1502,7 +1502,7 @@ const Diagno = () => {
                   <Typography
                     dangerouslySetInnerHTML={{ __html: paragraph }}
                     color="black"
-                    className="text-base font-medium font-bold"
+                    className="text-base font-medium  font-poppins"
                   ></Typography>
                 </li>
               </ul>
@@ -1921,7 +1921,7 @@ const Diagno = () => {
           {!showFlashscreen && (
             <div className={`w-1/6 flex justify-center items-center`}>
               <button
-                className="my-2 bg-gray-500 text-white px-4 py-2 rounded-md"
+                className="my-2 bg-gray-500 text-white px-4 py-2 rounded-md font-poppins"
                 onClick={handleCompleteSubmit}
                 // disabled={!isExerciseDataValid}
               >
@@ -1958,7 +1958,7 @@ const Diagno = () => {
                               onChange={handleToggle}
                               className="sr-only"
                             />
-                            <span className="label flex items-center text-xs font-semibold text-black">
+                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                               PASSIVE
                             </span>
                             <span
@@ -1972,7 +1972,7 @@ const Diagno = () => {
                                 }`}
                               ></span>
                             </span>
-                            <span className="label flex items-center text-xs font-semibold text-black">
+                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                               ACTIVE
                             </span>
                           </label>
@@ -1988,7 +1988,7 @@ const Diagno = () => {
                               onChange={handleLegCheckboxChange}
                               className="sr-only"
                             />
-                            <span className="label flex items-center text-xs font-semibold text-black">
+                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                               LEFT LEG
                             </span>
                             <span
@@ -2002,7 +2002,7 @@ const Diagno = () => {
                                 }`}
                               ></span>
                             </span>
-                            <span className="label flex items-center text-xs font-semibold text-black">
+                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                               RIGHT LEG
                             </span>
                           </label>
@@ -2025,7 +2025,7 @@ const Diagno = () => {
                               isBluetoothConnected
                                 ? "bg-green-500 animate-flash"
                                 : "bg-gray-400"
-                            } text-black text-xs font-semibold rounded-full justify-center `}
+                            } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
                             onClick={handleDeviceStatus}
                           >
                             {isBluetoothConnected
@@ -2062,7 +2062,7 @@ const Diagno = () => {
                                   className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
                                   placeholder="00"
                                 />
-                                <span className="w-full text-center text-black font-bold text-[10px]">
+                                <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
                                   minutes
                                 </span>
                               </div>
@@ -2074,7 +2074,7 @@ const Diagno = () => {
                                   className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
                                   placeholder="00"
                                 />
-                                <span className="w-full text-center text-black font-bold text-[10px]">
+                                <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
                                   seconds
                                 </span>
                               </div>
@@ -2141,7 +2141,7 @@ const Diagno = () => {
                         className="flex flex-col justify-center items-center w-full pt-4"
                         ref={chartRef}
                       >
-                        <div className="w-full pl-6 font-bold text-2xl">
+                        <div className="w-full pl-6 font-bold text-2xl font-poppins">
                           Levels Report
                         </div>
                         <div className="w-full">
@@ -2247,7 +2247,7 @@ const Diagno = () => {
                           onChange={handleToggle}
                           className="sr-only"
                         />
-                        <span className="label flex items-center text-xs font-semibold text-black">
+                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                           PASSIVE
                         </span>
                         <span
@@ -2261,7 +2261,7 @@ const Diagno = () => {
                             }`}
                           ></span>
                         </span>
-                        <span className="label flex items-center text-xs font-semibold text-black">
+                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                           ACTIVE
                         </span>
                       </label>
@@ -2275,7 +2275,7 @@ const Diagno = () => {
                           onChange={handleLegCheckboxChange}
                           className="sr-only"
                         />
-                        <span className="label flex items-center text-xs font-semibold text-black">
+                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                           LEFT LEG
                         </span>
                         <span
@@ -2289,7 +2289,7 @@ const Diagno = () => {
                             }`}
                           ></span>
                         </span>
-                        <span className="label flex items-center text-xs font-semibold text-black">
+                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
                           RIGHT LEG
                         </span>
                       </label>
@@ -2310,7 +2310,7 @@ const Diagno = () => {
                           isBluetoothConnected
                             ? "bg-green-500 animate-flash"
                             : "bg-gray-400"
-                        } text-black text-xs font-semibold rounded-full justify-center `}
+                        } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
                         onClick={handleDeviceStatus}
                       >
                         {isBluetoothConnected ? "CONNECTED" : "DISCONNECTED"}
@@ -2359,7 +2359,7 @@ const Diagno = () => {
                                 className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
                                 placeholder="00"
                               />
-                              <span className="w-full text-center text-black font-bold text-[10px]">
+                              <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
                                 minutes
                               </span>
                             </div>
@@ -2371,7 +2371,7 @@ const Diagno = () => {
                                 className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
                                 placeholder="00"
                               />
-                              <span className="w-full text-center text-black font-bold text-[10px]">
+                              <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
                                 seconds
                               </span>
                             </div>
@@ -2435,67 +2435,67 @@ const Diagno = () => {
                         color="white"
                         className="mt-6 flex justify-center gap-1 text-7xl font-normal"
                       >
-                        <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5" />
+                        <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5 font-poppins" />
                         {elapsedTime}
-                        <p className="text-lg flex items-end">sec</p>
+                        <p className="text-lg flex items-end font-poppins">sec</p>
                       </Typography>
                     </CardHeader>
                     <CardBody className="p-0">
                       <ul className="flex flex-col gap-3.5">
                         <li className="flex justify-center items-center gap-4">
-                          <Typography className="font-normal text-2xl">
+                          <Typography className="font-normal text-2xl font-poppins">
                             {isActive ? "Active" : "Passive"}
                           </Typography>
-                          <Typography className="font-normal text-2xl">
+                          <Typography className="font-normal text-2xl font-poppins">
                             /
                           </Typography>
-                          <Typography className="font-normal text-2xl">
+                          <Typography className="font-normal text-2xl font-poppins">
                             {!isLegChecked ? "Left Leg" : "Right Leg"}
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             Maximum Angle
                           </Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             {maxAngles}°
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             Minimum Angle
                           </Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             {minAngles}°
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             Flexion Cycle
                           </Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             {flexionCycles}
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             Extension Cycle
                           </Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             {extensionCycles}
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             Velocity
                           </Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">
                             {(maxAngles + minAngles) / 2}
                           </Typography>
                         </li>
                         <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal">ROM</Typography>
-                          <Typography className="font-normal">
+                          <Typography className="font-normal font-poppins">ROM</Typography>
+                          <Typography className="font-normal font-poppins">
                             {maxAngles - minAngles}
                           </Typography>
                         </li>
@@ -2503,8 +2503,8 @@ const Diagno = () => {
                     </CardBody>
                     <CardFooter className="pt-4 w-full">
                       <div className="w-full flex gap-3">
-                        <Typography className="font-bold">Note:</Typography>
-                        <Typography>Angles in degrees</Typography>
+                        <Typography className="font-bold font-poppins">Note:</Typography>
+                        <Typography className="font-poppins">Angles in degrees</Typography>
                       </div>
                     </CardFooter>
                   </Card>
@@ -2534,18 +2534,18 @@ const Diagno = () => {
                           <Typography
                             variant="h1"
                             color="white"
-                            className={` flex justify-center gap-1 font-normal ${
+                            className={` flex justify-center gap-1 font-normal font-poppins ${
                               screenWidth >= 845 ? "text-7xl" : "text-6xl"
                             }`}
                           >
                             <ClockIcon
-                              className={`${
+                              className={`font-poppins ${
                                 screenWidth >= 845 ? "w-7 h-7" : "w-6 h-6"
                               }`}
                             />
                             120
                             <p
-                              className={`flex items-end ${
+                              className={`flex items-end font-poppins ${
                                 screenWidth >= 845 ? "text-lg" : "text-base"
                               }`}
                             >
@@ -2580,10 +2580,10 @@ const Diagno = () => {
                       <div className="col-span-1 row-span-1 flex items-center justify-center">
                         <CardFooter>
                           <div className="flex gap-3">
-                            <Typography className="font-bold text-base sm:text-lg">
+                            <Typography className="font-bold text-base sm:text-lg font-poppins">
                               Note:
                             </Typography>
-                            <Typography className="text-base sm:text-lg">
+                            <Typography className="text-base sm:text-lg font-poppins">
                               Angles in degrees
                             </Typography>
                           </div>

@@ -362,6 +362,7 @@ const HomePage = () => {
                     left: 0,
                     bottom: 0,
                   }}
+                  className="font-poppins"
                 >
                   <defs>
                     <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
@@ -436,7 +437,7 @@ const HomePage = () => {
                   data={bardata}
                   layout="vertical"
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                
+                  className="font-poppins"
                 >
                  <XAxis type="number"/>
                   <YAxis dataKey="name" type="category" />
@@ -518,6 +519,7 @@ const HomePage = () => {
                 height={300}
                 data={finalData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                className="font-poppins"
               >
                 {/* <CartesianGrid strokeDasharray="3 3" /> */}
                 <XAxis dataKey="index" />
