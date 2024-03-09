@@ -186,6 +186,7 @@ const HomePage = () => {
   const [exerciseData, setExerciseData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [romData, setromData] = useState({});
   // const [userId, setUserId] = useState(""); // Assuming you have userId state variable
 
   useEffect(() => {
@@ -204,9 +205,15 @@ const HomePage = () => {
             name: exercise.name,
             values: exercise.values.map((value) => parseFloat(value)),
           }));
+          const parsedROMData = data.Exercises.data.map((exercise) => ({
+            name: exercise.name,
+            rom: exercise.rom,
+          }));
 
           console.log("Parsed exercise data:", parsedExerciseData);
+          console.log("parsedROMData", parsedROMData);
           setExerciseData(parsedExerciseData);
+          setromData(parsedROMData)
         } else {
           setError(data?.detail || "Failed to fetch patient information");
         }
@@ -404,18 +411,18 @@ const HomePage = () => {
                   color="gray"
                   className="flex text-start px-5 font-poppins"
                 >
-                  Sugar Level
+                  ROM
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="h6"
                   color="black"
                   className="flex text-start px-5 font-poppins font-semibold"
                 >
                   Age and Gender
-                </Typography>
+                </Typography> */}
               </div>
               <div className={`w-1/2 h-12 flex flex-row items-center`}>
-                <Typography
+                {/* <Typography
                   variant="h6"
                   color="black"
                   className="flex flex-row justify-center items-center text-start px-5 font-poppins gap-2"
@@ -428,23 +435,34 @@ const HomePage = () => {
                   className="flex flex-row justify-center items-center text-start px-5 font-poppins font-semibold gap-2"
                 >
                   <div className={`w-3 h-3 bg-cyan-200 rounded-full`}></div> Female
-                </Typography>
+                </Typography> */}
               </div>
             </div>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={bardata}
-                  layout="vertical"
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  className="font-poppins"
-                >
-                 <XAxis type="number"/>
-                  <YAxis dataKey="name" type="category" />
-                  <Tooltip />
-                  <Bar dataKey="uv" stackId="a" fill="#00ced1" />
-                  <Bar dataKey="pv" stackId="a" fill="#00ffff" shape={<CustomBar />}/>
-                </BarChart>
+              <AreaChart
+          width={500}
+          height={400}
+          data={romData}
+          margin={{
+            top: 10,
+            right: 30,
+            left: 0,
+            bottom: 0,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <defs>
+            <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
+              <stop offset={off} stopColor="green" stopOpacity={1} />
+              <stop offset={off} stopColor="red" stopOpacity={1} />
+            </linearGradient>
+          </defs>
+          <Area type="monotone" dataKey="rom" stroke="#000" fill="url(#splitColor)" />
+        </AreaChart>
               </ResponsiveContainer>
             </div>
           </Card>

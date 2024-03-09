@@ -56,8 +56,8 @@ import {
   Scatter,
   Label,
 } from "recharts";
-import exerbg from "../../assets/exerbg.svg"
-import glass from "../../assets/glass.svg"
+import exerbg from "../../assets/exerbg.svg";
+import glass from "../../assets/glass.svg";
 import { toast } from "react-toastify";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import html2canvas from "html2canvas";
@@ -497,13 +497,13 @@ const Exercise = ({ onBack }) => {
   });
 
   const componentRef = useRef();
-  
+
   const handleDownload = async () => {
     try {
       const chartContainer = chartRef.current;
       const componentContainer = componentRef.current;
-  
-      console.log(chartContainer)
+
+      console.log(chartContainer);
       const canvas = await html2canvas(chartContainer, {
         scale: 2,
       });
@@ -514,7 +514,7 @@ const Exercise = ({ onBack }) => {
       const imgComponent = componentcanvas.toDataURL("image/jpeg");
       setImageSrc(imgData);
       setComponentImage(imgComponent);
-  
+
       const commonDetails = `
         <h1>${details.companyTitle}</h1>
         <p>Patient Name: ${details.patientName}</p>
@@ -537,7 +537,7 @@ const Exercise = ({ onBack }) => {
         <p>Doctor Name: ${details.doctorName}</p>
         <p>Assistant Name: ${details.assistantName}</p>
       `;
-  
+
       const template = `
         <div>
           ${commonDetails}
@@ -548,19 +548,19 @@ const Exercise = ({ onBack }) => {
         </div>
       `;
       const content = componentRef.current;
-  
+
       if (!content) {
         console.error("Content not found for PDF generation");
         return;
       }
-  
+
       const combinedContent = document.createElement("div");
-  
+
       const offDetails = document.createElement("div");
       offDetails.innerHTML = template;
       combinedContent.appendChild(offDetails.cloneNode(true));
       combinedContent.appendChild(content.cloneNode(true));
-  
+
       html2pdf(combinedContent, {
         margin: 10,
         filename: "combined.pdf",
@@ -738,7 +738,9 @@ const Exercise = ({ onBack }) => {
     setElapsedTime(-1);
     updateChart();
     // Create a new WebSocket connection when starting the chart
-    const newSocket = new WebSocket(`wss://api-backup-vap2.onrender.com/ws/${userId}`);
+    const newSocket = new WebSocket(
+      `wss://api-backup-vap2.onrender.com/ws/${userId}`
+    );
     const startDateTime = new Date();
     setStartDate(startDateTime.toLocaleDateString()); // Update startDate
     setStartTime(formatTime(startDateTime)); // Update startTime
@@ -1273,7 +1275,7 @@ const Exercise = ({ onBack }) => {
 
       prevSignChange = change;
     }
-    highlightArray.push([{index: 0, val:0}])
+    highlightArray.push([{ index: 0, val: 0 }]);
     sethighlightArray(highlightArray);
     // console.log(highlightArray,"highlight")
     // console.log("ObjectElements",ObjectElements)
@@ -1568,7 +1570,7 @@ const Exercise = ({ onBack }) => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
     // console.log(highlightArray)
-    for (let i = startIndex; i < endIndex && i < totalCards ; i++) {
+    for (let i = startIndex; i < endIndex && i < totalCards; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
@@ -1723,8 +1725,7 @@ const Exercise = ({ onBack }) => {
 
   const [diagnoArray, setdiagnoArray] = useState([]);
   const [tempDiagnoarray, settempDiagnoarray] = useState([]);
-  
-  
+
   let tempedRow = [];
   const [highlightedArray, sethighlightedArray] = useState([]);
 
@@ -1799,7 +1800,7 @@ const Exercise = ({ onBack }) => {
     // console.log(flexionVelocities, "extensionVelocities");
     // console.log(extensionVelocities, "extensionVelocities");
     return {
-      highlightedArray:highlightedArray,
+      highlightedArray: highlightedArray,
       // flexionCycle: flexionCycle,
       // extensionCycle: extensionCycle,
     };
@@ -1807,94 +1808,97 @@ const Exercise = ({ onBack }) => {
 
   function handleHighlightArray(highlightedArray) {
     const pain = [];
-console.log(highlightedArray,"HI")
+    console.log(highlightedArray, "HI");
     // Loop through each array in updatedHighlightArray
     highlightedArray.forEach((innerArray) => {
-        const indices = [];
-        const values = [];
+      const indices = [];
+      const values = [];
 
-        // Process each object in the inner array
-        innerArray.forEach((entry) => {
-            indices.push(entry.index);
-            values.push(entry.val);
-        });
+      // Process each object in the inner array
+      innerArray.forEach((entry) => {
+        indices.push(entry.index);
+        values.push(entry.val);
+      });
 
-        // Calculate velocity and pain level for this inner array
-        const minandmaxangle = findMinMaxAngles(values);
-        const velocityforPain =
-            parseInt(
-                Math.abs(
-                    (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
-                    indices[indices.length - 1] -
-                    indices[0]
-                ).toFixed(2)
-            ) +
-            parseInt(
-                Math.abs(
-                    (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
-                    indices[indices.length - 1] -
-                    indices[0]
-                ).toFixed(2)
-            );
+      // Calculate velocity and pain level for this inner array
+      const minandmaxangle = findMinMaxAngles(values);
+      const velocityforPain =
+        parseInt(
+          Math.abs(
+            (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)
+        ) +
+        parseInt(
+          Math.abs(
+            (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)
+        );
 
-        // Calculate pain level based on velocityforPain
-        if (velocityforPain < 10) {
-          pain.push(1);
-        } else if (velocityforPain > 10 && velocityforPain < 20) {
-          pain.push(2);
-        } else if (velocityforPain > 20 && velocityforPain < 30) {
-          pain.push(3);
-        } else if (velocityforPain > 30 && velocityforPain < 40) {
-          pain.push(4);
-        } else if (velocityforPain > 40 && velocityforPain < 50) {
-          pain.push(5);
-        } else if (velocityforPain > 50 && velocityforPain < 60) {
-          pain.push(6);
-        } else if (velocityforPain > 60 && velocityforPain < 70) {
-          pain.push(7);
-        } else if (velocityforPain > 70 && velocityforPain < 80) {
-          pain.push(8);
-        } else if (velocityforPain > 80 && velocityforPain < 90) {
-          pain.push(9);
-        } else if (velocityforPain > 90 && velocityforPain < 100) {
-          pain.push(10);
-        } else if (velocityforPain > 100 && velocityforPain < 110) {
-          pain.push(11);
-        } else if (velocityforPain > 110 && velocityforPain < 120) {
-          pain.push(12);
-        } else if (velocityforPain > 120 && velocityforPain < 130) {
-          pain.push(13);
-        } else if (velocityforPain > 130 && velocityforPain < 140) {
-          pain.push(14);
-        } else if (velocityforPain > 140 && velocityforPain < 150) {
-          pain.push(15);
-        } else if (velocityforPain > 150 && velocityforPain < 160) {
-          pain.push(16);
-        } else if (velocityforPain > 160 && velocityforPain < 170) {
-          pain.push(17);
-        } else if (velocityforPain > 170 && velocityforPain < 180) {
-          pain.push(18);
-        } else {
-          pain.push(19);
-        }
+      // Calculate pain level based on velocityforPain
+      if (velocityforPain < 10) {
+        pain.push(1);
+      } else if (velocityforPain > 10 && velocityforPain < 20) {
+        pain.push(2);
+      } else if (velocityforPain > 20 && velocityforPain < 30) {
+        pain.push(3);
+      } else if (velocityforPain > 30 && velocityforPain < 40) {
+        pain.push(4);
+      } else if (velocityforPain > 40 && velocityforPain < 50) {
+        pain.push(5);
+      } else if (velocityforPain > 50 && velocityforPain < 60) {
+        pain.push(6);
+      } else if (velocityforPain > 60 && velocityforPain < 70) {
+        pain.push(7);
+      } else if (velocityforPain > 70 && velocityforPain < 80) {
+        pain.push(8);
+      } else if (velocityforPain > 80 && velocityforPain < 90) {
+        pain.push(9);
+      } else if (velocityforPain > 90 && velocityforPain < 100) {
+        pain.push(10);
+      } else if (velocityforPain > 100 && velocityforPain < 110) {
+        pain.push(11);
+      } else if (velocityforPain > 110 && velocityforPain < 120) {
+        pain.push(12);
+      } else if (velocityforPain > 120 && velocityforPain < 130) {
+        pain.push(13);
+      } else if (velocityforPain > 130 && velocityforPain < 140) {
+        pain.push(14);
+      } else if (velocityforPain > 140 && velocityforPain < 150) {
+        pain.push(15);
+      } else if (velocityforPain > 150 && velocityforPain < 160) {
+        pain.push(16);
+      } else if (velocityforPain > 160 && velocityforPain < 170) {
+        pain.push(17);
+      } else if (velocityforPain > 170 && velocityforPain < 180) {
+        pain.push(18);
+      } else {
+        pain.push(19);
+      }
     });
 
     return pain;
-}
-
+  }
 
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
     setuseExercise(chosenExercise);
     console.log(simple, "simple");
-    
+
     if (simple && simple.length > 0) {
-      const simpleObjects = simple.map((value, index) => ChartObject(value, index));
+      const simpleObjects = simple.map((value, index) =>
+        ChartObject(value, index)
+      );
       // console.log(simpleObjects)
       const updatedHighlightArray = PainandRomArray(simpleObjects);
       sethighlightedArray(updatedHighlightArray);
       console.log(updatedHighlightArray.highlightedArray);
-      const painLevels = handleHighlightArray(updatedHighlightArray.highlightedArray);
+      const painLevels = handleHighlightArray(
+        updatedHighlightArray.highlightedArray
+      );
       console.log(painLevels);
       const exerciseObject = {
         name: chosenExercise,
@@ -1920,9 +1924,8 @@ console.log(highlightedArray,"HI")
   }
   const [combinedArray, setCombinedArray] = useState([]);
 
-
   useEffect(() => {
-    setCombinedArray(combinedArray)
+    setCombinedArray(combinedArray);
   }, [combinedArray]);
 
   // const isExerciseDataValid =
@@ -1937,7 +1940,7 @@ console.log(highlightedArray,"HI")
     setrep(count);
     setexerc(exe);
     setisdisplay(flag);
-    loadModel(exe)
+    loadModel(exe);
     console.log(exe, "exerc");
     setuseExercise(exe);
   };
@@ -1974,32 +1977,30 @@ console.log(highlightedArray,"HI")
   const handleCompleteSubmit = () => {
     // Combine the contents of diagnoArray and tempDiagnoarray
     const combinedArray = [...diagnoArray, ...tempDiagnoarray];
-  
+
     // Update diagnoArray with combinedArray
     setdiagnoArray(combinedArray);
-  
+
     // Reset tempDiagnoarray
     settempDiagnoarray([]);
-  
-    
+
     // Store combinedArray in state
     setCombinedArray(combinedArray);
     // console.log("diagnarray after submit", combinedArray);
-    updateExerciseData(combinedArray)
+    updateExerciseData(combinedArray);
   };
 
   const updateExerciseData = async (combinedArray) => {
-    const updatedExercises = combinedArray.map(exercise => ({
+    const updatedExercises = combinedArray.map((exercise) => ({
       name: exercise.name,
       values: exercise.values,
       pain: exercise.pain, // Omit pain array as per the existing structure
       rom: exercise.rom, // Omit rom value as per the existing structure
     }));
-    console.log("updatedExercises",updatedExercises)
+    console.log("updatedExercises", updatedExercises);
     // Create the exerciseData object with the updated exercises
     const exerciseData = {
-      data:updatedExercises
-        
+      data: updatedExercises,
     };
     const new_flag = 5;
     try {
@@ -2124,7 +2125,7 @@ console.log(highlightedArray,"HI")
       className={`w-full h-full bg-cover bg-center ${
         screenWidth < 1105 ? "flex flex-col gap-4 pt-4" : "flex flex-col gap-4"
       }`}
-      style={{backgroundImage: `url(${exerbg})`}}
+      style={{ backgroundImage: `url(${exerbg})` }}
     >
       <div
         className={` w-full   ${
@@ -2297,7 +2298,11 @@ console.log(highlightedArray,"HI")
             >
               <div className={`flex justify-center items-center`}>
                 <button class="relative group rounded-full">
-                  <ArrowLeftIcon className={`w-7 h-7`} onClick={onBack} color="white" />
+                  <ArrowLeftIcon
+                    className={`w-7 h-7`}
+                    onClick={onBack}
+                    color="white"
+                  />
                 </button>
               </div>
               <div className={`w-full h-full flex items-center`}>
@@ -2314,18 +2319,19 @@ console.log(highlightedArray,"HI")
               className={`h-full flex items-center  justify-end pr-2 ${
                 screenWidth < 500 ? "w-full" : "w-1/2"
               }`}
-              
             >
-              <Typography className="text-white font-poppins font-medium bg-red-200 px-2.5 py-1 rounded-2xl flex flex-row gap-2 items-center" style={{
-                backgroundColor: "transparent",
-                backdropFilter: "blur(10px)",
-                borderRadius: "1rem",
-                border: "1px solid rgba(255, 255, 255, 0.18)",
-                boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-              }}>
-              Exercises <ChevronDownIcon className="w-4 h-4"/>
+              <Typography
+                className="text-white font-poppins font-medium bg-red-200 px-2.5 py-1 rounded-2xl flex flex-row gap-2 items-center"
+                style={{
+                  backgroundColor: "transparent",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "1rem",
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                }}
+              >
+                Exercises <ChevronDownIcon className="w-4 h-4" />
               </Typography>
-              
             </div>
           </div>
           <div className="w-full h-5/6 rounded-3xl pl-3">
@@ -2340,51 +2346,51 @@ console.log(highlightedArray,"HI")
               }}
             >
               <div className="w-full h-full py-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-pixelf bg-cover">
-              {exer.map((item, index) => (
-                <div className={`w-full h-20 flex flex-row py-2`} key={index}>
-                  <div
-                    className={`w-1/6 h-full flex items-center justify-center`}
-                  >
-                    <Typography
-                      variant="h4"
-                      color="white"
-                      className="flex text-start px-5 font-poppins"
+                {exer.map((item, index) => (
+                  <div className={`w-full h-20 flex flex-row py-2`} key={index}>
+                    <div
+                      className={`w-1/6 h-full flex items-center justify-center`}
                     >
-                      {index + 1}
-                    </Typography>
-                  </div>
-                  <div className={`w-4/6 h-full  flex flex-row`}>
-                    <div className={`w-1/2 h-full `}>
-                      <img src="" alt="" className={`w-full h-full px-4`} />
-                    </div>
-                    <div className={`w-1/2 h-full  flex flex-col`}>
                       <Typography
-                        variant="h6"
+                        variant="h4"
                         color="white"
-                        className="flex text-start w-full h-1/2 items-center font-poppins"
+                        className="flex text-start px-5 font-poppins"
                       >
-                        {item.name}
-                      </Typography>
-                      <Typography
-                        variant="h6"
-                        color="white"
-                        className="flex text-start w-full h-1/2 items-center font-poppins"
-                      >
-                        Set - {item.rep}
+                        {index + 1}
                       </Typography>
                     </div>
+                    <div className={`w-4/6 h-full  flex flex-row`}>
+                      <div className={`w-1/2 h-full `}>
+                        <img src="" alt="" className={`w-full h-full px-4`} />
+                      </div>
+                      <div className={`w-1/2 h-full  flex flex-col`}>
+                        <Typography
+                          variant="h6"
+                          color="white"
+                          className="flex text-start w-full h-1/2 items-center font-poppins"
+                        >
+                          {item.name}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          color="white"
+                          className="flex text-start w-full h-1/2 items-center font-poppins"
+                        >
+                          Set - {item.rep}
+                        </Typography>
+                      </div>
+                    </div>
+                    <div
+                      className={`w-1/6 h-full  flex justify-center items-center`}
+                    >
+                      <PlayCircleIcon
+                        color="white"
+                        className={`w-9 h-9 cursor-pointer`}
+                        onClick={() => handledisplay(item.rep, item.name, true)}
+                      />
+                    </div>
                   </div>
-                  <div
-                    className={`w-1/6 h-full  flex justify-center items-center`}
-                  >
-                    <PlayCircleIcon
-                      color="white"
-                      className={`w-9 h-9 cursor-pointer`}
-                      onClick={() => handledisplay(item.rep, item.name, true)}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))}
               </div>
             </div>
           </div>
@@ -2417,31 +2423,31 @@ console.log(highlightedArray,"HI")
                   color="white"
                   className=" flex  gap-1 text-base font-semibold font-poppins items-center justify-start"
                 >
-                  Flexibility
+                  ROM Indicator
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="h6"
                   color="white"
                   className=" flex gap-1 text-sm font-mediumb text-gray-300 font-poppins items-center justify-start"
                 >
                   48% More than last month
-                </Typography>
+                </Typography> */}
               </div>
 
               <div className="w-full h-4/6 pt-4 flex-col flex justify-center items-center">
-              <CircularProgressbar
-                        value={84}
-                        text={84}
-                        circleRatio={0.75}
-                        styles={buildStyles({
-                          rotation: 1 / 2 + 1 / 8,
-                          trailColor: "#eee",
-                          pathColor: "cyan",
-                          textColor: "white",
-                          textSize: "22px",
-                        })}
-                        className="font-poppins"
-                      />
+                <CircularProgressbar
+                  value={((maxAngles - minAngles) / 200) * 100} // Adjust value proportionally to be out of 200
+                  text={`${maxAngles - minAngles}`} // Display the value out of 200
+                  circleRatio={0.75}
+                  styles={buildStyles({
+                    rotation: 1 / 2 + 1 / 8,
+                    trailColor: "#eee",
+                    pathColor: "cyan",
+                    textColor: "white",
+                    textSize: "22px",
+                  })}
+                  className="font-poppins"
+                />
               </div>
               <div className="w-full h-1/6 flex flex-col items-center justify-center">
                 <button
@@ -2585,9 +2591,9 @@ console.log(highlightedArray,"HI")
                 onClick={handlePlayPauseClick}
               >
                 {isPlaying ? (
-                  <PauseIcon className="w-8 h-8" color="white"/>
+                  <PauseIcon className="w-8 h-8" color="white" />
                 ) : (
-                  <PlayIcon className="w-8 h-8" color="white"/>
+                  <PlayIcon className="w-8 h-8" color="white" />
                 )}
               </button>
               {!isPlaying && (
@@ -2631,7 +2637,7 @@ console.log(highlightedArray,"HI")
                     onComplete={() => {
                       setIsPlaying(false);
                       handleTimerStop();
-                      stopTimer()
+                      stopTimer();
                       return [false, 0]; // Stop the timer and reset to 0
                     }}
                   >
@@ -2662,7 +2668,7 @@ console.log(highlightedArray,"HI")
                   setRotationX(0);
                 }}
               >
-                <ArrowPathIcon className="h-8 w-8  inline" color="white"/>
+                <ArrowPathIcon className="h-8 w-8  inline" color="white" />
               </button>
 
               <button
@@ -2670,7 +2676,7 @@ console.log(highlightedArray,"HI")
                 onClick={handleDownload}
                 disabled={isPlaying}
               >
-                <ArrowDownTrayIcon className="h-8 w-8  inline" color="white"/>
+                <ArrowDownTrayIcon className="h-8 w-8  inline" color="white" />
               </button>
             </div>
           </div>
@@ -2814,9 +2820,10 @@ console.log(highlightedArray,"HI")
         <Page size="A4" style={styles.page} ref={componentRef}>
           {highlightArray.map(
             (data, index) =>
-              index >= 0 && index<highlightArray.length-1 && (
+              index >= 0 &&
+              index < highlightArray.length - 1 && (
                 <View key={index} style={styles.graphContainer}>
-                  <Text style={styles.graphTitle}>Graph {index+1}</Text>
+                  <Text style={styles.graphTitle}>Graph {index + 1}</Text>
                   <View style={styles.graphView}>
                     <LineChart
                       width={460}
@@ -2841,21 +2848,21 @@ console.log(highlightedArray,"HI")
         </Page>
       </div>
       {!isPlaying && (
-          <div className="w-full" style={{ display: "none" }}>
-            {highlightArray.length > 0 && (
-              <div
-                style={{
-                  overflowX: "auto",
-                  whiteSpace: "nowrap",
-                  display: "flex",
-                }}
-                className="py-2 gap-4 ml-4"
-              >
-                {generateCards()}
-              </div>
-            )}
-          </div>
-        )}
+        <div className="w-full" style={{ display: "none" }}>
+          {highlightArray.length > 0 && (
+            <div
+              style={{
+                overflowX: "auto",
+                whiteSpace: "nowrap",
+                display: "flex",
+              }}
+              className="py-2 gap-4 ml-4"
+            >
+              {generateCards()}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
