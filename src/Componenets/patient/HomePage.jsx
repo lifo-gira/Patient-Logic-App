@@ -187,6 +187,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [romData, setromData] = useState({});
+  const [painData, setpainData] = useState({});
   // const [userId, setUserId] = useState(""); // Assuming you have userId state variable
 
   useEffect(() => {
@@ -209,11 +210,17 @@ const HomePage = () => {
             name: exercise.name,
             rom: exercise.rom,
           }));
+          const parsedPainData = data.Exercises.data.map((exercise) => ({
+            name: exercise.name,
+            pain: exercise.pain.map((value) => parseInt(value)),
+          }));
 
           console.log("Parsed exercise data:", parsedExerciseData);
           console.log("parsedROMData", parsedROMData);
+          console.log("parsedPainData", parsedPainData);
           setExerciseData(parsedExerciseData);
           setromData(parsedROMData)
+          setpainData(parsedPainData)
         } else {
           setError(data?.detail || "Failed to fetch patient information");
         }
@@ -251,6 +258,31 @@ const HomePage = () => {
     ...values,
   }));
   console.log(finalData);
+
+  //pain data format
+  const formattedPainData = Object.values(painData).flatMap((exercise) =>
+    exercise.pain.map((value, index) => ({
+      index: index,
+      [exercise.name]: value,
+    }))
+  );
+
+  // Group the points by index
+  const groupedPainData = formattedPainData.reduce((grouped, item) => {
+    const { index, ...rest } = item;
+    if (!grouped[index]) {
+      grouped[index] = {};
+    }
+    Object.assign(grouped[index], rest);
+    return grouped;
+  }, {});
+
+  // Convert grouped data back to an array of objects
+  const finalPainData = Object.entries(groupedPainData).map(([index, values]) => ({
+    index: parseInt(index), // Convert index back to integer if needed
+    ...values,
+  }));
+  console.log(finalPainData);
 
   const gradientOffset = () => {
     const dataMax = Math.max(...data.map((i) => i.uv));
@@ -326,21 +358,21 @@ const HomePage = () => {
             <div className={`w-full flex flex-row`}>
               <div className="w-1/2 flex flex-col">
                 <Typography
-                  variant="h7"
+                  variant="h6"
                   color="gray"
-                  className="flex text-start px-5 font-normal font-poppins"
+                  className="flex text-start px-5"
                 >
-                  Sugar Level
+                  Pain Indicators
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="h5"
                   color="black"
                   className="flex text-start px-5 font-poppins"
                 >
                   220 mg/dl
-                </Typography>
+                </Typography> */}
               </div>
-              <div className="w-1/2 flex flex-col items-end">
+              {/* <div className="w-1/2 flex flex-col items-end">
                 <Typography
                   variant="h6"
                   color="black"
@@ -355,43 +387,47 @@ const HomePage = () => {
                 >
                   VS LAST MONTH
                 </Typography>
-              </div>
+              </div> */}
             </div>
             <div className="w-full h-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  width={500}
-                  height={400}
-                  data={data2}
-                  margin={{
-                    top: 10,
-                    right: 30,
-                    left: 0,
-                    bottom: 0,
-                  }}
-                  className="font-poppins"
-                >
-                  <defs>
-                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="red" stopOpacity={0.5} />
-                      <stop
-                        offset="95%"
-                        stopColor="transparent"
-                        stopOpacity={0}
+              <AreaChart
+          width={500}
+          height={400}
+          data={finalPainData}
+          margin={{
+            top: 10,
+            right: 30,
+            left: 0,
+            bottom: 0,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          {/* <Area type="monotone" dataKey="pain" stackId="1" stroke="#8884d8" fill="#8884d8" /> */}
+          {finalPainData.length > 0 &&
+                  Object.keys(finalPainData[0])
+                    .filter((key) => key !== "index") // Exclude the 'index' key
+                    .map((exerciseName, index) => (
+                      <Area
+                        key={index}
+                        type="monotone"
+                        dataKey={exerciseName}
+                        stroke={`#${Math.floor(
+                          Math.random() * 16777215
+                        ).toString(16)}`}
+                        fill={`#${Math.floor(
+                          Math.random() * 16777215
+                        ).toString(16)}`}
+                        strokeWidth={4}
+                        strokeDasharray={'45 10'}
                       />
-                    </linearGradient>
-                  </defs>
-
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area
-                    dataKey="uv"
-                    stroke="red"
-                    strokeWidth={2}
-                    fill="url(#colorUv)"
-                  />
-                </AreaChart>
+                    ))}
+          {/* <Area type="monotone" dataKey="pv" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+          <Area type="monotone" dataKey="amt" stackId="1" stroke="#ffc658" fill="#ffc658" /> */}
+        </AreaChart>
               </ResponsiveContainer>
             </div>
           </Card>
