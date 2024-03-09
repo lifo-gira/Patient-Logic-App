@@ -115,7 +115,7 @@ const Exercise = ({ onBack }) => {
     const fetchPatientInfo = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/patient-info/${patient_id}`
+          `https://api-backup-vap2.onrender.com/patient-info/${patient_id}`
         );
         if (!response.ok) {
           if (response.status === 404) {
@@ -2005,7 +2005,7 @@ const Exercise = ({ onBack }) => {
     const new_flag = 5;
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/update-exercise-info/${patient_id}/${new_flag}`,
+        `https://api-backup-vap2.onrender.com/update-exercise-info/${patient_id}/${new_flag}`,
         {
           method: "PUT",
           headers: {

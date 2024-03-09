@@ -210,7 +210,7 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
   const sendDataToFastAPI = async () => {
     console.log(profileData.healthCheckup.bmi, "height");
     try {
-      const response = await fetch("http://127.0.0.1:8000/patient-info/", {
+      const response = await fetch("https://api-backup-vap2.onrender.com/patient-info/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +262,7 @@ const Profilebar = ({chatbot,chatcont1,chatcont2,dischat}) => {
 
   // const sendDataToFastAPI = async () => {
   //   try {
-  //     const response = await fetch("http://127.0.0.1:8000/patient-info/", {
+  //     const response = await fetch("https://api-backup-vap2.onrender.com/patient-info/", {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",

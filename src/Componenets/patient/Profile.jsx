@@ -87,7 +87,7 @@ const Profile = () => {
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://127.0.0.1:8000/patients");
+    const socket = new WebSocket("wss://api-backup-vap2.onrender.com/patients");
 
     socket.onmessage = (event) => {
       // Handle the WebSocket message

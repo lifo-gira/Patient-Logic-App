@@ -1894,7 +1894,7 @@ console.log(highlightedArray,"HI")
     const new_flag = -1;
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/update-exercise-info/${patient_id}/${new_flag}`,
+        `https://api-backup-vap2.onrender.com/update-exercise-info/${patient_id}/${new_flag}`,
         {
           method: "PUT",
           headers: {

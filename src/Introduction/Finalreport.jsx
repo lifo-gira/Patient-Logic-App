@@ -229,7 +229,7 @@ const Finalreport = () => {
     const fetchPatientInfo = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/patient-info/${userId}`
+          `https://api-backup-vap2.onrender.com/patient-info/${userId}`
         );
         const data = await response.json();
 
