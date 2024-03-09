@@ -1913,7 +1913,7 @@ console.log(highlightedArray,"HI")
           setShowFlashscreen(false); // Hide the Flashscreen component after 5 seconds
           // Navigate to the finalreport page here if needed
           navigate("/finalreport");
-        }, 7000);
+        }, 12000);
         // Handle success as needed
       } else {
         console.error("Failed to update exercise data");
@@ -1954,6 +1954,7 @@ console.log(highlightedArray,"HI")
 
   return (
     <>
+    {!showFlashscreen && (
       <Drawer open={open} onClose={closeDrawer} className={`mt-20 rounded-r-lg`}>
         <div className="mb-2 flex items-center justify-between p-4">
           <Typography variant="h5" color="blue-gray" className={`font-poppins`}>
@@ -2082,8 +2083,12 @@ console.log(highlightedArray,"HI")
           </Button>
         </div>
       </Drawer>
+    )}
+
       <div>
+      {!showFlashscreen && (
         <Profilebar />
+      )}
         <div className="flex flex-row items-center justify-center">
           {!showFlashscreen && (
             <div
@@ -2114,7 +2119,7 @@ console.log(highlightedArray,"HI")
           )}
         </div>
         <ToastContainer />
-
+        {!showFlashscreen && (
         <div
           className={
             screenWidth < 1242 && screenWidth >= 720
@@ -2779,7 +2784,8 @@ console.log(highlightedArray,"HI")
             </div>
           </div>
         </div>
-        {!isPlaying && (
+        )}
+        {!showFlashscreen && !isPlaying && (
           <div className="w-full">
             {highlightArray.length > 0 && (
               <div
@@ -2797,6 +2803,7 @@ console.log(highlightedArray,"HI")
         )}
       </div>
       {/* <div style={{ display: 'none' }}> */}
+      {!showFlashscreen && (
       <div style={{ display: "none" }}>
         <Page size="A4" style={styles.page} ref={componentRef}>
           {highlightArray.map(
@@ -2827,7 +2834,7 @@ console.log(highlightedArray,"HI")
           )}
         </Page>
       </div>
-
+    )}
       {/* </div> */}
     </>
   );

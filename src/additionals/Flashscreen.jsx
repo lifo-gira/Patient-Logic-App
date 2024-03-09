@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Loading from "../assets/loading.json"
 import Lottie from 'react-lottie-player'
 import Typewriter from 'typewriter-effect';
+import Loaded from '../assets/Loading.mp4';
 
 const Flashscreen = () => {
 
@@ -30,7 +31,7 @@ const Flashscreen = () => {
 
   return (
     <div className={`w-full h-screen `}>
-        <Lottie
+        {/* <Lottie
       loop
       animationData={Loading}
       play
@@ -57,7 +58,20 @@ const Flashscreen = () => {
           loop: true,
           deleteSpeed: 50 // Additional class for the wrapper element
         }}
-      />
+      /> */}
+      
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          // controls
+          autoPlay
+          loop
+          // poster="/videos/poster-image.jpg"
+        >
+          <source src={Loaded} type="video/mp4" />
+          {/* Your browser does not support the video tag. */}
+        </video>
+      </div>
     </div>
   )
 }
