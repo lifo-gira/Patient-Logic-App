@@ -40,7 +40,7 @@ const Patientdetails = ({ onNextClick, onPrevClick, onflag, onDataSubmit }) => {
       {
         title: "Any accident / surgeries happended before",
         alt_title: "Accident",
-        options: ["No", "Yes"],
+        options: ["Yes", "No"],
         images: [Acci1, Health1, Acci2, Health2],
         colo: ["cyan", "red"],
       },

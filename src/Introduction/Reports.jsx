@@ -7,11 +7,16 @@ import {
   Button,
 } from "@material-tailwind/react";
 
-import { InformationCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import {
+  InformationCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 import { motion } from "framer-motion";
+import Human from "../../src/assets/humanbg.png";
+import { ToastContainer, toast } from "react-toastify";
 
-const predefinedKeywords = ["Right Knee Pain", "Left Knee Pain", "Hip Pain"];
+const predefinedKeywords = ["Right Knee Pain", "Left Knee Pain", "Right Arm Pain", "Left Arm Pain"];
 
 const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
   const [initialKeywords] = useState(predefinedKeywords);
@@ -31,9 +36,22 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
   };
 
   const handleRemoveKeyword = (keyword) => {
+    console.log("Remove Input", keyword);
     const updatedKeywords = selectedKeywords.filter((kw) => kw !== keyword);
+    console.log("Update", updatedKeywords);
     setSelectedKeywords(updatedKeywords);
+  
+    console.log("Removed", selectedKeywords);
+    if (selectedKeywords.length === 1) {
+      setSelectedKeywords([]);
+    }
+  
+    // Adding a setTimeout to log the final state after a delay
+    setTimeout(() => {
+      console.log("Final", selectedKeywords);
+    }, 5000); // Adjust the delay time (in milliseconds) as needed
   };
+  
 
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -67,6 +85,37 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
     }, // Sliding animation to the center
   };
 
+  const [clickedRegion, setClickedRegion] = useState(null);
+
+  const handleRegionClick = (regionName) => {
+    if (selectedKeywords.includes(regionName)) {
+      console.warn(`Region ${regionName} is already selected.`);
+      toast.warning(`${regionName} is already selected.`, {
+        position: "bottom-right",
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+    setClickedRegion(regionName);
+    selectedKeywords.push(regionName);
+    console.log("SelectedKeywords",selectedKeywords)
+  };
+  
+
+  const rightarm =
+    "21.5% 21%, 22% 24%, 21% 26%, 20% 28%, 22% 29%, 25% 30%, 27.8% 30.5%, 27.4% 29%, 27.8% 30%, 32.5% 25%, 32.5% 25%, 32% 21%, 30% 21%, 25% 21%";
+  const leftarm =
+    "70% 21%, 70% 21%, 70% 21%, 76% 21%, 79% 21%, 78.5% 24%, 80% 26%, 80% 27%, 79% 29.5%, 75% 24%, 81.5% 29%, 77% 29.5%, 75.5% 29.8%, 73% 30%, 72% 30%, 69.5% 27%, 68% 25%, 68% 25%, 67% 23%, 67% 21%";
+  const rightKnee =
+    "32% 60%, 31.5% 61%, 32% 63%, 31% 65%, 31% 67%, 35% 67%, 38% 67%, 40% 67%, 44% 67%, 44% 64%, 45% 62%, 45.8% 55.8%, 45% 60%, 37% 60%, 37% 60%";
+  const leftKnee =
+    "55% 60%, 55% 62%, 56.5% 64%, 56.5% 67%, 59% 67%, 60% 67%, 64% 67%, 66% 67%, 69.3% 67%, 68.2% 64%, 68% 63%, 68% 61%, 68% 60%, 64% 60%, 62% 60%, 58% 60%";
+
   return (
     <motion.div
       className={`w-full h-full flex-col `}
@@ -83,7 +132,7 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
           className={` ${
             screenWidth < 900
               ? "flex flex-col w-full p-5"
-              : "flex flex-row p-5 h-[30rem]"
+              : "flex flex-row p-5 h-[29rem]"
           }`}
         >
           <div className={`${screenWidth < 900 ? "w-full" : "w-1/2"}`}>
@@ -106,7 +155,7 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
                 <input
                   type="text"
                   className="border p-2 pl-4 w-full rounded-lg border-black focus:outline-none focus:shadow-outline font-poppins"
-                  placeholder="Search, Ex:Knee Pain..."
+                  placeholder="Search, Ex:Arm Pain..."
                   onChange={handleAddKeyword}
                   list="keywordsList"
                   value={inputValue}
@@ -141,18 +190,66 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
               </div>
             </div>
           </div>
-          <div className={`${screenWidth < 900 ? "w-full mt-8" : "w-1/2"}`}>
+          <div className={`${screenWidth < 900 ? "w-full mt-8" : "w-1/2 h-full"}`}>
             <div
-              className={`w-full flex justify-end items-center text-black gap-2`}
+              className={`w-full h-12 flex justify-end items-center text-black gap-2`}
             >
               <Typography className={`font-poppins font-medium`}>
                 Selection Steps
               </Typography>
               <InformationCircleIcon className={`w-8 h-8 cursor-pointer`} />
             </div>
-            
+            <div className={`w-full h-full flex justify-center items-center`}>
+              <div className="relative w-1/2 h-full ">
+                <img
+                  src={Human}
+                  alt="Highlighted Image"
+                  className="w-full h-full"
+                />
+                <div className="absolute inset-0">
+                  <div
+                    className="absolute inset-0"
+                    style={{ clipPath: `polygon(${rightarm})` }}
+                    // onClick={() => handleRegionClick("Right Arm Pain")}
+                  >
+                    {(clickedRegion === "Right Arm Pain" || (selectedKeywords.includes("Right Arm Pain") && selectedKeywords != "")) && (
+                      <div className="absolute inset-0 bg-cyan-700"></div>
+                    )}
+                  </div>
+                  <div
+                    className="absolute inset-0"
+                    style={{ clipPath: `polygon(${leftarm})` }}
+                    // onClick={() => handleRegionClick("Left Arm Pain")}
+                  >
+                    {(clickedRegion === "Left Arm Pain" || (selectedKeywords.includes("Left Arm Pain") && selectedKeywords != "")) && (
+                      <div className="absolute inset-0 bg-cyan-700"></div>
+                    )}
+                  </div>
+                  <div
+                    className="absolute inset-0"
+                    style={{ clipPath: `polygon(${rightKnee})` }}
+                    // onClick={() => handleRegionClick("Right Knee Pain")}
+                  >
+                    {(clickedRegion === "Right Knee Pain" || (selectedKeywords.includes("Right Knee Pain") && selectedKeywords != "")) && (
+                      <div className="absolute inset-0 bg-cyan-700"></div>
+                    )}
+                  </div>
+                  <div
+                    className="absolute inset-0"
+                    style={{ clipPath: `polygon(${leftKnee})` }}
+                    // onClick={() => handleRegionClick("Left Knee Pain")}
+                  >
+                    {(clickedRegion === "Left Knee Pain" || (selectedKeywords.includes("Left Knee Pain") && selectedKeywords != "") )&& (
+                      <div className="absolute inset-0 bg-cyan-700"></div>
+                    )}
+                  </div>
+                </div>
+                
+              </div>
+            </div>
           </div>
         </CardBody>
+        
         <div
           className={`flex flex-row ${screenWidth < 900 ? "h-full" : "h-12"}`}
         >
@@ -183,7 +280,7 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
             <Button
               variant="text"
               className="flex items-center gap-2 bg-cyan-100"
-              onClick={onNextClickHandler }
+              onClick={onNextClickHandler}
             >
               Next
               <svg
@@ -204,6 +301,7 @@ const Reports = ({ onNextClick, onPrevClick, onDataSubmit }) => {
           </a>
         </div>
       </Card>
+      <ToastContainer />
     </motion.div>
   );
 };

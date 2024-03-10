@@ -1489,18 +1489,17 @@ const Diagno = () => {
             key={i}
             
             variant="gradient"
-            className="border-black w-full max-w-[15rem] p-2 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300"
+            className={`border-black w-full max-w-[15rem] py-5 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300 ${pain[i] > 10 ? "border-2 border-red-800 border-solid" : "border-2 border-green-500 border-solid"}`}
           >
             <CardHeader
               floated={false}
               shadow={false}
-              color={pain[i] > 10 ? "red" : "green"}
-              className="m-0 mb-1 rounded-none border-b border-white/10 pb-2 text-center "
+              className=" rounded-xl border-b border-white/10  text-center bg-black "
             >
               <Typography
                 variant="small"
                 color="black"
-                className="font-bold uppercase font-poppins"
+                className="font-bold uppercase font-poppins m-0 mb-1 pb-2"
               >
                 CYCLE {i + 1}
               </Typography>
@@ -1512,7 +1511,7 @@ const Diagno = () => {
                 {pain[i]} <span className="self-end text-base">Pain</span>
               </Typography> */}
             </CardHeader>
-            <CardBody className="pt-0 pb-2">
+            <CardBody className="pt-0 pb-2 px-2">
               <ul className="flex flex-col">
                 <li className="flex items-center justify-between">
                   <Typography
@@ -2109,7 +2108,7 @@ console.log(highlightedArray,"HI")
           {!showFlashscreen && (
             <div className={`w-1/6 flex justify-center items-center`}>
               <button
-                className="my-2 bg-gray-500 text-white px-4 py-2 rounded-md font-poppins"
+                className="my-2 bg-gray-500 text-white px-4 py-2 rounded-3xl font-poppins"
                 onClick={handleCompleteSubmit}
                 // disabled={!isExerciseDataValid}
               >
@@ -2354,7 +2353,7 @@ console.log(highlightedArray,"HI")
                                   LabelStyle={{ color: "black" }}
                                   itemStyle={{ color: "black" }}
                                 />
-                                <Legend
+                                {/* <Legend
                                   wrapperStyle={{
                                     top: -30,
                                     left: 20,
@@ -2362,7 +2361,7 @@ console.log(highlightedArray,"HI")
                                   }}
                                   iconType="circle"
                                   iconSize={6}
-                                />
+                                /> */}
                                 <Line
                                   data={data}
                                   type="monotone"
