@@ -32,7 +32,7 @@ import Profilebar from "./Profilebar";
 import Progresstimeline from "./Progresstimeline";
 import Maingraph from "./Maingraph";
 import Maingraphinfo from "./Maingraphinfo";
-import { Tilt } from 'react-tilt'
+import { Tilt } from "react-tilt";
 
 import {
   Drawer,
@@ -378,13 +378,13 @@ const Diagno = () => {
   });
 
   const componentRef = useRef();
-  
+
   const handleDownload = async () => {
     try {
       const chartContainer = chartRef.current;
       const componentContainer = componentRef.current;
-  
-      console.log(chartContainer)
+
+      console.log(chartContainer);
       const canvas = await html2canvas(chartContainer, {
         scale: 2,
       });
@@ -395,53 +395,69 @@ const Diagno = () => {
       const imgComponent = componentcanvas.toDataURL("image/jpeg");
       setImageSrc(imgData);
       setComponentImage(imgComponent);
-  
+
       const commonDetails = `
-        <h1>${details.companyTitle}</h1>
-        <p>Patient Name: ${details.patientName}</p>
-        <p>Hospital Name: ${details.hospitalName}</p>
-        <p>Date: ${details.date}</p>
-        <p>Time: ${details.time}</p>
-        <p>Login ID: ${details.loginId}</p>
-        <p>Sensor ID: ${details.sensorId}</p>
-      `;
+            <h1>${details.companyTitle}</h1>
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <p>Patient Name: ${details.patientName}</p>
+                    <p>Hospital Name: ${details.hospitalName}</p>
+                    <p>Date: ${details.date}</p>
+                </div>
+                <div>
+                    <p>Time: ${details.time}</p>
+                    <p>Login ID: ${details.loginId}</p>
+                    <p>Sensor ID: ${details.sensorId}</p>
+                </div>
+            </div>
+        `;
+
       const totalGraphdetails = `
-        <h1>OverAll Details</h1>
-        <p>Maximum Angle: ${maxAngles}°</p>
-        <p>Minimum Angle: ${minAngles}°</p>
-        <p>Flexion Cycle: ${flexionCycles}</p>
-        <p>Extension Cycle: ${extensionCycles}</p>
-        <p>Velocity: ${(maxAngles + minAngles) / 2}</p>
-        <p>ROM: ${maxAngles - minAngles}</p>
-      `;
+            <h1>OverAll Details</h1>
+            <p>Maximum Angle: ${maxAngles}°</p>
+            <p>Minimum Angle: ${minAngles}°</p>
+            <p>Flexion Cycle: ${flexionCycles}</p>
+            <p>Extension Cycle: ${extensionCycles}</p>
+            <p>Velocity: ${(maxAngles + minAngles) / 2}</p>
+            <p>ROM: ${maxAngles - minAngles}</p>
+        `;
       const doctorAssistantDetails = `
-        <p>Doctor Name: ${details.doctorName}</p>
-        <p>Assistant Name: ${details.assistantName}</p>
-      `;
-  
+            <p>Doctor Name: ${details.doctorName}</p>
+            <p>Assistant Name: ${details.assistantName}</p>
+        `;
+
       const template = `
-        <div>
-          ${commonDetails}
-          ${isActive ? doctorAssistantDetails : ""}
-          <br></br>
-          <img src="${imgData}" alt="Graph Image" style="width: 600px; height: 400px;" />
-          ${totalGraphdetails}
-        </div>
-      `;
+            <div style="border: 2px solid black; padding: 10px;">
+                ${commonDetails}
+                ${isActive ? doctorAssistantDetails : ""}
+                <br></br>
+                <img src="${imgData}" alt="Graph Image" style="width: 600px; height: 400px;" />
+                <div style="text-align: center;">
+                    ${totalGraphdetails}
+                </div>
+            </div>
+        `;
+
       const content = componentRef.current;
-  
+
       if (!content) {
         console.error("Content not found for PDF generation");
         return;
       }
-  
+
       const combinedContent = document.createElement("div");
-  
+
       const offDetails = document.createElement("div");
       offDetails.innerHTML = template;
       combinedContent.appendChild(offDetails.cloneNode(true));
+
+      // Start new page for additional content
+      const newPageContent = document.createElement("div");
+      newPageContent.style.pageBreakAfter = "always";
+      combinedContent.appendChild(newPageContent);
+
       combinedContent.appendChild(content.cloneNode(true));
-  
+
       html2pdf(combinedContent, {
         margin: 10,
         filename: "combined.pdf",
@@ -1176,7 +1192,7 @@ const Diagno = () => {
     // console.log(flexionVelocities, "extensionVelocities");
     // console.log(extensionVelocities, "extensionVelocities");
     return {
-      highlightArray:highlightArray,
+      highlightArray: highlightArray,
       flexionCycle: flexionCycle,
       extensionCycle: extensionCycle,
     };
@@ -1462,67 +1478,100 @@ const Diagno = () => {
     setRedLineGraphData(PlotArray);
   };
 
-
   const defaultOptions = {
-    reverse:        false,  // reverse the tilt direction
-    max:            5,     // max tilt rotation (degrees)
-    perspective:    1000,   // Transform perspective, the lower the more extreme the tilt gets.
-    scale:          1.1,    // 2 = 200%, 1.5 = 150%, etc..
-    speed:          1000,   // Speed of the enter/exit transition
-    transition:     true,   // Set a transition on enter/exit.
-    axis:           null,   // What axis should be disabled. Can be X or Y.
-    reset:          true,    // If the tilt effect has to be reset on exit.
-    easing:         "cubic-bezier(.03,.98,.52,.99)",    // Easing on enter/exit.
-  }
+    reverse: false, // reverse the tilt direction
+    max: 5, // max tilt rotation (degrees)
+    perspective: 1000, // Transform perspective, the lower the more extreme the tilt gets.
+    scale: 1.1, // 2 = 200%, 1.5 = 150%, etc..
+    speed: 1000, // Speed of the enter/exit transition
+    transition: true, // Set a transition on enter/exit.
+    axis: null, // What axis should be disabled. Can be X or Y.
+    reset: true, // If the tilt effect has to be reset on exit.
+    easing: "cubic-bezier(.03,.98,.52,.99)", // Easing on enter/exit.
+  };
 
   const generateCards = () => {
     const cards = [];
     const endIndex = Math.min(startIndex + cardsPerPage, totalCards);
     // console.log(highlightArray);
-    for (let i = startIndex; i < endIndex-1  && i < totalCards-1 ; i++) {
+    for (let i = startIndex; i < endIndex - 1 && i < totalCards - 1; i++) {
       const paragraph = generateParagraph(i);
 
       cards.push(
         <div key={i} className="card" onClick={() => handleCardClick(i)}>
-        <Tilt options={defaultOptions}>
-          <Card
-            key={i}
-            
-            variant="gradient"
-            className={`border-black w-full max-w-[15rem] py-5 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300 ${pain[i] > 10 ? "border-2 border-red-800 border-solid" : "border-2 border-green-500 border-solid"}`}
-          >
-            <CardHeader
-              floated={false}
-              shadow={false}
-              className=" rounded-xl border-b border-white/10  text-center bg-black "
+          <Tilt options={defaultOptions}>
+            <Card
+              key={i}
+              variant="gradient"
+              className={`border-black w-full max-w-[15rem] py-5 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300 ${
+                pain[i] > 10
+                  ? "border-2 border-red-800 border-solid"
+                  : "border-2 border-green-500 border-solid"
+              }`}
             >
-              <Typography
-                variant="small"
-                color="black"
-                className="font-bold uppercase font-poppins m-0 mb-1 pb-2"
+              <CardHeader
+                floated={false}
+                shadow={false}
+                className=" rounded-xl border-b border-white/10  text-center bg-black "
               >
-                CYCLE {i + 1}
-              </Typography>
-              {/* <Typography
+                <Typography
+                  variant="small"
+                  color="black"
+                  className="font-bold uppercase font-poppins m-0 mb-1 pb-2"
+                />
+                <Tilt options={defaultOptions}>
+                  <Card
+                    key={i}
+                    variant="gradient"
+                    className="border-black w-full max-w-[15rem] p-2 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300"
+                  >
+                    <CardHeader
+                      floated={false}
+                      shadow={false}
+                      color={pain[i] > 10 ? "red" : "green"}
+                      className="m-0 mb-1 rounded-none border-b border-white/10 pb-2 text-center "
+                    >
+                      <Typography
+                        variant="small"
+                        color="black"
+                        className="font-bold uppercase font-poppins"
+                      >
+                        CYCLE {i + 1}
+                      </Typography>
+                      {/* <Typography
                 variant="h1"
                 color="black"
                 className="mt-2 flex justify-center gap-1 text-4xl font-bold"
               >
                 {pain[i]} <span className="self-end text-base">Pain</span>
               </Typography> */}
-            </CardHeader>
-            <CardBody className="pt-0 pb-2 px-2">
-              <ul className="flex flex-col">
-                <li className="flex items-center justify-between">
-                  <Typography
-                    dangerouslySetInnerHTML={{ __html: paragraph }}
-                    color="black"
-                    className="text-base font-medium  font-poppins"
-                  ></Typography>
-                </li>
-              </ul>
-            </CardBody>
-          </Card>
+                    </CardHeader>
+                    <CardBody className="pt-0 pb-2 px-2">
+                      <ul className="flex flex-col">
+                        <li className="flex items-center justify-between">
+                          <Typography
+                            dangerouslySetInnerHTML={{ __html: paragraph }}
+                            color="black"
+                            className="text-base font-medium  font-poppins"
+                          ></Typography>
+                        </li>
+                      </ul>
+                    </CardBody>
+                  </Card>
+                </Tilt>
+              </CardHeader>
+              <CardBody className="pt-0 pb-2">
+                <ul className="flex flex-col">
+                  <li className="flex items-center justify-between">
+                    <Typography
+                      dangerouslySetInnerHTML={{ __html: paragraph }}
+                      color="black"
+                      className="text-base font-medium  font-poppins"
+                    ></Typography>
+                  </li>
+                </ul>
+              </CardBody>
+            </Card>
           </Tilt>
         </div>
       );
@@ -1614,7 +1663,6 @@ const Diagno = () => {
         togglePlay();
         toggleChart();
       } else {
-
         toast.warning("Please select a time interval!", {
           position: "top-right",
           autoClose: 3000,
@@ -1625,7 +1673,7 @@ const Diagno = () => {
           progress: undefined,
         });
       }
-    }else{
+    } else {
       toast.warning("Select atleast one exercise to proceed", {
         position: "top-right",
         autoClose: 3000,
@@ -1733,7 +1781,7 @@ const Diagno = () => {
     // console.log(flexionVelocities, "extensionVelocities");
     // console.log(extensionVelocities, "extensionVelocities");
     return {
-      highlightedArray:highlightedArray,
+      highlightedArray: highlightedArray,
       // flexionCycle: flexionCycle,
       // extensionCycle: extensionCycle,
     };
@@ -1741,94 +1789,97 @@ const Diagno = () => {
 
   function handleHighlightArray(highlightedArray) {
     const pain = [];
-console.log(highlightedArray,"HI")
+    console.log(highlightedArray, "HI");
     // Loop through each array in updatedHighlightArray
     highlightedArray.forEach((innerArray) => {
-        const indices = [];
-        const values = [];
+      const indices = [];
+      const values = [];
 
-        // Process each object in the inner array
-        innerArray.forEach((entry) => {
-            indices.push(entry.index);
-            values.push(entry.val);
-        });
+      // Process each object in the inner array
+      innerArray.forEach((entry) => {
+        indices.push(entry.index);
+        values.push(entry.val);
+      });
 
-        // Calculate velocity and pain level for this inner array
-        const minandmaxangle = findMinMaxAngles(values);
-        const velocityforPain =
-            parseInt(
-                Math.abs(
-                    (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
-                    indices[indices.length - 1] -
-                    indices[0]
-                ).toFixed(2)
-            ) +
-            parseInt(
-                Math.abs(
-                    (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
-                    indices[indices.length - 1] -
-                    indices[0]
-                ).toFixed(2)
-            );
+      // Calculate velocity and pain level for this inner array
+      const minandmaxangle = findMinMaxAngles(values);
+      const velocityforPain =
+        parseInt(
+          Math.abs(
+            (minandmaxangle.maxAngle - minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)
+        ) +
+        parseInt(
+          Math.abs(
+            (minandmaxangle.maxAngle + minandmaxangle.minAngle) /
+              indices[indices.length - 1] -
+              indices[0]
+          ).toFixed(2)
+        );
 
-        // Calculate pain level based on velocityforPain
-        if (velocityforPain < 10) {
-          pain.push(1);
-        } else if (velocityforPain > 10 && velocityforPain < 20) {
-          pain.push(2);
-        } else if (velocityforPain > 20 && velocityforPain < 30) {
-          pain.push(3);
-        } else if (velocityforPain > 30 && velocityforPain < 40) {
-          pain.push(4);
-        } else if (velocityforPain > 40 && velocityforPain < 50) {
-          pain.push(5);
-        } else if (velocityforPain > 50 && velocityforPain < 60) {
-          pain.push(6);
-        } else if (velocityforPain > 60 && velocityforPain < 70) {
-          pain.push(7);
-        } else if (velocityforPain > 70 && velocityforPain < 80) {
-          pain.push(8);
-        } else if (velocityforPain > 80 && velocityforPain < 90) {
-          pain.push(9);
-        } else if (velocityforPain > 90 && velocityforPain < 100) {
-          pain.push(10);
-        } else if (velocityforPain > 100 && velocityforPain < 110) {
-          pain.push(11);
-        } else if (velocityforPain > 110 && velocityforPain < 120) {
-          pain.push(12);
-        } else if (velocityforPain > 120 && velocityforPain < 130) {
-          pain.push(13);
-        } else if (velocityforPain > 130 && velocityforPain < 140) {
-          pain.push(14);
-        } else if (velocityforPain > 140 && velocityforPain < 150) {
-          pain.push(15);
-        } else if (velocityforPain > 150 && velocityforPain < 160) {
-          pain.push(16);
-        } else if (velocityforPain > 160 && velocityforPain < 170) {
-          pain.push(17);
-        } else if (velocityforPain > 170 && velocityforPain < 180) {
-          pain.push(18);
-        } else {
-          pain.push(19);
-        }
+      // Calculate pain level based on velocityforPain
+      if (velocityforPain < 10) {
+        pain.push(1);
+      } else if (velocityforPain > 10 && velocityforPain < 20) {
+        pain.push(2);
+      } else if (velocityforPain > 20 && velocityforPain < 30) {
+        pain.push(3);
+      } else if (velocityforPain > 30 && velocityforPain < 40) {
+        pain.push(4);
+      } else if (velocityforPain > 40 && velocityforPain < 50) {
+        pain.push(5);
+      } else if (velocityforPain > 50 && velocityforPain < 60) {
+        pain.push(6);
+      } else if (velocityforPain > 60 && velocityforPain < 70) {
+        pain.push(7);
+      } else if (velocityforPain > 70 && velocityforPain < 80) {
+        pain.push(8);
+      } else if (velocityforPain > 80 && velocityforPain < 90) {
+        pain.push(9);
+      } else if (velocityforPain > 90 && velocityforPain < 100) {
+        pain.push(10);
+      } else if (velocityforPain > 100 && velocityforPain < 110) {
+        pain.push(11);
+      } else if (velocityforPain > 110 && velocityforPain < 120) {
+        pain.push(12);
+      } else if (velocityforPain > 120 && velocityforPain < 130) {
+        pain.push(13);
+      } else if (velocityforPain > 130 && velocityforPain < 140) {
+        pain.push(14);
+      } else if (velocityforPain > 140 && velocityforPain < 150) {
+        pain.push(15);
+      } else if (velocityforPain > 150 && velocityforPain < 160) {
+        pain.push(16);
+      } else if (velocityforPain > 160 && velocityforPain < 170) {
+        pain.push(17);
+      } else if (velocityforPain > 170 && velocityforPain < 180) {
+        pain.push(18);
+      } else {
+        pain.push(19);
+      }
     });
 
     return pain;
-}
-
+  }
 
   function handleExerciseSelection(chosenExercise, simple) {
     console.log(`${chosenExercise} is chosen.`);
     setuseExercise(chosenExercise);
     console.log(simple, "simple");
-    
+
     if (simple && simple.length > 0) {
-      const simpleObjects = simple.map((value, index) => ChartObject(value, index));
+      const simpleObjects = simple.map((value, index) =>
+        ChartObject(value, index)
+      );
       // console.log(simpleObjects)
       const updatedHighlightArray = PainandRomArray(simpleObjects);
       sethighlightedArray(updatedHighlightArray);
       console.log(updatedHighlightArray.highlightedArray);
-      const painLevels = handleHighlightArray(updatedHighlightArray.highlightedArray);
+      const painLevels = handleHighlightArray(
+        updatedHighlightArray.highlightedArray
+      );
       console.log(painLevels);
       const exerciseObject = {
         name: chosenExercise,
@@ -1878,7 +1929,7 @@ console.log(highlightedArray,"HI")
   const [showFlashscreen, setShowFlashscreen] = useState(false);
 
   const updateExerciseData = async (combinedArray) => {
-    console.log("diagnarray after submit",combinedArray)
+    console.log("diagnarray after submit", combinedArray);
     const updatedExercises = combinedArray.map((exercise) => ({
       name: exercise.name,
       values: exercise.values,
@@ -1953,141 +2004,147 @@ console.log(highlightedArray,"HI")
 
   return (
     <>
-    {!showFlashscreen && (
-      <Drawer open={open} onClose={closeDrawer} className={`mt-20 rounded-r-lg`}>
-        <div className="mb-2 flex items-center justify-between p-4">
-          <Typography variant="h5" color="blue-gray" className={`font-poppins`}>
-            Exercise Categories
-          </Typography>
-          <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="h-5 w-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </IconButton>
-        </div>
-        <List>
-          <ListItem>
-            <ListItemPrefix className="mr-3">
-              <Checkbox
-                id="Endurance"
-                ripple={false}
-                className="hover:before:opacity-0"
-                containerProps={{
-                  className: "p-0 my-auto",
-                }}
-                color="teal"
-                checked={selectedItems.includes("Endurance")}
-                onChange={() => handleItemSelect("Endurance")}
-              />
-            </ListItemPrefix>
+      {!showFlashscreen && (
+        <Drawer
+          open={open}
+          onClose={closeDrawer}
+          className={`mt-20 rounded-r-lg`}
+        >
+          <div className="mb-2 flex items-center justify-between p-4">
             <Typography
+              variant="h5"
               color="blue-gray"
-              className={`font-poppins font-medium`}
+              className={`font-poppins`}
             >
-              Endurance
+              Exercise Categories
             </Typography>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix className="mr-3">
-              <Checkbox
-                id="Endurance"
-                ripple={false}
-                className="hover:before:opacity-0"
-                containerProps={{
-                  className: "p-0 my-auto",
-                }}
-                color="teal"
-                checked={selectedItems.includes("Strength")}
-                onChange={() => handleItemSelect("Strength")}
-              />
-            </ListItemPrefix>
-            <Typography
-              color="blue-gray"
-              className={`font-poppins font-medium`}
-            >
-              Strength
-            </Typography>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix className="mr-3">
-              <Checkbox
-                id="Endurance"
-                ripple={false}
-                className="hover:before:opacity-0"
-                containerProps={{
-                  className: "p-0 my-auto",
-                }}
-                color="teal"
-                checked={selectedItems.includes("Flexibility")}
-                onChange={() => handleItemSelect("Flexibility")}
-              />
-            </ListItemPrefix>
-            <Typography
-              color="blue-gray"
-              className={`font-poppins font-medium`}
-            >
-              Flexibility
-            </Typography>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix className="mr-3">
-              <Checkbox
-                id="Endurance"
-                ripple={false}
-                className="hover:before:opacity-0"
-                containerProps={{
-                  className: "p-0 my-auto",
-                }}
-                color="teal"
-                checked={selectedItems.includes("Balance")}
-                onChange={() => handleItemSelect("Balance")}
-              />
-            </ListItemPrefix>
-            <Typography
-              color="blue-gray"
-              className={`font-poppins font-medium`}
-            >
-              Balance
-            </Typography>
-          </ListItem>
-          {errorflag && (
-            <ListItem className={`p-0`}>
+            <IconButton variant="text" color="blue-gray" onClick={closeDrawer}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="h-5 w-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </IconButton>
+          </div>
+          <List>
+            <ListItem>
+              <ListItemPrefix className="mr-3">
+                <Checkbox
+                  id="Endurance"
+                  ripple={false}
+                  className="hover:before:opacity-0"
+                  containerProps={{
+                    className: "p-0 my-auto",
+                  }}
+                  color="teal"
+                  checked={selectedItems.includes("Endurance")}
+                  onChange={() => handleItemSelect("Endurance")}
+                />
+              </ListItemPrefix>
               <Typography
                 color="blue-gray"
-                className={`font-poppins font-medium text-sm text-red-400`}
+                className={`font-poppins font-medium`}
               >
-                *Select atleast one category to proceed
+                Endurance
               </Typography>
             </ListItem>
-          )}
-        </List>
-        <div className={`w-full flex justify-center items-center`}>
-          <Button
-            className="my-1 font-poppins"
-            size="sm"
-            onClick={displayexercise}
-          >
-            Proceed
-          </Button>
-        </div>
-      </Drawer>
-    )}
+            <ListItem>
+              <ListItemPrefix className="mr-3">
+                <Checkbox
+                  id="Endurance"
+                  ripple={false}
+                  className="hover:before:opacity-0"
+                  containerProps={{
+                    className: "p-0 my-auto",
+                  }}
+                  color="teal"
+                  checked={selectedItems.includes("Strength")}
+                  onChange={() => handleItemSelect("Strength")}
+                />
+              </ListItemPrefix>
+              <Typography
+                color="blue-gray"
+                className={`font-poppins font-medium`}
+              >
+                Strength
+              </Typography>
+            </ListItem>
+            <ListItem>
+              <ListItemPrefix className="mr-3">
+                <Checkbox
+                  id="Endurance"
+                  ripple={false}
+                  className="hover:before:opacity-0"
+                  containerProps={{
+                    className: "p-0 my-auto",
+                  }}
+                  color="teal"
+                  checked={selectedItems.includes("Flexibility")}
+                  onChange={() => handleItemSelect("Flexibility")}
+                />
+              </ListItemPrefix>
+              <Typography
+                color="blue-gray"
+                className={`font-poppins font-medium`}
+              >
+                Flexibility
+              </Typography>
+            </ListItem>
+            <ListItem>
+              <ListItemPrefix className="mr-3">
+                <Checkbox
+                  id="Endurance"
+                  ripple={false}
+                  className="hover:before:opacity-0"
+                  containerProps={{
+                    className: "p-0 my-auto",
+                  }}
+                  color="teal"
+                  checked={selectedItems.includes("Balance")}
+                  onChange={() => handleItemSelect("Balance")}
+                />
+              </ListItemPrefix>
+              <Typography
+                color="blue-gray"
+                className={`font-poppins font-medium`}
+              >
+                Balance
+              </Typography>
+            </ListItem>
+            {errorflag && (
+              <ListItem className={`p-0`}>
+                <Typography
+                  color="blue-gray"
+                  className={`font-poppins font-medium text-sm text-red-400`}
+                >
+                  *Select atleast one category to proceed
+                </Typography>
+              </ListItem>
+            )}
+          </List>
+          <div className={`w-full flex justify-center items-center`}>
+            <Button
+              className="my-1 font-poppins"
+              size="sm"
+              onClick={displayexercise}
+            >
+              Proceed
+            </Button>
+          </div>
+        </Drawer>
+      )}
 
       <div>
-      {!showFlashscreen && (
-        <Profilebar />
-      )}
+        {!showFlashscreen && <Profilebar />}
         <div className="flex flex-row items-center justify-center">
           {!showFlashscreen && (
             <div
@@ -2101,7 +2158,10 @@ console.log(highlightedArray,"HI")
           )}
           {!showFlashscreen && (
             <div className={`w-4/6`}>
-              <Progresstimeline onStepClick={handleExerciseSelection} onExercise={selectedItems}/>
+              <Progresstimeline
+                onStepClick={handleExerciseSelection}
+                onExercise={selectedItems}
+              />
             </div>
           )}
           {showFlashscreen && <Flashscreen />}
@@ -2119,112 +2179,392 @@ console.log(highlightedArray,"HI")
         </div>
         <ToastContainer />
         {!showFlashscreen && (
-        <div
-          className={
-            screenWidth < 1242 && screenWidth >= 720
-              ? "w-full px-4"
-              : screenWidth < 720 && screenWidth >= 595
-              ? "w-full px-4"
-              : screenWidth < 595
-              ? "w-full px-4"
-              : "flex justify-center"
-          }
-        >
-          <div className={screenWidth >= 1242 ? "w-3/4 pl-12" : "w-full"}>
-            <div className="mt-8">
-              <div>
-                {(screenWidth >= 595 ? isrenderscreen : !isrenderscreen) && (
-                  <div className={"w-full"}>
-                    <div className="flex justify-center items-center flex-col sm:flex-row">
-                      <div className="w-full sm:w-1/3 pl-7 mb-2 sm:mb-0 ">
-                        <div className="flex justify-start items-center">
-                          <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
-                            <input
-                              type="checkbox"
-                              checked={isActive}
-                              onChange={handleToggle}
-                              className="sr-only"
-                            />
-                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                              PASSIVE
-                            </span>
-                            <span
-                              className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
-                                isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
-                              }`}
-                            >
+          <div
+            className={
+              screenWidth < 1242 && screenWidth >= 720
+                ? "w-full px-4"
+                : screenWidth < 720 && screenWidth >= 595
+                ? "w-full px-4"
+                : screenWidth < 595
+                ? "w-full px-4"
+                : "flex justify-center"
+            }
+          >
+            <div className={screenWidth >= 1242 ? "w-3/4 pl-12" : "w-full"}>
+              <div className="mt-8">
+                <div>
+                  {(screenWidth >= 595 ? isrenderscreen : !isrenderscreen) && (
+                    <div className={"w-full"}>
+                      <div className="flex justify-center items-center flex-col sm:flex-row">
+                        <div className="w-full sm:w-1/3 pl-7 mb-2 sm:mb-0 ">
+                          <div className="flex justify-start items-center">
+                            <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
+                              <input
+                                type="checkbox"
+                                checked={isActive}
+                                onChange={handleToggle}
+                                className="sr-only"
+                              />
+                              <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                                PASSIVE
+                              </span>
                               <span
-                                className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
-                                  isActive ? "translate-x-[20px]" : ""
+                                className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                                  isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
                                 }`}
-                              ></span>
-                            </span>
-                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                              ACTIVE
-                            </span>
-                          </label>
+                              >
+                                <span
+                                  className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                    isActive ? "translate-x-[20px]" : ""
+                                  }`}
+                                ></span>
+                              </span>
+                              <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                                ACTIVE
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="w-full sm:w-1/3 p-2 mb-2 sm:mb-0 justify-center items-center">
+                          <div className="flex justify-center items-center">
+                            <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
+                              <input
+                                type="checkbox"
+                                checked={isLegChecked}
+                                onChange={handleLegCheckboxChange}
+                                className="sr-only"
+                              />
+                              <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                                LEFT LEG
+                              </span>
+                              <span
+                                className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                                  isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
+                                }`}
+                              >
+                                <span
+                                  className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                    isLegChecked ? "translate-x-[20px]" : ""
+                                  }`}
+                                ></span>
+                              </span>
+                              <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                                RIGHT LEG
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="w-full sm:w-1/3 pr-3">
+                          <div className="flex justify-end items-center">
+                            <button
+                              style={{
+                                width: "120px",
+                                height: "24px",
+                                borderRadius: "20px",
+                                cursor: "pointer",
+                                position: "relative",
+                                overflow: "hidden",
+                                transition: "background-color 1s ease-in",
+                              }}
+                              className={`${
+                                isBluetoothConnected
+                                  ? "bg-green-500 animate-flash"
+                                  : "bg-gray-400"
+                              } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
+                              onClick={handleDeviceStatus}
+                            >
+                              {isBluetoothConnected
+                                ? "CONNECTED"
+                                : "DISCONNECTED"}
+                            </button>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="w-full sm:w-1/3 p-2 mb-2 sm:mb-0 justify-center items-center">
-                        <div className="flex justify-center items-center">
-                          <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
-                            <input
-                              type="checkbox"
-                              checked={isLegChecked}
-                              onChange={handleLegCheckboxChange}
-                              className="sr-only"
-                            />
-                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                              LEFT LEG
-                            </span>
-                            <span
-                              className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
-                                isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
-                              }`}
-                            >
-                              <span
-                                className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
-                                  isLegChecked ? "translate-x-[20px]" : ""
-                                }`}
-                              ></span>
-                            </span>
-                            <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                              RIGHT LEG
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="w-full sm:w-1/3 pr-3">
-                        <div className="flex justify-end items-center">
+                      <div className="flex justify-center items-center">
+                        <div className="w-1/3 pl-5 flex justify-start items-end">
                           <button
-                            style={{
-                              width: "120px",
-                              height: "24px",
-                              borderRadius: "20px",
-                              cursor: "pointer",
-                              position: "relative",
-                              overflow: "hidden",
-                              transition: "background-color 1s ease-in",
-                            }}
-                            className={`${
-                              isBluetoothConnected
-                                ? "bg-green-500 animate-flash"
-                                : "bg-gray-400"
-                            } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
-                            onClick={handleDeviceStatus}
+                            className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
+                            onClick={handlePlayPauseClick}
                           >
-                            {isBluetoothConnected
-                              ? "CONNECTED"
-                              : "DISCONNECTED"}
+                            {isPlaying ? (
+                              <PauseIcon className="h-7 w-7" />
+                            ) : (
+                              <PlayIcon className="h-7 w-7" />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="w-1/3 ">
+                          <div className="flex justify-center items-center">
+                            {!isPlaying && (
+                              <div className="w-full flex justify-center items-center gap-1">
+                                <div className="flex flex-col items-center">
+                                  <input
+                                    type="number"
+                                    value={selectedMinute}
+                                    onChange={handleMinuteChange}
+                                    className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
+                                    placeholder="00"
+                                  />
+                                  <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
+                                    minutes
+                                  </span>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                  <input
+                                    type="number"
+                                    value={selectedSecond}
+                                    onChange={handleSecondChange}
+                                    className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
+                                    placeholder="00"
+                                  />
+                                  <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
+                                    seconds
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {isPlaying && (
+                              <CountdownCircleTimer
+                                key={key}
+                                isPlaying={isPlaying}
+                                duration={selectedMinute * 60 + selectedSecond} // 2 minutes
+                                colors={[["#3c005a"]]}
+                                size={60}
+                                strokeWidth={3}
+                                onComplete={() => {
+                                  setIsPlaying(false);
+                                  handleTimerStop();
+                                  stopTimer();
+                                  return [false, 0]; // Stop the timer and reset to 0
+                                }}
+                              >
+                                {({ remainingTime }) => (
+                                  <div className="font-semibold text-base">
+                                    {`${Math.floor(remainingTime / 60)
+                                      .toString()
+                                      .padStart(2, "0")}:${(remainingTime % 60)
+                                      .toString()
+                                      .padStart(2, "0")}`}
+                                  </div>
+                                )}
+                              </CountdownCircleTimer>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="w-1/3 pr-3 flex justify-end gap-12">
+                          <button
+                            className=" text-black font-bold  rounded-full"
+                            onClick={() => {
+                              // Add logic for reset action here
+                              setData([]);
+                              setShowRedLine(false);
+                              generateCards();
+                              setSelectedMinute("");
+                              setSelectedSecond("");
+                              setKey((prevKey) => prevKey + 1);
+                            }}
+                          >
+                            <ArrowPathIcon className="h-6 w-6  inline" />
+                          </button>
+
+                          <button
+                            className=" text-black font-bold  rounded-full"
+                            onClick={handleDownload}
+                            disabled={isPlaying}
+                          >
+                            <ArrowDownTrayIcon className="h-6 w-6  inline" />
                           </button>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex justify-center items-center">
-                      <div className="w-1/3 pl-5 flex justify-start items-end">
+                      <div className="flex mt-2 border-dashed border-gray-300 border-4 rounded-3xl">
+                        <div
+                          className="flex flex-col justify-center items-center w-full pt-4"
+                          ref={chartRef}
+                        >
+                          <div className="w-full pl-6 font-bold text-2xl font-poppins">
+                            Levels Report
+                          </div>
+                          <div className="w-full">
+                            <div className="flex flex-col items-center justify-start rounded w-full h-[400px]">
+                              <ResponsiveContainer
+                                width="100%"
+                                height="100%"
+                                className={"pr-4"}
+                              >
+                                <LineChart>
+                                  <Tooltip
+                                    cursor={false}
+                                    wrapperStyle={{
+                                      backgroundColor: "transparent",
+                                      padding: "5px",
+                                      borderRadius: 4,
+                                      overflow: "hidden",
+                                      fill: "black",
+                                      boxShadow:
+                                        "rgba(0, 0, 0, 0.24) 0px 3px 8px",
+                                    }}
+                                    LabelStyle={{ color: "black" }}
+                                    itemStyle={{ color: "black" }}
+                                  />
+                                  {/* <Legend
+                                  wrapperStyle={{
+                                    top: -30,
+                                    left: 20,
+                                    position: "absolute",
+                                  }}
+                                  iconType="circle"
+                                  iconSize={6}
+                                /> */}
+                                  <Line
+                                    data={data}
+                                    type="monotone"
+                                    dataKey="val"
+                                    dot={{ fill: "yellow", r: 5 }}
+                                    strokeDasharray="25 10"
+                                    stroke="#8884d8"
+                                    strokeWidth={2.5}
+                                    stackId="2"
+                                    isAnimationActive={false}
+                                  />
+                                  {showRedLine && (
+                                    <Line
+                                      data={RedLineGraphData}
+                                      type="monotone"
+                                      dataKey="val"
+                                      dot={{ fill: "yellow", r: 5 }}
+                                      strokeDasharray="25 10"
+                                      stroke="red"
+                                      stackId="2"
+                                      strokeWidth={2.5}
+                                      isAnimationActive={false}
+                                    />
+                                  )}
+                                  <XAxis
+                                    dataKey="index"
+                                    type="category"
+                                    allowDuplicatedCategory={false}
+                                    axisLine={false}
+                                  >
+                                    <Label
+                                      dy={10}
+                                      value="Time"
+                                      domain={[1, elapsedTime + 20]}
+                                      position="insideBottom"
+                                      style={{ textAnchor: "middle" }}
+                                      tick={{ fill: "black" }}
+                                      ticks={[1, 20, 40, 60, 80, 100, 120]}
+                                    />
+                                  </XAxis>
+                                  <YAxis axisLine={false}>
+                                    <Label
+                                      angle={-90}
+                                      value="Angle"
+                                      position="insideLeft"
+                                      style={{ textAnchor: "middle" }}
+                                      tick={{ fill: "black" }}
+                                    />
+                                  </YAxis>
+                                  <CartesianGrid
+                                    strokearray="1"
+                                    horizontal="true"
+                                    vertical=""
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {(screenWidth < 595 ? isrenderscreen : !isrenderscreen) && (
+                    <div className="grid grid-rows-6 w-full">
+                      <div className="flex justify-center">
+                        <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-40 justify-start">
+                          <input
+                            type="checkbox"
+                            checked={isActive}
+                            onChange={handleToggle}
+                            className="sr-only"
+                          />
+                          <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                            PASSIVE
+                          </span>
+                          <span
+                            className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                              isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
+                            }`}
+                          >
+                            <span
+                              className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                isActive ? "translate-x-[20px]" : ""
+                              }`}
+                            ></span>
+                          </span>
+                          <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                            ACTIVE
+                          </span>
+                        </label>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-full justify-center">
+                          <input
+                            type="checkbox"
+                            checked={isLegChecked}
+                            onChange={handleLegCheckboxChange}
+                            className="sr-only"
+                          />
+                          <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                            LEFT LEG
+                          </span>
+                          <span
+                            className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
+                              isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
+                            }`}
+                          >
+                            <span
+                              className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
+                                isLegChecked ? "translate-x-[20px]" : ""
+                              }`}
+                            ></span>
+                          </span>
+                          <span className="label flex items-center text-xs font-semibold text-black font-poppins">
+                            RIGHT LEG
+                          </span>
+                        </label>
+                      </div>
+
+                      <div className="flex justify-center items-center">
+                        <button
+                          style={{
+                            width: "120px",
+                            height: "24px",
+                            borderRadius: "20px",
+                            cursor: "pointer",
+                            position: "relative",
+                            overflow: "hidden",
+                            transition: "background-color 1s ease-in",
+                          }}
+                          className={`${
+                            isBluetoothConnected
+                              ? "bg-green-500 animate-flash"
+                              : "bg-gray-400"
+                          } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
+                          onClick={handleDeviceStatus}
+                        >
+                          {isBluetoothConnected ? "CONNECTED" : "DISCONNECTED"}
+                        </button>
+                      </div>
+
+                      <div className="flex justify-center gap-12 py-1">
                         <button
                           className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
                           onClick={handlePlayPauseClick}
@@ -2235,12 +2575,29 @@ console.log(highlightedArray,"HI")
                             <PlayIcon className="h-7 w-7" />
                           )}
                         </button>
+                        <button
+                          className=" text-black font-bold  rounded-full"
+                          onClick={() => {
+                            setSelectedMinute("");
+                            setSelectedSecond("");
+                            setKey((prevKey) => prevKey + 1);
+                          }}
+                        >
+                          <ArrowPathIcon className="h-6 w-7  inline" />
+                        </button>
+
+                        <button
+                          className=" text-black font-bold  rounded-full"
+                          onClick={handleDownload}
+                        >
+                          <ArrowDownTrayIcon className="h-6 w-7  inline" />
+                        </button>
                       </div>
 
-                      <div className="w-1/3 ">
+                      <div>
                         <div className="flex justify-center items-center">
                           {!isPlaying && (
-                            <div className="w-full flex justify-center items-center gap-1">
+                            <div className="w-full flex justify-center items-center gap-1 py-1">
                               <div className="flex flex-col items-center">
                                 <input
                                   type="number"
@@ -2279,7 +2636,6 @@ console.log(highlightedArray,"HI")
                               onComplete={() => {
                                 setIsPlaying(false);
                                 handleTimerStop();
-                                stopTimer()
                                 return [false, 0]; // Stop the timer and reset to 0
                               }}
                             >
@@ -2296,455 +2652,171 @@ console.log(highlightedArray,"HI")
                           )}
                         </div>
                       </div>
-
-                      <div className="w-1/3 pr-3 flex justify-end gap-12">
-                        <button
-                          className=" text-black font-bold  rounded-full"
-                          onClick={() => {
-                            // Add logic for reset action here
-                            setData([]);
-                            setShowRedLine(false);
-                            generateCards();
-                            setSelectedMinute("");
-                            setSelectedSecond("");
-                            setKey((prevKey) => prevKey + 1);
-                          }}
-                        >
-                          <ArrowPathIcon className="h-6 w-6  inline" />
-                        </button>
-
-                        <button
-                          className=" text-black font-bold  rounded-full"
-                          onClick={handleDownload}
-                          disabled={isPlaying}
-                        >
-                          <ArrowDownTrayIcon className="h-6 w-6  inline" />
-                        </button>
-                      </div>
                     </div>
-
-                    <div className="flex mt-2 border-dashed border-gray-300 border-4 rounded-3xl">
-                      <div
-                        className="flex flex-col justify-center items-center w-full pt-4"
-                        ref={chartRef}
-                      >
-                        <div className="w-full pl-6 font-bold text-2xl font-poppins">
-                          Levels Report
-                        </div>
-                        <div className="w-full">
-                          <div className="flex flex-col items-center justify-start rounded w-full h-[400px]">
-                            <ResponsiveContainer
-                              width="100%"
-                              height="100%"
-                              className={"pr-4"}
-                            >
-                              <LineChart>
-                                <Tooltip
-                                  cursor={false}
-                                  wrapperStyle={{
-                                    backgroundColor: "transparent",
-                                    padding: "5px",
-                                    borderRadius: 4,
-                                    overflow: "hidden",
-                                    fill: "black",
-                                    boxShadow:
-                                      "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-                                  }}
-                                  LabelStyle={{ color: "black" }}
-                                  itemStyle={{ color: "black" }}
-                                />
-                                {/* <Legend
-                                  wrapperStyle={{
-                                    top: -30,
-                                    left: 20,
-                                    position: "absolute",
-                                  }}
-                                  iconType="circle"
-                                  iconSize={6}
-                                /> */}
-                                <Line
-                                  data={data}
-                                  type="monotone"
-                                  dataKey="val"
-                                  dot={{ fill: "yellow", r: 5 }}
-                                  strokeDasharray="25 10"
-                                  stroke="#8884d8"
-                                  strokeWidth={2.5}
-                                  stackId="2"
-                                  isAnimationActive={false}
-                                />
-                                {showRedLine && (
-                                  <Line
-                                    data={RedLineGraphData}
-                                    type="monotone"
-                                    dataKey="val"
-                                    dot={{ fill: "yellow", r: 5 }}
-                                    strokeDasharray="25 10"
-                                    stroke="red"
-                                    stackId="2"
-                                    strokeWidth={2.5}
-                                    isAnimationActive={false}
-                                  />
-                                )}
-                                <XAxis
-                                  dataKey="index"
-                                  type="category"
-                                  allowDuplicatedCategory={false}
-                                  axisLine={false}
-                                >
-                                  <Label
-                                    dy={10}
-                                    value="Time"
-                                    domain={[1, elapsedTime + 20]}
-                                    position="insideBottom"
-                                    style={{ textAnchor: "middle" }}
-                                    tick={{ fill: "black" }}
-                                    ticks={[1, 20, 40, 60, 80, 100, 120]}
-                                  />
-                                </XAxis>
-                                <YAxis axisLine={false}>
-                                  <Label
-                                    angle={-90}
-                                    value="Angle"
-                                    position="insideLeft"
-                                    style={{ textAnchor: "middle" }}
-                                    tick={{ fill: "black" }}
-                                  />
-                                </YAxis>
-                                <CartesianGrid
-                                  strokearray="1"
-                                  horizontal="true"
-                                  vertical=""
-                                />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {(screenWidth < 595 ? isrenderscreen : !isrenderscreen) && (
-                  <div className="grid grid-rows-6 w-full">
-                    <div className="flex justify-center">
-                      <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-40 justify-start">
-                        <input
-                          type="checkbox"
-                          checked={isActive}
-                          onChange={handleToggle}
-                          className="sr-only"
-                        />
-                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                          PASSIVE
-                        </span>
-                        <span
-                          className={`slider mx-3 flex h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
-                            isActive ? "bg-[#d74848]" : "bg-[#CCCCCE]"
-                          }`}
-                        >
-                          <span
-                            className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
-                              isActive ? "translate-x-[20px]" : ""
-                            }`}
-                          ></span>
-                        </span>
-                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                          ACTIVE
-                        </span>
-                      </label>
-                    </div>
-
-                    <div className="flex justify-center">
-                      <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center w-full justify-center">
-                        <input
-                          type="checkbox"
-                          checked={isLegChecked}
-                          onChange={handleLegCheckboxChange}
-                          className="sr-only"
-                        />
-                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                          LEFT LEG
-                        </span>
-                        <span
-                          className={`slider mx-3 flex  h-5 w-[40px] items-center rounded-full p-1 duration-200 ${
-                            isLegChecked ? "bg-[#212b36]" : "bg-[#47d547]"
-                          }`}
-                        >
-                          <span
-                            className={`dot h-3 w-3 rounded-full bg-white duration-200 ${
-                              isLegChecked ? "translate-x-[20px]" : ""
-                            }`}
-                          ></span>
-                        </span>
-                        <span className="label flex items-center text-xs font-semibold text-black font-poppins">
-                          RIGHT LEG
-                        </span>
-                      </label>
-                    </div>
-
-                    <div className="flex justify-center items-center">
-                      <button
-                        style={{
-                          width: "120px",
-                          height: "24px",
-                          borderRadius: "20px",
-                          cursor: "pointer",
-                          position: "relative",
-                          overflow: "hidden",
-                          transition: "background-color 1s ease-in",
-                        }}
-                        className={`${
-                          isBluetoothConnected
-                            ? "bg-green-500 animate-flash"
-                            : "bg-gray-400"
-                        } text-black text-xs font-semibold rounded-full justify-center font-poppins`}
-                        onClick={handleDeviceStatus}
-                      >
-                        {isBluetoothConnected ? "CONNECTED" : "DISCONNECTED"}
-                      </button>
-                    </div>
-
-                    <div className="flex justify-center gap-12 py-1">
-                      <button
-                        className=" text-black font-bold py-2 px-3 rounded-full transition-all duration-300 ease-in-out"
-                        onClick={handlePlayPauseClick}
-                      >
-                        {isPlaying ? (
-                          <PauseIcon className="h-7 w-7" />
-                        ) : (
-                          <PlayIcon className="h-7 w-7" />
-                        )}
-                      </button>
-                      <button
-                        className=" text-black font-bold  rounded-full"
-                        onClick={() => {
-                          setSelectedMinute("");
-                          setSelectedSecond("");
-                          setKey((prevKey) => prevKey + 1);
-                        }}
-                      >
-                        <ArrowPathIcon className="h-6 w-7  inline" />
-                      </button>
-
-                      <button
-                        className=" text-black font-bold  rounded-full"
-                        onClick={handleDownload}
-                      >
-                        <ArrowDownTrayIcon className="h-6 w-7  inline" />
-                      </button>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-center items-center">
-                        {!isPlaying && (
-                          <div className="w-full flex justify-center items-center gap-1 py-1">
-                            <div className="flex flex-col items-center">
-                              <input
-                                type="number"
-                                value={selectedMinute}
-                                onChange={handleMinuteChange}
-                                className=" text-black text-sm font-bold border rounded-md  w-12 h-6 text-center"
-                                placeholder="00"
-                              />
-                              <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
-                                minutes
-                              </span>
-                            </div>
-                            <div className="flex flex-col items-center">
-                              <input
-                                type="number"
-                                value={selectedSecond}
-                                onChange={handleSecondChange}
-                                className=" text-black text-sm font-bold border rounded-md w-12 h-6 text-center"
-                                placeholder="00"
-                              />
-                              <span className="w-full text-center text-black font-bold text-[10px] font-poppins">
-                                seconds
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        {isPlaying && (
-                          <CountdownCircleTimer
-                            key={key}
-                            isPlaying={isPlaying}
-                            duration={selectedMinute * 60 + selectedSecond} // 2 minutes
-                            colors={[["#3c005a"]]}
-                            size={60}
-                            strokeWidth={3}
-                            onComplete={() => {
-                              setIsPlaying(false);
-                              handleTimerStop();
-                              return [false, 0]; // Stop the timer and reset to 0
-                            }}
-                          >
-                            {({ remainingTime }) => (
-                              <div className="font-semibold text-base">
-                                {`${Math.floor(remainingTime / 60)
-                                  .toString()
-                                  .padStart(2, "0")}:${(remainingTime % 60)
-                                  .toString()
-                                  .padStart(2, "0")}`}
-                              </div>
-                            )}
-                          </CountdownCircleTimer>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className={
-              screenWidth >= 1242 ? "w-1/4 px-5 self-end" : "w-full mt-4"
-            }
-          >
-            <div className="">
-              <div>
-                {(screenWidth >= 1242 ? isrenderscreen : !isrenderscreen) && (
-                  <Card
-                    color="gray"
-                    variant="gradient"
-                    className="w-full  px-6"
-                  >
-                    <CardHeader
-                      floated={false}
-                      shadow={false}
-                      color="transparent"
-                      className=" mb-4 rounded-none border-b border-white/10 pb-1 mt-0 text-center"
+            <div
+              className={
+                screenWidth >= 1242 ? "w-1/4 px-5 self-end" : "w-full mt-4"
+              }
+            >
+              <div className="">
+                <div>
+                  {(screenWidth >= 1242 ? isrenderscreen : !isrenderscreen) && (
+                    <Card
+                      color="gray"
+                      variant="gradient"
+                      className="w-full  px-6"
                     >
-                      <Typography
-                        variant="h1"
-                        color="white"
-                        className="mt-6 flex justify-center gap-1 text-7xl font-normal"
+                      <CardHeader
+                        floated={false}
+                        shadow={false}
+                        color="transparent"
+                        className=" mb-4 rounded-none border-b border-white/10 pb-1 mt-0 text-center"
                       >
-                        <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5 font-poppins" />
-                        {elapsedTime}
-                        <p className="text-lg flex items-end font-poppins">sec</p>
-                      </Typography>
-                    </CardHeader>
-                    <CardBody className="p-0">
-                      <ul className="flex flex-col gap-3.5">
-                        <li className="flex justify-center items-center gap-4">
-                          <Typography className="font-normal text-2xl font-poppins">
-                            {isActive ? "Active" : "Passive"}
-                          </Typography>
-                          <Typography className="font-normal text-2xl font-poppins">
-                            /
-                          </Typography>
-                          <Typography className="font-normal text-2xl font-poppins">
-                            {!isLegChecked ? "Left Leg" : "Right Leg"}
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">
-                            Maximum Angle
-                          </Typography>
-                          <Typography className="font-normal font-poppins">
-                            {maxAngles}°
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">
-                            Minimum Angle
-                          </Typography>
-                          <Typography className="font-normal font-poppins">
-                            {minAngles}°
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">
-                            Flexion Cycle
-                          </Typography>
-                          <Typography className="font-normal font-poppins">
-                            {flexionCycles}
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">
-                            Extension Cycle
-                          </Typography>
-                          <Typography className="font-normal font-poppins">
-                            {extensionCycles}
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">
-                            Velocity
-                          </Typography>
-                          <Typography className="font-normal font-poppins">
-                            {(maxAngles + minAngles) / 2}
-                          </Typography>
-                        </li>
-                        <li className="flex items-center gap-4 justify-between">
-                          <Typography className="font-normal font-poppins">ROM</Typography>
-                          <Typography className="font-normal font-poppins">
-                            {maxAngles - minAngles}
-                          </Typography>
-                        </li>
-                      </ul>
-                    </CardBody>
-                    <CardFooter className="pt-4 w-full">
-                      <div className="w-full flex gap-3">
-                        <Typography className="font-bold font-poppins">Note:</Typography>
-                        <Typography className="font-poppins">Angles in degrees</Typography>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                )}
-
-                {(screenWidth < 1242 ? isrenderscreen : !isrenderscreen) && (
-                  <Card color="gray" variant="gradient" className="w-full px-6">
-                    <div
-                      className={`grid grid-rows-3 gap-2 ${
-                        screenWidth >= 1205
-                          ? "grid-cols-5"
-                          : screenWidth < 1205 && screenWidth >= 845
-                          ? "grid-cols-3"
-                          : screenWidth < 845 && screenWidth >= 595
-                          ? "grid-cols-2"
-                          : "grid-cols-1"
-                      }`}
-                    >
-                      {/* Merged cell spanning 2 rows in the 1st column */}
-                      <div className="col-span-1 row-span-2 flex justify-center items-center">
-                        <CardHeader
-                          floated={false}
-                          shadow={false}
-                          color="transparent"
-                          className="mx-auto rounded-none border-b border-white/10 pb-2 mt-0 text-center"
+                        <Typography
+                          variant="h1"
+                          color="white"
+                          className="mt-6 flex justify-center gap-1 text-7xl font-normal"
                         >
-                          <Typography
-                            variant="h1"
-                            color="white"
-                            className={` flex justify-center gap-1 font-normal font-poppins ${
-                              screenWidth >= 845 ? "text-7xl" : "text-6xl"
-                            }`}
+                          <ClockIcon className="lg:h-7 lg:w-7 md:h-5 md:w-5 font-poppins" />
+                          {elapsedTime}
+                          <p className="text-lg flex items-end font-poppins">
+                            sec
+                          </p>
+                        </Typography>
+                      </CardHeader>
+                      <CardBody className="p-0">
+                        <ul className="flex flex-col gap-3.5">
+                          <li className="flex justify-center items-center gap-4">
+                            <Typography className="font-normal text-2xl font-poppins">
+                              {isActive ? "Active" : "Passive"}
+                            </Typography>
+                            <Typography className="font-normal text-2xl font-poppins">
+                              /
+                            </Typography>
+                            <Typography className="font-normal text-2xl font-poppins">
+                              {!isLegChecked ? "Left Leg" : "Right Leg"}
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              Maximum Angle
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {maxAngles}°
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              Minimum Angle
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {minAngles}°
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              Flexion Cycle
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {flexionCycles}
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              Extension Cycle
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {extensionCycles}
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              Velocity
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {(maxAngles + minAngles) / 2}
+                            </Typography>
+                          </li>
+                          <li className="flex items-center gap-4 justify-between">
+                            <Typography className="font-normal font-poppins">
+                              ROM
+                            </Typography>
+                            <Typography className="font-normal font-poppins">
+                              {maxAngles - minAngles}
+                            </Typography>
+                          </li>
+                        </ul>
+                      </CardBody>
+                      <CardFooter className="pt-4 w-full">
+                        <div className="w-full flex gap-3">
+                          <Typography className="font-bold font-poppins">
+                            Note:
+                          </Typography>
+                          <Typography className="font-poppins">
+                            Angles in degrees
+                          </Typography>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  )}
+
+                  {(screenWidth < 1242 ? isrenderscreen : !isrenderscreen) && (
+                    <Card
+                      color="gray"
+                      variant="gradient"
+                      className="w-full px-6"
+                    >
+                      <div
+                        className={`grid grid-rows-3 gap-2 ${
+                          screenWidth >= 1205
+                            ? "grid-cols-5"
+                            : screenWidth < 1205 && screenWidth >= 845
+                            ? "grid-cols-3"
+                            : screenWidth < 845 && screenWidth >= 595
+                            ? "grid-cols-2"
+                            : "grid-cols-1"
+                        }`}
+                      >
+                        {/* Merged cell spanning 2 rows in the 1st column */}
+                        <div className="col-span-1 row-span-2 flex justify-center items-center">
+                          <CardHeader
+                            floated={false}
+                            shadow={false}
+                            color="transparent"
+                            className="mx-auto rounded-none border-b border-white/10 pb-2 mt-0 text-center"
                           >
-                            <ClockIcon
-                              className={`font-poppins ${
-                                screenWidth >= 845 ? "w-7 h-7" : "w-6 h-6"
-                              }`}
-                            />
-                            120
-                            <p
-                              className={`flex items-end font-poppins ${
-                                screenWidth >= 845 ? "text-lg" : "text-base"
+                            <Typography
+                              variant="h1"
+                              color="white"
+                              className={` flex justify-center gap-1 font-normal font-poppins ${
+                                screenWidth >= 845 ? "text-7xl" : "text-6xl"
                               }`}
                             >
-                              sec
-                            </p>
-                          </Typography>
-                        </CardHeader>
-                        {/* Card Body and Footer content goes here */}
-                      </div>
+                              <ClockIcon
+                                className={`font-poppins ${
+                                  screenWidth >= 845 ? "w-7 h-7" : "w-6 h-6"
+                                }`}
+                              />
+                              120
+                              <p
+                                className={`flex items-end font-poppins ${
+                                  screenWidth >= 845 ? "text-lg" : "text-base"
+                                }`}
+                              >
+                                sec
+                              </p>
+                            </Typography>
+                          </CardHeader>
+                          {/* Card Body and Footer content goes here */}
+                        </div>
 
-                      {/* Columns 2 to 5 for CardBody content */}
-                      {/* {info.map((data, index) => (
+                        {/* Columns 2 to 5 for CardBody content */}
+                        {/* {info.map((data, index) => (
                         <div key={index} className="col-span-1">
 
                           <CardBody>
@@ -2763,26 +2835,26 @@ console.log(highlightedArray,"HI")
                         </div>
                       ))} */}
 
-                      {/* Centered CardFooter in the 3rd row */}
-                      <div className="col-span-1 row-span-1 flex items-center justify-center">
-                        <CardFooter>
-                          <div className="flex gap-3">
-                            <Typography className="font-bold text-base sm:text-lg font-poppins">
-                              Note:
-                            </Typography>
-                            <Typography className="text-base sm:text-lg font-poppins">
-                              Angles in degrees
-                            </Typography>
-                          </div>
-                        </CardFooter>
+                        {/* Centered CardFooter in the 3rd row */}
+                        <div className="col-span-1 row-span-1 flex items-center justify-center">
+                          <CardFooter>
+                            <div className="flex gap-3">
+                              <Typography className="font-bold text-base sm:text-lg font-poppins">
+                                Note:
+                              </Typography>
+                              <Typography className="text-base sm:text-lg font-poppins">
+                                Angles in degrees
+                              </Typography>
+                            </div>
+                          </CardFooter>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                )}
+                    </Card>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
         )}
         {!showFlashscreen && !isPlaying && (
           <div className="w-full">
@@ -2801,39 +2873,61 @@ console.log(highlightedArray,"HI")
           </div>
         )}
       </div>
+      {/* )} */}
+      {/* </div> */}
       {/* <div style={{ display: 'none' }}> */}
       {!showFlashscreen && (
-      <div style={{ display: "none" }}>
-        <Page size="A4" style={styles.page} ref={componentRef}>
-          {highlightArray.map(
-            (data, index) =>
-            index >= 0 && index<highlightArray.length-1 && (
-                <View key={index} style={styles.graphContainer}>
-                  <Text style={styles.graphTitle}>Graph ${index}</Text>
-                  <View style={styles.graphView}>
-                    <LineChart
-                      width={460}
-                      height={250}
-                      data={data}
-                      margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+        <div style={{ display: "none" }}>
+          <Page size="A4" style={styles.page} ref={componentRef}>
+            {highlightArray.map(
+              (data, index) =>
+                index >= 0 &&
+                index < highlightArray.length - 1 && (
+                  <div
+                    key={index}
+                    style={{
+                      pageBreakAfter:
+                        index !== highlightArray.length - 2
+                          ? "always"
+                          : "avoid",
+                    }}
+                  >
+                    <View
+                      style={{
+                        ...styles.graphContainer,
+                        border: "1px solid black",
+                      }}
                     >
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="val" stroke="#8884d8" />
-                    </LineChart>
-                  </View>
-                  <br></br>
-                  <div className="border-black">
-                    {generateContentforPdf(index - 1)}
+                      <Text style={styles.graphTitle}>Graph ${index}</Text>
+                      <View style={styles.graphView}>
+                        <LineChart
+                          width={460}
+                          height={250}
+                          data={data}
+                          margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                        >
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="val"
+                            stroke="#8884d8"
+                          />
+                        </LineChart>
+                      </View>
+                      <br />
+                      <div className="border-black">
+                        {generateContentforPdf(index - 1)}
+                      </div>
+                    </View>
                   </div>
-                </View>
-              )
-          )}
-        </Page>
-      </div>
-    )}
+                )
+            )}
+          </Page>
+        </div>
+      )}
       {/* </div> */}
     </>
   );

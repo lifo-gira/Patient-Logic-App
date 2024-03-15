@@ -39,7 +39,7 @@ const ModelRender = ({model,props,rotat}) => {
 //   }, [isIncreasing]);
 
   return (
-    <group {...props} dispose={null}>
+    <group {...props} position={[0,0,-0.4]} dispose={null}>
       <group name="Scene">
         {/* Left Leg */}
         <group name="LeftLeg" position={[0.107, 0.161, 0.024]} rotation={[-3.133, 0, 0]} scale={0.01}>

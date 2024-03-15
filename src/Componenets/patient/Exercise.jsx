@@ -56,6 +56,7 @@ import {
   Scatter,
   Label,
 } from "recharts";
+import RightLegBend from "../../assets/Right-Leg-Bend.mp4";
 import exerbg from "../../assets/exerbg.svg";
 import glass from "../../assets/glass.svg";
 import { toast } from "react-toastify";
@@ -282,6 +283,7 @@ const Exercise = ({ onBack }) => {
   }
   const [legValue, setlegValue] = useState([]);
   const [rotationX, setRotationX] = useState(0);
+  const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
 
@@ -292,7 +294,13 @@ const Exercise = ({ onBack }) => {
       // // const rotation = legvalue;
       // console.log("legvalue",legvalue)
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
+        console.log(typeof(metricItem.val))
         setRotationX(metricItem.val);
+        if(metricItem.val<10){
+          setShouldAutoplay(true)
+        }else{
+          setShouldAutoplay(false)
+        }
         return {
           index: newIndex,
           val: metricItem.val,
@@ -308,6 +316,11 @@ const Exercise = ({ onBack }) => {
         "val" in lastMetricItem
       ) {
         setRotationX(lastMetricItem.val);
+        if(lastMetricItem.val<10){
+          setShouldAutoplay(true)
+        }else{
+          setShouldAutoplay(false)
+        }
         return {
           index: newIndex,
           val: lastMetricItem.val,
@@ -1952,7 +1965,7 @@ const Exercise = ({ onBack }) => {
     console.log(s3, "Model");
     const params = {
       Bucket: "blenderbuck",
-      Key: "ProneRightLegBending.glb", // Replace with your actual model file name
+      Key: exe+".glb", // Replace with your actual model file name
     };
 
     try {
@@ -2162,93 +2175,16 @@ const Exercise = ({ onBack }) => {
                 //   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
                 // }}
               >
-                <div className={`w-full h-full rounded-3x flex flex-row gap-8`}>
-                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
-                    <div className="w-full h-full item-center">
-                      {/* <Canvas
-                        camera={{
-                          position: [-45, 0, -5],
-                          fov: 2,
-                          near: 10,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <ModelRender
-                              rotat={rotationX}
-                              model={glbData}
-                              position={[0  , 0, 0]}
-                              scale={1}
-                              rotation={[0, -0.2, 0]}
-                            />
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                          <OrbitControls />
-                        </Suspense>
-                      </Canvas> */}
-                      <Canvas
-                        camera={{
-                          position: [-45, 0, -5], // Adjusted camera position
-                          fov: 4,
-                          near: 0.1,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <>
-                              <ModelRender
-                                rotat={rotationX}
-                                model={glbData}
-                                scale={1}
-                                rotation={[0, -0.2, 0]}
-                              />
-                              {/* <OrbitControls /> */}
-                            </>
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                        </Suspense>
-                      </Canvas>
-                    </div>
-                  </div>
-                  <div className={`w-2/5 h-full bg-white rounded-xl`}>
+                <div className={`w-full h-full rounded-3x flex flex-row gap-8 relative`}>
+                  <div
+                    className={`w-4/5 h-full bg-transparent`}
+                  >
                     <div className="w-full h-full">
-                      {/* <Canvas
+                      <div className="w-full h-full">
+                        <Canvas
                         camera={{
-                          position: [-45, 0, -5],
-                          fov: 2,
-                          near: 10,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && (
-                            <ModelRender
-                              rotat={rotationX}
-                              model={glbData}
-                              position={[0  , 0, 0]}
-                              scale={1}
-                              rotation={[0, -0.2, 0]}
-                            />
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                          <OrbitControls />
-                        </Suspense>
-                      </Canvas> */}
-                      <Canvas
-                        camera={{
-                          position: [-45, 0, -5], // Adjusted camera position
-                          fov: 2,
+                          position: [-8,5, -7], // Adjusted camera position
+                          fov: 6,
                           near: 0.1,
                           far: 1000,
                         }}
@@ -2271,9 +2207,22 @@ const Exercise = ({ onBack }) => {
                           />
                         </Suspense>
                       </Canvas>
+                        </div>
+                        
                     </div>
                   </div>
                   <div className={`w-1/5`}></div>
+                  {shouldAutoplay && (
+                        <video
+                        className="absolute w-72 h-52 object-cover bottom-0 right-0"
+                        // Use if condition to render autoplay attribute
+                        autoPlay
+                        // controls
+                        // poster="/videos/poster-image.jpg"
+                        >
+                        <source src={RightLegBend} type="video/mp4" />
+                      </video>
+                      )}
                 </div>
               </div>
             </div>
