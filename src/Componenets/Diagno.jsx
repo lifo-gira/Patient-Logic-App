@@ -1480,9 +1480,9 @@ const Diagno = () => {
 
   const defaultOptions = {
     reverse: false, // reverse the tilt direction
-    max: 5, // max tilt rotation (degrees)
+    max: 1, // max tilt rotation (degrees)
     perspective: 1000, // Transform perspective, the lower the more extreme the tilt gets.
-    scale: 1.1, // 2 = 200%, 1.5 = 150%, etc..
+    scale: 1, // 2 = 200%, 1.5 = 150%, etc..
     speed: 1000, // Speed of the enter/exit transition
     transition: true, // Set a transition on enter/exit.
     axis: null, // What axis should be disabled. Can be X or Y.
@@ -1503,7 +1503,7 @@ const Diagno = () => {
             <Card
               key={i}
               variant="gradient"
-              className={`border-black w-full max-w-[15rem] py-5 ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300 ${
+              className={`border-black w-full max-w-[15rem] ml-1  mr-2 inline-block hover:scale-105 ease-in-out duration-300 ${
                 pain[i] > 10
                   ? "border-2 border-red-800 border-solid"
                   : "border-2 border-green-500 border-solid"
@@ -1512,14 +1512,16 @@ const Diagno = () => {
               <CardHeader
                 floated={false}
                 shadow={false}
-                className=" rounded-xl border-b border-white/10  text-center bg-black "
+                className=" rounded-lg border-b border-white/10  text-center bg-black mb-5"
               >
                 <Typography
                   variant="small"
-                  color="black"
-                  className="font-bold uppercase font-poppins m-0 mb-1 pb-2"
-                />
-                <Tilt options={defaultOptions}>
+                  color="white"
+                  className="font-bold uppercase font-poppins py-2 text-base"
+                >
+                  CYCLE {i + 1}
+                </Typography>
+                {/* <Tilt options={defaultOptions}>
                   <Card
                     key={i}
                     variant="gradient"
@@ -1538,13 +1540,6 @@ const Diagno = () => {
                       >
                         CYCLE {i + 1}
                       </Typography>
-                      {/* <Typography
-                variant="h1"
-                color="black"
-                className="mt-2 flex justify-center gap-1 text-4xl font-bold"
-              >
-                {pain[i]} <span className="self-end text-base">Pain</span>
-              </Typography> */}
                     </CardHeader>
                     <CardBody className="pt-0 pb-2 px-2">
                       <ul className="flex flex-col">
@@ -1558,7 +1553,7 @@ const Diagno = () => {
                       </ul>
                     </CardBody>
                   </Card>
-                </Tilt>
+                </Tilt> */}
               </CardHeader>
               <CardBody className="pt-0 pb-2">
                 <ul className="flex flex-col">
@@ -2865,7 +2860,7 @@ const Diagno = () => {
                   whiteSpace: "nowrap",
                   display: "flex",
                 }}
-                className="py-2 gap-4 ml-4"
+                className="py-2 gap-4 ml-10 pl-2 my-6"
               >
                 {generateCards()}
               </div>
