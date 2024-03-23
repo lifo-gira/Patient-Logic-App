@@ -1960,13 +1960,18 @@ const Exercise = ({ onBack }) => {
     setuseExercise(exe);
   };
 
+  const [modelname, setmodelname] =useState("")
+
   const loadModel = async (exe) => {
     const s3 = new AWS.S3();
-    console.log(s3, "Model");
+    console.log( "Model",s3);
+    
+    
     const params = {
       Bucket: "blenderbuck",
-      Key: exe+".glb", // Replace with your actual model file name
+      Key: exe +".glb", // Replace with your actual model file name
     };
+    
 
     try {
       console.log("Inside fetch");
@@ -1983,6 +1988,7 @@ const Exercise = ({ onBack }) => {
       );
       console.log("Parsed GLB Data:", glbData); // Log parsed data
       // setModel(glbData.scene);
+      setmodelname(exe);
       setGlbData(URL.createObjectURL(new Blob([data.Body])));
     } catch (error) {
       console.error("Error fetching or parsing model:", error);
@@ -2190,13 +2196,14 @@ const Exercise = ({ onBack }) => {
                         }}
                       >
                         <Suspense fallback={null}>
-                          {glbData && (
+                          {glbData && modelname && (
                             <>
                               <ModelRender
                                 rotat={rotationX}
                                 model={glbData}
-                                scale={1}
-                                rotation={[0, -0.2, 0]}
+                                
+                                name={modelname}
+                                
                               />
                               {/* <OrbitControls /> */}
                             </>
