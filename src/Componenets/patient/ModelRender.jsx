@@ -174,80 +174,32 @@ const ModelRender = ({ model, props, rotat, name }) => {
         </group>
       </group>
       )}
-      {/* {name === "Right-Knee-Bend (squats)" && (
-        <group {...props} dispose={null}>
-          <group name="Scene">
-            <group
-              name="UpperModel"
-              position={[0, -0.33, 0]}
-              rotation={[Math.PI / 2, 0, 0]}
-              scale={0.01}
-            >
-              <primitive object={nodes.mixamorig9Hips_1} />
-              <group name="Ch31_Collar" position={[0, -40.726, 50.457]}>
-                <mesh
-                  name="Mesh003"
-                  geometry={nodes.Mesh003.geometry}
-                  material={materials["Ch31_body.004"]}
-                />
-                <mesh
-                  name="Mesh003_1"
-                  geometry={nodes.Mesh003_1.geometry}
-                  material={materials.Ch31_hair}
-                />
-              </group>
-            </group>
-            <group
-              name="LeftLeg"
-              position={[0, -0.31, 0]}
-              rotation={[Math.PI / 2, 0, 0]}
-              scale={0.01}
-            >
-              <primitive object={nodes.mixamorig9Hips} />
-              <mesh
-                name="Ch31_Shoes"
-                geometry={nodes.Ch31_Shoes.geometry}
-                material={materials["Ch31_body.003"]}
-                position={[12.829, 0.681, -38.031]}
-                rotation={[1.604, 0, 0]}
-              />
-            </group>
-            <group
-              ref={rightLegGroup}
-              name="RightLeg"
-              position={[-0.14, 0.01, 0]}
-              rotation={[(rotat * Math.PI) / 180, 0, 0]}
-              scale={0.01}
-            >
-              
-              <primitive object={nodes.mixamorig9Hips_2} />
-              <mesh
-                name="Ch31_Shoes001"
-                geometry={nodes.Ch31_Shoes001.geometry}
-                material={materials["Ch31_body.005"]}
-                position={[0, 0, 0]}
-                rotation={[1.517, -0.1, -0.16]}
-              />
-            </group>
-            <group
-              name="Line010"
-              position={[-0.005, -0.302, -0.469]}
-              scale={0.011}
-            >
-              <mesh
-                name="Mesh004"
-                geometry={nodes.Mesh004.geometry}
-                material={materials["21 - Default"]}
-              />
-              <mesh
-                name="Mesh004_1"
-                geometry={nodes.Mesh004_1.geometry}
-                material={materials["17 - Default"]}
-              />
+       {name === "Right-Knee-Bend" && (
+        <group {...props} scale={0.75} position={[0, -0.15, 0]} rotation={[0, 15.5, 0.2]} dispose={null}>
+        <group name="Scene">
+        <group name="UpperModel" position={[0, -0.33, 0]} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+            <primitive object={nodes.mixamorig9Hips_1} />
+            <group name="Ch31_Collar" position={[0, -40.726, 50.457]}>
+              <mesh name="Mesh003" geometry={nodes.Mesh003.geometry} material={materials['Ch31_body.004']} />
+              <mesh name="Mesh003_1" geometry={nodes.Mesh003_1.geometry} material={materials.Ch31_hair} />
             </group>
           </group>
+          <group name="LeftLeg" position={[0, -0.31, 0]} rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+            <primitive object={nodes.mixamorig9Hips} />
+            <mesh name="Ch31_Shoes" geometry={nodes.Ch31_Shoes.geometry} material={materials['Ch31_body.003']} position={[12.829, 0.681, -38.031]} rotation={[1.604, 0, 0]} />
+          </group>
+          <group ref={rightLegGroup} name="RightLeg" position={[-0.14, 0.01, 0]} rotation={[(180 - rotat) * Math.PI / 180, 0, 0]} scale={0.01}>
+            {/* Right Leg */}
+            <primitive object={nodes.mixamorig9Hips_2} />
+            <mesh name="Ch31_Shoes001" geometry={nodes.Ch31_Shoes001.geometry} material={materials['Ch31_body.005']} position={[0, 0, 0]} rotation={[0 * Math.PI / 180, 0, 0]} />
+          </group>
+          <group name="Line010" position={[-0.005, -0.302, -0.469]} scale={0.011}>
+            <mesh name="Mesh004" geometry={nodes.Mesh004.geometry} material={materials['21 - Default']} />
+            <mesh name="Mesh004_1" geometry={nodes.Mesh004_1.geometry} material={materials['17 - Default']} />
+          </group>
         </group>
-      )}  */}
+      </group>
+      )} 
       {name === "Left-Knee-Bend" && (
         <group {...props} scale={0.75} position={[0, -0.15, 0]} rotation={[0, 15.5, 0.2]} dispose={null}>
         <group name="Scene">
