@@ -56,7 +56,11 @@ import {
   Scatter,
   Label,
 } from "recharts";
-import RightLegBend from "../../assets/Right-Leg-Bend.mp4";
+import SitandStandVideo from "../../assets/SitandStand.mp4";
+import ProneLeftLegBendingVideo from "../../assets/ProneLeftLegBending.mp4";
+import ProneRightLegBendingVideo from "../../assets/ProneRightLegBending.mp4";
+import RightLegBendingVideo from "../../assets/RightLegBending.mp4";
+import LeftLegBendingVideo from "../../assets/LeftLegBending.mp4";
 import exerbg from "../../assets/exerbg.svg";
 import glass from "../../assets/glass.svg";
 import { toast } from "react-toastify";
@@ -294,12 +298,12 @@ const Exercise = ({ onBack }) => {
       // // const rotation = legvalue;
       // console.log("legvalue",legvalue)
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
-        console.log(typeof(metricItem.val))
+        console.log(typeof metricItem.val);
         setRotationX(metricItem.val);
-        if(metricItem.val<10){
-          setShouldAutoplay(true)
-        }else{
-          setShouldAutoplay(false)
+        if (metricItem.val < 10) {
+          setShouldAutoplay(true);
+        } else {
+          setShouldAutoplay(false);
         }
         return {
           index: newIndex,
@@ -316,10 +320,10 @@ const Exercise = ({ onBack }) => {
         "val" in lastMetricItem
       ) {
         setRotationX(lastMetricItem.val);
-        if(lastMetricItem.val<10){
-          setShouldAutoplay(true)
-        }else{
-          setShouldAutoplay(false)
+        if (lastMetricItem.val < 10) {
+          setShouldAutoplay(true);
+        } else {
+          setShouldAutoplay(false);
         }
         return {
           index: newIndex,
@@ -1960,18 +1964,16 @@ const Exercise = ({ onBack }) => {
     setuseExercise(exe);
   };
 
-  const [modelname, setmodelname] =useState("")
+  const [modelname, setmodelname] = useState("");
 
   const loadModel = async (exe) => {
     const s3 = new AWS.S3();
-    console.log( "Model",s3);
-    
-    
+    console.log("Model", s3);
+
     const params = {
       Bucket: "blenderbuck",
-      Key: exe +".glb", // Replace with your actual model file name
+      Key: exe + ".glb", // Replace with your actual model file name
     };
-    
 
     try {
       console.log("Inside fetch");
@@ -2141,6 +2143,24 @@ const Exercise = ({ onBack }) => {
     },
   ];
 
+  const getExerciseUrl = (exercise) => {
+    switch (exercise) {
+      case "Sit-Stand":
+        return SitandStandVideo;
+      case "Left-Knee-Bend":
+        return LeftLegBendingVideo;
+      case "Right-Knee-Bend":
+        return RightLegBendingVideo;
+      case "Right-Leg-Bend":
+        return ProneRightLegBendingVideo;
+      case "Left-Leg-Bend":
+        return ProneLeftLegBendingVideo;
+      default:
+        return null;
+    }
+  };
+
+  const exerciseUrl = getExerciseUrl(useExercise);
   return (
     <div
       className={`w-full h-full bg-cover bg-center ${
@@ -2181,55 +2201,52 @@ const Exercise = ({ onBack }) => {
                 //   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
                 // }}
               >
-                <div className={`w-full h-full rounded-3x flex flex-row gap-8 relative`}>
-                  <div
-                    className={`w-4/5 h-full bg-transparent`}
-                  >
+                <div
+                  className={`w-full h-full rounded-3x flex flex-row gap-8 relative`}
+                >
+                  <div className={`w-4/5 h-full bg-transparent`}>
                     <div className="w-full h-full">
                       <div className="w-full h-full">
                         <Canvas
-                        camera={{
-                          position: [-8,5, -7], // Adjusted camera position
-                          fov: 6,
-                          near: 0.1,
-                          far: 1000,
-                        }}
-                      >
-                        <Suspense fallback={null}>
-                          {glbData && modelname && (
-                            <>
-                              <ModelRender
-                                rotat={rotationX}
-                                model={glbData}
-                                
-                                name={modelname}
-                                
-                              />
-                              {/* <OrbitControls /> */}
-                            </>
-                          )}
-                          <directionalLight
-                            position={[-60, 40, -30]}
-                            intensity={10}
-                          />
-                        </Suspense>
-                      </Canvas>
-                        </div>
-                        
+                          camera={{
+                            position: [-8, 5, -7], // Adjusted camera position
+                            fov: 6,
+                            near: 0.1,
+                            far: 1000,
+                          }}
+                        >
+                          <Suspense fallback={null}>
+                            {glbData && modelname && (
+                              <>
+                                <ModelRender
+                                  rotat={rotationX}
+                                  model={glbData}
+                                  name={modelname}
+                                />
+                                {/* <OrbitControls /> */}
+                              </>
+                            )}
+                            <directionalLight
+                              position={[-60, 40, -30]}
+                              intensity={10}
+                            />
+                          </Suspense>
+                        </Canvas>
+                      </div>
                     </div>
                   </div>
                   <div className={`w-1/5`}></div>
+                  {console.log(useExercise, "useExercise")}
                   {shouldAutoplay && (
-                        <video
-                        className="absolute w-72 h-52 object-cover bottom-0 right-0"
-                        // Use if condition to render autoplay attribute
-                        autoPlay
-                        // controls
-                        // poster="/videos/poster-image.jpg"
-                        >
-                        <source src={RightLegBend} type="video/mp4" />
-                      </video>
-                      )}
+                    <video
+                      className="absolute w-72 h-52 object-cover bottom-0 right-0"
+                      autoPlay
+                      // controls
+                      // poster="/videos/poster-image.jpg"
+                    >
+                      <source src={exerciseUrl} type="video/mp4" />
+                    </video>
+                  )}
                 </div>
               </div>
             </div>
