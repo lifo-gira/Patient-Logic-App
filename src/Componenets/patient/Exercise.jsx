@@ -2179,32 +2179,41 @@ const Exercise = ({ onBack }) => {
   useEffect(() => {
     const rotateLeftLeg = () => {
       const startTime = Date.now();
-      const duration = 1000; // Duration of rotation in milliseconds
-      setTargetRotation1(110);
+      const duration = 3000; // Duration of rotation in milliseconds
+      
       const updateRotation = () => {
         const currentTime = Date.now();
         const elapsedTime = currentTime - startTime;
         const progress = Math.min(1, elapsedTime / duration);
-        const easedProgress = easeInOutQuad(progress);
-        const newRotation = rotationX1 + (targetRotation1 - rotationX1) * easedProgress;
+        let easedProgress;
+        let newRotation;
+  
+        if (progress <= 0.5) {
+          // Ease in for the first half (0 to 90)
+          easedProgress = easeInOutQuad(progress * 2);
+          newRotation = 90 * easedProgress;
+        } else {
+          // Ease out for the second half (90 to 0)
+          easedProgress = easeInOutQuad(1 - ((progress - 0.5) * 2));
+          newRotation = 90 * easedProgress;
+        }
+  
         setRotationX1(newRotation);
-
+  
         if (elapsedTime < duration) {
           requestAnimationFrame(updateRotation);
-        } else {
-          // Switch direction when reaching 0 or 100 degrees
-          setTargetRotation1(targetRotation1 === 0 ? 110 : 0);
         }
       };
+  
       updateRotation();
-
     };
-
+  
     // Check if the effect should be triggered
     if (shouldAutoplay) {
       rotateLeftLeg();
     }
   }, [shouldAutoplay]); // Run effect only when shouldTriggerEffect changes
+  
 
   // Easing function for smooth interpolation
   const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
