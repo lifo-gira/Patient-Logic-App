@@ -92,6 +92,7 @@ const Exercise = ({ onBack }) => {
   const [isside, setisside] = useState(true);
   const userId = user.user_id;
   const patient_id = user._id;
+    const [rotationX1, setRotationX1] = useState(0);
   useEffect(() => {
     const handleResize = () => {
       const windowWidth = window.innerWidth;
@@ -287,6 +288,7 @@ const Exercise = ({ onBack }) => {
   }
   const [legValue, setlegValue] = useState([]);
   const [rotationX, setRotationX] = useState(0);
+
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const generateNewDataPoint = () => {
     const newIndex = elapsedTime + 1;
@@ -300,8 +302,10 @@ const Exercise = ({ onBack }) => {
       if (metricItem && typeof metricItem === "object" && "val" in metricItem) {
         console.log(typeof metricItem.val);
         setRotationX(metricItem.val);
+        // setRotationX1(metricItem.val);
         if (metricItem.val < 10) {
           setShouldAutoplay(true);
+          rotate();
         } else {
           setShouldAutoplay(false);
         }
@@ -320,8 +324,10 @@ const Exercise = ({ onBack }) => {
         "val" in lastMetricItem
       ) {
         setRotationX(lastMetricItem.val);
+        // setRotationX1(lastMetricItem.val);
         if (lastMetricItem.val < 10) {
           setShouldAutoplay(true);
+          rotate();
         } else {
           setShouldAutoplay(false);
         }
@@ -1147,6 +1153,7 @@ const Exercise = ({ onBack }) => {
   ];
 
   const [targetRotation, setTargetRotation] = useState([0, 0, 0]);
+  const [targetRotation1, setTargetRotation1] = useState(100);
 
   // for finding the cycles
 
@@ -2161,6 +2168,47 @@ const Exercise = ({ onBack }) => {
   };
 
   const exerciseUrl = getExerciseUrl(useExercise);
+
+  const rotate = () =>{
+    for(let i=0; i<120; i++){
+      setRotationX1(i);
+    }
+    setRotationX1(0);
+  }
+
+  useEffect(() => {
+    const rotateLeftLeg = () => {
+      const startTime = Date.now();
+      const duration = 1000; // Duration of rotation in milliseconds
+      setTargetRotation1(110);
+      const updateRotation = () => {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(1, elapsedTime / duration);
+        const easedProgress = easeInOutQuad(progress);
+        const newRotation = rotationX1 + (targetRotation1 - rotationX1) * easedProgress;
+        setRotationX1(newRotation);
+
+        if (elapsedTime < duration) {
+          requestAnimationFrame(updateRotation);
+        } else {
+          // Switch direction when reaching 0 or 100 degrees
+          setTargetRotation1(targetRotation1 === 0 ? 110 : 0);
+        }
+      };
+      updateRotation();
+
+    };
+
+    // Check if the effect should be triggered
+    if (shouldAutoplay) {
+      rotateLeftLeg();
+    }
+  }, [shouldAutoplay]); // Run effect only when shouldTriggerEffect changes
+
+  // Easing function for smooth interpolation
+  const easeInOutQuad = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
   return (
     <div
       className={`w-full h-full bg-cover bg-center ${
@@ -2204,8 +2252,39 @@ const Exercise = ({ onBack }) => {
                 <div
                   className={`w-full h-full rounded-3x flex flex-row gap-8 relative`}
                 >
-                  <div className={`w-4/5 h-full bg-transparent`}>
+                  <div className={`w-1/2 h-full bg-transparent`}>
                     <div className="w-full h-full">
+                      <div className="w-full h-full">
+                        <Canvas
+                          camera={{
+                            position: [-8, 5, -7], // Adjusted camera position
+                            fov: 6,
+                            near: 0.1,
+                            far: 1000,
+                          }}
+                        >
+                          <Suspense fallback={null}>
+                            {glbData && modelname && (
+                              <>
+                                <ModelRender
+                                  rotat={rotationX1}
+                                  model={glbData}
+                                  name={modelname}
+                                />
+                                {/* <OrbitControls /> */}
+                              </>
+                            )}
+                            <directionalLight
+                              position={[-60, 40, -30]}
+                              intensity={10}
+                            />
+                          </Suspense>
+                        </Canvas>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`w-1/2`}>
+                  <div className="w-full h-full">
                       <div className="w-full h-full">
                         <Canvas
                           camera={{
@@ -2235,9 +2314,8 @@ const Exercise = ({ onBack }) => {
                       </div>
                     </div>
                   </div>
-                  <div className={`w-1/5`}></div>
                   {console.log(useExercise, "useExercise")}
-                  {shouldAutoplay && (
+                  {/* {shouldAutoplay && (
                     <video
                       className="absolute w-72 h-52 object-cover bottom-0 right-0"
                       autoPlay
@@ -2246,7 +2324,7 @@ const Exercise = ({ onBack }) => {
                     >
                       <source src={exerciseUrl} type="video/mp4" />
                     </video>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>

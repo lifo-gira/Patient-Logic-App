@@ -54,7 +54,7 @@ const ModelRender = ({ model, props, rotat, name }) => {
   return (
     <>
       {name === "Right-Leg-Bend" && (
-        <group {...props} position={[0, 0, -0.4]} rotation={[0, -0.2, 0]} scale={1} dispose={null}>
+        <group {...props} position={[0, 0, -0.3]} rotation={[0, 0.1, 0]} scale={0.7} dispose={null}>
           <group name="Scene">
             <group
               name="LeftLeg"
@@ -141,7 +141,7 @@ const ModelRender = ({ model, props, rotat, name }) => {
         </group>
       )}
       {name === "Left-Leg-Bend" && (
-        <group {...props} position={[-0.4, 0, 0]} rotation={[0, 1.5, 0]} scale={1} dispose={null}>
+        <group {...props} position={[-0.4, 0, 0]} rotation={[0, 1.5, 0]} scale={0.7} dispose={null}>
         <group name="Scene">
           {/* Left Leg Group */}
           <group name="UpperModel" position={[0, 0.161, 0]} rotation={[-3.133, 0, 0]} scale={0.01}>
