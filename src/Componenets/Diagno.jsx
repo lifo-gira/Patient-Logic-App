@@ -639,7 +639,7 @@ const Diagno = () => {
       updateChart();
       // Create a new WebSocket connection when starting the chart
       const newSocket = new WebSocket(
-        `ws://127.0.0.1:8000/ws/${userId}`
+        `wss://api-backup-vap2.onrender.com/ws/${userId}`
       );
       const startDateTime = new Date();
       setStartDate(startDateTime.toLocaleDateString()); // Update startDate
