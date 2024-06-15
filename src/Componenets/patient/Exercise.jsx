@@ -774,30 +774,24 @@ const Exercise = ({ onBack }) => {
     console.log("Start Date:", startDateTime.toLocaleDateString());
     console.log("Start Time:", formatTime(startDateTime));
     newSocket.onmessage = (event) => {
-      // console.log(event, "event");
       const newData = JSON.parse(event.data);
       const seriesCount = newData.series;
-      // console.log(seriesCount, "seriesCount");
-      // seriesCount = Updated_data.length
-      for (let i = 0; i < seriesCount.length; i += 20) {
-        const slice = seriesCount.slice(i, i + seriesCount.length);
-        setmetricArrayLength(slice);
-        stackedMetricsArray.push(...slice);
-        // console.log(stackedMetricsArray, "STACKED");
-        const mappedSlice = slice.map((val, index) => ({
-          index: i + index,
+      const seriesLength = seriesCount.length;
+      
+      const mappedSlice = seriesCount.map((val, index) => ({
+          index: index,
           val: parseFloat(val),
-        }));
-
-        // console.log(mappedSlice)
-        metricArray.push(...mappedSlice);
-        console.log(metricArrayLength, "metrics");
-        // setmetricArray(mappedSlice)
-      }
-
-      // console.log(metricArray);
+      }));
+      
+      setmetricArrayLength(mappedSlice);
+      stackedMetricsArray.push(...mappedSlice);
+      metricArray.push(...mappedSlice);
+  
+      console.log(stackedMetricsArray, "STACKED");
+      console.log(metricArray);
+  
       return metricArray;
-    };
+  };
     newSocket.onopen = () => {
       console.log("Socket open");
     };
