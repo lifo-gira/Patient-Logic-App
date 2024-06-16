@@ -8,8 +8,8 @@ const ModelRender = ({ model, props, rotat, name }) => {
   const leftLegGroup = useRef();
   const upperModelRef = useRef();
   const thighRef = useRef();
-  console.log("modelrender", rotat);
-  console.log("Modelname", name);
+  // console.log("modelrender", rotat);
+  // console.log("Modelname", name);
 
   const [rotationX, setRotationX] = useState(0);
   const [isIncreasing, setIsIncreasing] = useState(true);

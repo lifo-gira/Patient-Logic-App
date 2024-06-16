@@ -787,8 +787,8 @@ const Exercise = ({ onBack }) => {
       stackedMetricsArray.push(...mappedSlice);
       metricArray.push(...mappedSlice);
   
-      console.log(stackedMetricsArray, "STACKED");
-      console.log(metricArray);
+      // console.log(stackedMetricsArray, "STACKED");
+      // console.log(metricArray);
   
       return metricArray;
   };
@@ -1828,7 +1828,7 @@ const Exercise = ({ onBack }) => {
 
   function handleHighlightArray(highlightedArray) {
     const pain = [];
-    console.log(highlightedArray, "HI");
+    // console.log(highlightedArray, "HI");
     // Loop through each array in updatedHighlightArray
     highlightedArray.forEach((innerArray) => {
       const indices = [];
@@ -1915,11 +1915,11 @@ const Exercise = ({ onBack }) => {
       // console.log(simpleObjects)
       const updatedHighlightArray = PainandRomArray(simpleObjects);
       sethighlightedArray(updatedHighlightArray);
-      console.log(updatedHighlightArray.highlightedArray);
+      // console.log(updatedHighlightArray.highlightedArray);
       const painLevels = handleHighlightArray(
         updatedHighlightArray.highlightedArray
       );
-      console.log(painLevels);
+      // console.log(painLevels);
       const exerciseObject = {
         name: chosenExercise,
         values: simple,
@@ -2317,7 +2317,6 @@ const Exercise = ({ onBack }) => {
                       </div>
                     </div>
                   </div>
-                  {console.log(useExercise, "useExercise")}
                   {/* {shouldAutoplay && (
                     <video
                       className="absolute w-72 h-52 object-cover bottom-0 right-0"
